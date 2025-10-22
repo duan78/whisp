@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestion des alias de commandes pour Whisp Assistant Vocal - Personnalisez vos commandes vocales.">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Alias de commandes - Whisp Assistant Vocal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%234361ee' d='M256 32C114.52 32 0 146.496 0 288v48a32 32 0 0 0 17.689 28.622l14.383 7.191C34.083 431.903 83.421 480 144 480h24c13.255 0 24-10.745 24-24V280c0-13.255-10.745-24-24-24h-24c-31.342 0-59.671 12.879-80 33.627V288c0-105.869 86.131-192 192-192s192 86.131 192 192v1.627C427.671 268.879 399.342 256 368 256h-24c-13.255 0-24 10.745-24 24v176c0 13.255 10.745 24 24 24h24c60.579 0 109.917-48.098 111.928-108.187l14.382-7.191A32 32 0 0 0 512 336v-48c0-141.479-114.496-256-256-256z'/%3E%3C/svg%3E">
+    <!-- Script de détection précoce pour éviter les flashs de contenu non stylisé -->
+    <script>
+        // Supprimer la classe no-js dès que possible
+        document.documentElement.classList.remove('no-js');
+        
+        // Détection des préférences de réduction de mouvement
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.classList.add('reduced-motion');
+        }
+        
+        // Vérifier le mode sombre
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+    
+    <style>
+        /* Styles spécifiques à la page d'alias */
+        .aliases-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark-mode .aliases-section {
+            background-color: #2d3748;
+        }
+        
+        .aliases-section h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #4361ee;
+            font-size: 1.25rem;
+        }
+        
+        .dark-mode .aliases-section h3 {
+            color: #90cdf4;
+        }
+        
+        .add-alias-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #f1f5f9;
+            border-radius: 0.25rem;
+        }
+        
+        .dark-mode .add-alias-form {
+            background-color: #1e293b;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        
+        .dark-mode .form-group label {
+            color: #cbd5e0;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.25rem;
+            background-color: #fff;
+        }
+        
+        .dark-mode .form-group select,
+        .dark-mode .form-group input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .add-button {
+            align-self: flex-end;
+            padding: 0.5rem 1rem;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .add-button:hover {
+            background-color: #3651d4;
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.25rem 0 0 0.25rem;
+            background-color: #fff;
+        }
+        
+        .dark-mode .search-bar input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .search-bar button {
+            padding: 0.5rem 1rem;
+            background-color: #e2e8f0;
+            border: 1px solid #cbd5e0;
+            border-left: none;
+            border-radius: 0 0.25rem 0.25rem 0;
+            cursor: pointer;
+        }
+        
+        .dark-mode .search-bar button {
+            background-color: #4b5563;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .command-card {
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        
+        .dark-mode .command-card {
+            border-color: #4b5563;
+        }
+        
+        .command-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+        
+        .dark-mode .command-header {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        
+        .command-name {
+            font-weight: 600;
+            color: #1a202c;
+        }
+        
+        .dark-mode .command-name {
+            color: #e2e8f0;
+        }
+        
+        .command-count {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #e2e8f0;
+            color: #4a5568;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .dark-mode .command-count {
+            background-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .command-body {
+            display: none;
+            padding: 1rem;
+            background-color: #fff;
+        }
+        
+        .dark-mode .command-body {
+            background-color: #2d3748;
+        }
+        
+        .command-body.active {
+            display: block;
+        }
+        
+        .alias-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .alias-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            background-color: #f8fafc;
+            border-radius: 0.25rem;
+        }
+        
+        .dark-mode .alias-item {
+            background-color: #374151;
+        }
+        
+        .alias-item:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .dark-mode .alias-item:hover {
+            background-color: #4a5568;
+        }
+        
+        .alias-text {
+            color: #4a5568;
+        }
+        
+        .dark-mode .alias-text {
+            color: #cbd5e0;
+        }
+        
+        .alias-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .delete-button {
+            padding: 0.25rem 0.5rem;
+            background-color: #f56565;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .delete-button:hover {
+            background-color: #e53e3e;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #a0aec0;
+        }
+        
+        .dark-mode .empty-state {
+            color: #718096;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            background-color: #4361ee;
+            color: white;
+            border-radius: 0.25rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.success {
+            background-color: #48bb78;
+        }
+        
+        .notification.error {
+            background-color: #f56565;
+        }
+        
+        .notification.warning {
+            background-color: #ed8936;
+        }
+        
+        .highlight {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 0 0.25rem;
+            border-radius: 0.25rem;
+        }
+        
+        .dark-mode .highlight {
+            background-color: #92400e;
+            color: #fef3c7;
+        }
+        
+        /* Modal de confirmation */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .dark-mode .modal-content {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        
+        .modal-header {
+            padding: 1rem;
+            background-color: #4361ee;
+            color: white;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .modal-body {
+            padding: 1rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .dark-mode .modal-footer {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        
+        .modal-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button.cancel {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .dark-mode .modal-button.cancel {
+            background-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .modal-button.confirm {
+            background-color: #f56565;
+            color: white;
+        }
+        
+        .modal-button.cancel:hover {
+            background-color: #cbd5e0;
+        }
+        
+        .dark-mode .modal-button.cancel:hover {
+            background-color: #4a5568;
+        }
+        
+        .modal-button.confirm:hover {
+            background-color: #e53e3e;
+        }
+    </style>
+</head>
+<body role="application">
+    <!-- Lien d'évitement pour l'accessibilité -->
+    <a href="#main-content" class="sr-only sr-only-focusable">Aller au contenu principal</a>
+    
+    <div class="container">
+        {% set active_page = 'aliases' %}
+        {% include 'components/navigation.html' %}
+
+        <main id="main-content">
+            <h2><i class="fas fa-tags"></i> Gestion des alias de commandes</h2>
+            
+            <div class="aliases-section">
+                <h3><i class="fas fa-plus-circle"></i> Ajouter un nouvel alias</h3>
+                <form id="add-alias-form" class="add-alias-form">
+                    <div class="form-group">
+                        <label for="command-select">Commande</label>
+                        <select id="command-select" required>
+                            <option value="" selected disabled>Sélectionner une commande</option>
+                            <!-- Les options seront ajoutées dynamiquement -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="alias-input">Nouvel alias</label>
+                        <input type="text" id="alias-input" placeholder="Entrez un nouvel alias" required>
+                    </div>
+                    <button type="submit" class="add-button">Ajouter</button>
+                </form>
+            </div>
+            
+            <div class="aliases-section">
+                <h3><i class="fas fa-list"></i> Liste des alias par commande</h3>
+                
+                <div style="margin-bottom: 10px;">
+                    <button id="debug-button" class="add-button" style="background-color: #4a5568;">
+                        <i class="fas fa-bug"></i> Déboguer les alias
+                    </button>
+                </div>
+                
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Rechercher un alias ou une commande...">
+                    <button id="clear-search-btn" type="button"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div id="aliases-container">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Chargement des alias...
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        {% include 'components/footer.html' %}
+    </div>
+    
+    <!-- Modal de confirmation -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmation</h3>
+            </div>
+            <div class="modal-body" id="confirm-message">
+                Êtes-vous sûr de vouloir supprimer cet alias ?
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-btn" class="modal-button cancel">Annuler</button>
+                <button id="confirm-btn" class="modal-button confirm">Supprimer</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conteneur pour les notifications -->
+    <div id="notifications-container"></div>
+
+    <script>
+        // Mettre à jour l'année automatiquement
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables globales
+            let allAliases = {};
+            let currentFilter = '';
+            let confirmCallback = null;
+            
+            // Éléments DOM
+            const aliasesContainer = document.getElementById('aliases-container');
+            const commandSelect = document.getElementById('command-select');
+            const aliasInput = document.getElementById('alias-input');
+            const addAliasForm = document.getElementById('add-alias-form');
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmMessage = document.getElementById('confirm-message');
+            const confirmBtn = document.getElementById('confirm-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const darkModeButton = document.getElementById('toggle-dark-mode');
+            const animationsButton = document.getElementById('toggle-animations');
+            
+            // Charger les alias
+            loadAliases();
+            
+            // Gestionnaire d'événements pour ajouter un alias
+            addAliasForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const command = commandSelect.value;
+                const alias = aliasInput.value.trim();
+                
+                if (!command || !alias) {
+                    showNotification('Veuillez sélectionner une commande et saisir un alias', 'error');
+                    return;
+                }
+                
+                addAlias(command, alias);
+            });
+            
+            // Gestionnaire d'événements pour la recherche
+            searchInput.addEventListener('input', function() {
+                currentFilter = this.value.trim().toLowerCase();
+                displayAliases(allAliases, currentFilter);
+            });
+            
+            // Gestionnaire d'événements pour effacer la recherche
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                currentFilter = '';
+                displayAliases(allAliases);
+            });
+            
+            // Gestionnaire d'événements pour le modal de confirmation
+            confirmBtn.addEventListener('click', function() {
+                if (confirmCallback) {
+                    confirmCallback();
+                    confirmCallback = null;
+                }
+                
+                confirmModal.classList.remove('active');
+            });
+            
+            // Gestionnaire d'événements pour le bouton de débogage
+            document.getElementById('debug-button').addEventListener('click', function() {
+                // Afficher les informations de débogage
+                console.log("Débogage des alias:");
+                console.log("allAliases:", allAliases);
+                
+                // Afficher une notification avec le nombre d'alias
+                const aliasCount = Object.keys(allAliases).length;
+                showNotification(`Informations de débogage: ${aliasCount} commandes trouvées. Voir la console pour plus de détails.`, 'info');
+                
+                // Créer un rapport de débogage
+                let debugReport = "=== RAPPORT DE DÉBOGAGE ===\n";
+                debugReport += `Nombre de commandes: ${aliasCount}\n`;
+                debugReport += `Nombre total d'alias: ${Object.values(allAliases).reduce((sum, aliases) => sum + aliases.length, 0)}\n\n`;
+                
+                // Ajouter des détails sur chaque commande
+                Object.entries(allAliases).forEach(([command, aliases]) => {
+                    debugReport += `Commande "${command}": ${aliases.length} alias\n`;
+                    aliases.forEach(alias => {
+                        debugReport += `  - ${alias}\n`;
+                    });
+                    debugReport += "\n";
+                });
+                
+                console.log(debugReport);
+                
+                // Recharger les alias depuis la base de données
+                fetch('/reload_command_aliases', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Réponse du rechargement:", data);
+                    if (data.success) {
+                        showNotification(`${data.count} commandes rechargées avec succès.`, 'success');
+                        
+                        // Recharger les alias depuis l'API
+                        return fetch('/get_command_aliases');
+                    } else {
+                        showNotification(`Erreur lors du rechargement: ${data.error}`, 'error');
+                        throw new Error(data.error);
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Données reçues de l'API après rechargement:", data);
+                    if (data.success) {
+                        const apiAliasCount = Object.keys(data.aliases || {}).length;
+                        
+                        // Mettre à jour les alias
+                        allAliases = data.aliases || {};
+                        displayAliases(allAliases, currentFilter);
+                        populateCommandSelect(allAliases);
+                        showNotification(`Interface mise à jour avec ${apiAliasCount} commandes.`, 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la récupération des alias:", error);
+                    showNotification(`Erreur: ${error.message}`, 'error');
+                });
+            });
+            
+            cancelBtn.addEventListener('click', function() {
+                confirmModal.classList.remove('active');
+                confirmCallback = null;
+            });
+            
+            // Gestion du mode sombre
+            if (darkModeButton) {
+                // Vérifier si le mode sombre est activé
+                if (localStorage.getItem('darkMode') === 'true') {
+                    document.documentElement.classList.add('dark-mode');
+                    darkModeButton.querySelector('i').className = 'fas fa-sun';
+                }
+                
+                darkModeButton.addEventListener('click', function() {
+                    document.documentElement.classList.toggle('dark-mode');
+                    const isDarkMode = document.documentElement.classList.contains('dark-mode');
+                    localStorage.setItem('darkMode', isDarkMode);
+                    
+                    // Changer l'icône
+                    const icon = darkModeButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+                    }
+                });
+            }
+            
+            // Gestion des animations
+            if (animationsButton) {
+                // Vérifier si les animations sont désactivées
+                if (localStorage.getItem('animationsDisabled') === 'true') {
+                    document.documentElement.classList.add('reduced-motion');
+                    animationsButton.querySelector('i').className = 'fas fa-film-slash';
+                }
+                
+                animationsButton.addEventListener('click', function() {
+                    document.documentElement.classList.toggle('reduced-motion');
+                    const isReduced = document.documentElement.classList.contains('reduced-motion');
+                    localStorage.setItem('animationsDisabled', isReduced);
+                    
+                    // Changer l'icône
+                    const icon = animationsButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isReduced ? 'fas fa-film-slash' : 'fas fa-film';
+                    }
+                });
+            }
+            
+            // Fonction pour charger les alias
+            function loadAliases() {
+                console.log("Chargement des alias...");
+                
+                // Afficher un indicateur de chargement
+                aliasesContainer.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Chargement des alias...
+                    </div>
+                `;
+                
+                // Forcer le rechargement depuis la base de données d'abord
+                fetch('/reload_command_aliases', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(() => {
+                    // Ensuite, charger les alias via l'API
+                    return fetch('/get_command_aliases');
+                })
+                .then(response => {
+                    console.log("Réponse reçue:", response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Données reçues:", data);
+                    if (data.success) {
+                        allAliases = data.aliases || {};
+                        
+                        // Vérifier si des alias ont été récupérés
+                        if (Object.keys(allAliases).length === 0) {
+                            console.log("Aucun alias récupéré après rechargement");
+                            showNotification('Aucun alias trouvé dans la base de données', 'warning');
+                        }
+                        
+                        displayAliases(allAliases, currentFilter);
+                        populateCommandSelect(allAliases);
+                    } else {
+                        throw new Error(data.error || "Échec du chargement des alias");
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur: ' + error.message, 'error');
+                    displayAliases({}, currentFilter);
+                });
+            }
+            
+            // Fonction pour afficher les alias
+            function displayAliases(aliases, filter = '') {
+                aliasesContainer.innerHTML = '';
+                
+                // Vérifier si aliases est défini et non vide
+                if (!aliases || typeof aliases !== 'object' || Object.keys(aliases).length === 0) {
+                    console.warn("Aucun alias à afficher ou format invalide:", aliases);
+                    aliasesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-tags"></i>
+                            <p>Aucun alias défini</p>
+                            <div style="margin-top: 20px;">
+                                <button id="reload-aliases" class="add-button" style="margin-right: 10px;">
+                                    <i class="fas fa-sync"></i> Recharger les alias
+                                </button>
+                                <button id="initialize-aliases" class="add-button" style="background-color: #4a5568;">
+                                    <i class="fas fa-database"></i> Initialiser les alias par défaut
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Ajouter un gestionnaire d'événements pour le bouton de rechargement
+                    const reloadButton = document.getElementById('reload-aliases');
+                    if (reloadButton) {
+                        reloadButton.addEventListener('click', function() {
+                            showNotification('Rechargement des alias...', 'info');
+                            loadAliases();
+                        });
+                    }
+                    
+                    // Ajouter un gestionnaire d'événements pour le bouton d'initialisation
+                    const initButton = document.getElementById('initialize-aliases');
+                    if (initButton) {
+                        initButton.addEventListener('click', function() {
+                            showNotification('Initialisation des alias par défaut...', 'info');
+                            
+                            // Appeler l'API pour recharger les alias depuis la base de données
+                            fetch('/reload_command_aliases', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    showNotification('Alias initialisés avec succès', 'success');
+                                    loadAliases();
+                                } else {
+                                    showNotification('Erreur: ' + (data.error || 'Échec de l\'initialisation'), 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erreur:', error);
+                                showNotification('Erreur de communication avec le serveur', 'error');
+                            });
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                // Trier les commandes par ordre alphabétique
+                const sortedCommands = Object.keys(aliases).sort();
+                
+                let visibleCommands = 0;
+                
+                sortedCommands.forEach(command => {
+                    // Vérifier si la liste d'alias existe et est un tableau
+                    if (!Array.isArray(aliases[command])) {
+                        console.error(`La liste d'alias pour la commande "${command}" n'est pas un tableau:`, aliases[command]);
+                        return;
+                    }
+                    
+                    const aliasList = aliases[command];
+                    
+                    // Filtrer les alias si un filtre est spécifié
+                    let filteredAliases = aliasList;
+                    let matchingCommand = false;
+                    
+                    if (filter) {
+                        // Vérifier si la commande correspond au filtre
+                        if (command.toLowerCase().includes(filter)) {
+                            matchingCommand = true;
+                        } else {
+                            // Sinon, filtrer les alias qui correspondent
+                            filteredAliases = aliasList.filter(alias => 
+                                alias.toLowerCase().includes(filter)
+                            );
+                            
+                            // Si aucun alias ne correspond, ne pas afficher cette commande
+                            if (filteredAliases.length === 0) {
+                                return;
+                            }
+                        }
+                    }
+                    
+                    visibleCommands++;
+                    
+                    const commandCard = document.createElement('div');
+                    commandCard.className = 'command-card';
+                    
+                    // Créer l'en-tête de la commande
+                    const commandHeader = document.createElement('div');
+                    commandHeader.className = 'command-header';
+                    
+                    // Mettre en surbrillance la commande si elle correspond au filtre
+                    let displayCommand = command;
+                    if (filter && matchingCommand) {
+                        const regex = new RegExp(`(${filter})`, 'gi');
+                        displayCommand = command.replace(regex, '<span class="highlight">$1</span>');
+                    }
+                    
+                    commandHeader.innerHTML = `
+                        <div class="command-name">${displayCommand}</div>
+                        <div class="command-count">${filteredAliases.length} alias</div>
+                    `;
+                    
+                    // Ajouter un gestionnaire d'événements pour afficher/masquer les alias
+                    commandHeader.addEventListener('click', function() {
+                        const body = this.nextElementSibling;
+                        body.classList.toggle('active');
+                    });
+                    
+                    commandCard.appendChild(commandHeader);
+                    
+                    // Créer le corps de la commande avec la liste des alias
+                    const commandBody = document.createElement('div');
+                    commandBody.className = 'command-body';
+                    
+                    // Si le filtre est actif, afficher automatiquement le corps
+                    if (filter) {
+                        commandBody.classList.add('active');
+                    }
+                    
+                    const aliasListElement = document.createElement('ul');
+                    aliasListElement.className = 'alias-list';
+                    
+                    filteredAliases.forEach(alias => {
+                        const aliasItem = document.createElement('li');
+                        aliasItem.className = 'alias-item';
+                        
+                        // Mettre en surbrillance l'alias s'il correspond au filtre
+                        let displayAlias = alias;
+                        if (filter && !matchingCommand && alias.toLowerCase().includes(filter)) {
+                            const regex = new RegExp(`(${filter})`, 'gi');
+                            displayAlias = alias.replace(regex, '<span class="highlight">$1</span>');
+                        }
+                        
+                        aliasItem.innerHTML = `
+                            <div class="alias-text">${displayAlias}</div>
+                            <div class="alias-actions">
+                                <button class="delete-button" data-alias="${alias}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        `;
+                        
+                        aliasListElement.appendChild(aliasItem);
+                    });
+                    
+                    commandBody.appendChild(aliasListElement);
+                    commandCard.appendChild(commandBody);
+                    
+                    aliasesContainer.appendChild(commandCard);
+                });
+                
+                // Si aucune commande n'est visible avec le filtre actuel
+                if (visibleCommands === 0) {
+                    aliasesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>Aucun résultat pour "${filter}"</p>
+                        </div>
+                    `;
+                }
+                
+                // Ajouter les gestionnaires d'événements pour les boutons de suppression
+                const deleteButtons = document.querySelectorAll('.delete-button');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const alias = this.getAttribute('data-alias');
+                        
+                        // Afficher le modal de confirmation
+                        confirmMessage.textContent = `Êtes-vous sûr de vouloir supprimer l'alias "${alias}" ?`;
+                        confirmModal.classList.add('active');
+                        
+                        confirmCallback = function() {
+                            deleteAlias(alias);
+                        };
+                    });
+                });
+            }
+            
+            // Fonction pour peupler la liste déroulante des commandes
+            function populateCommandSelect(aliases) {
+                // Vider la liste déroulante sauf l'option par défaut
+                while (commandSelect.options.length > 1) {
+                    commandSelect.remove(1);
+                }
+                
+                // Vérifier si des commandes ont été passées directement au template
+                {% if commands %}
+                console.log("Utilisation des commandes passées au template");
+                const templateCommands = {{ commands|tojson }};
+                
+                // Ajouter les commandes à la liste déroulante
+                templateCommands.forEach(command => {
+                    const option = document.createElement('option');
+                    option.value = command;
+                    option.textContent = command;
+                    commandSelect.appendChild(option);
+                });
+                {% else %}
+                // Sinon, utiliser les commandes des alias
+                // Trier les commandes par ordre alphabétique
+                const sortedCommands = Object.keys(aliases).sort();
+                
+                // Ajouter les commandes à la liste déroulante
+                sortedCommands.forEach(command => {
+                    const option = document.createElement('option');
+                    option.value = command;
+                    option.textContent = command;
+                    commandSelect.appendChild(option);
+                });
+                {% endif %}
+            }
+            
+            // Fonction pour ajouter un alias
+            function addAlias(command, alias) {
+                // Nettoyer les entrées
+                command = command.trim();
+                alias = alias.trim();
+                
+                if (!command || !alias) {
+                    showNotification('La commande et l\'alias ne peuvent pas être vides', 'error');
+                    return;
+                }
+                
+                fetch('/add_command_alias', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ command: command, alias: alias })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.message) {
+                            showNotification(data.message, 'info');
+                        } else {
+                            showNotification(`Alias "${alias}" ajouté pour la commande "${command}"`, 'success');
+                        }
+                        
+                        // Réinitialiser le formulaire
+                        aliasInput.value = '';
+                        
+                        // Recharger les alias
+                        loadAliases();
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur', 'error');
+                });
+            }
+            
+            // Fonction pour supprimer un alias
+            function deleteAlias(alias) {
+                fetch('/remove_command_alias', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ alias: alias })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Alias "${alias}" supprimé avec succès`, 'success');
+                        
+                        // Recharger les alias
+                        loadAliases();
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur', 'error');
+                });
+            }
+            
+            // Fonction pour afficher une notification
+            function showNotification(message, type = 'info') {
+                const container = document.getElementById('notifications-container');
+                
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                container.appendChild(notification);
+                
+                // Afficher la notification avec un délai pour l'animation
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+                
+                // Masquer et supprimer la notification après un délai
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

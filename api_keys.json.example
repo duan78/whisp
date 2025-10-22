@@ -1,0 +1,6 @@
+{
+  "openai_api_key": "sk-your-openai-api-key-here",
+  "mistral_api_key": "your-mistral-api-key-here",
+  "huggingface_token": "hf-your-huggingface-token-here",
+  "google_api_key": "your-google-api-key-here"
+}

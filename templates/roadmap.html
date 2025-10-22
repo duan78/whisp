@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Roadmap de Whisp Assistant Vocal - Fonctionnalités futures et améliorations prévues">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Roadmap - Whisp Assistant Vocal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%234361ee' d='M256 32C114.52 32 0 146.496 0 288v48a32 32 0 0 0 17.689 28.622l14.383 7.191C34.083 431.903 83.421 480 144 480h24c13.255 0 24-10.745 24-24V280c0-13.255-10.745-24-24-24h-24c-31.342 0-59.671 12.879-80 33.627V288c0-105.869 86.131-192 192-192s192 86.131 192 192v1.627C427.671 268.879 399.342 256 368 256h-24c-13.255 0-24 10.745-24 24v176c0 13.255 10.745 24 24 24h24c60.579 0 109.917-48.098 111.928-108.187l14.382-7.191A32 32 0 0 0 512 336v-48c0-141.479-114.496-256-256-256z'/%3E%3C/svg%3E">
+    
+    <!-- Script de détection précoce pour éviter les flashs de contenu non stylisé -->
+    <script>
+        // Supprimer la classe no-js dès que possible
+        document.documentElement.classList.remove('no-js');
+        
+        // Détection des préférences de réduction de mouvement
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.classList.add('reduced-motion');
+        }
+        
+        // Vérifier le mode sombre
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+    <style>
+        .roadmap-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .roadmap-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .roadmap-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .roadmap-header p {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .roadmap-timeline {
+            position: relative;
+            margin: 3rem 0;
+        }
+        
+        .roadmap-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: var(--primary-color);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        .roadmap-item {
+            position: relative;
+            margin-bottom: 3rem;
+            width: 100%;
+            display: flex;
+        }
+        
+        .roadmap-item:nth-child(odd) {
+            justify-content: flex-start;
+        }
+        
+        .roadmap-item:nth-child(even) {
+            justify-content: flex-end;
+        }
+        
+        .roadmap-item:nth-child(odd) .roadmap-content {
+            margin-right: 2rem;
+            text-align: right;
+        }
+        
+        .roadmap-item:nth-child(even) .roadmap-content {
+            margin-left: 2rem;
+            text-align: left;
+        }
+        
+        .roadmap-content {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: calc(50% - 2rem);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .roadmap-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .roadmap-content::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .roadmap-item:nth-child(odd) .roadmap-content::after {
+            right: -32px;
+        }
+        
+        .roadmap-item:nth-child(even) .roadmap-content::after {
+            left: -32px;
+        }
+        
+        .roadmap-date {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+        
+        .roadmap-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: var(--heading-color);
+        }
+        
+        .roadmap-description {
+            color: var(--text-color);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .roadmap-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .roadmap-item:nth-child(odd) .roadmap-tags {
+            justify-content: flex-end;
+        }
+        
+        .roadmap-tag {
+            padding: 0.2rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .tag-feature {
+            background: rgba(52, 152, 219, 0.15);
+            color: #3498db;
+        }
+        
+        .tag-improvement {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+        }
+        
+        .tag-bugfix {
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+        }
+        
+        .tag-optimization {
+            background: rgba(155, 89, 182, 0.15);
+            color: #9b59b6;
+        }
+        
+        .tag-security {
+            background: rgba(241, 196, 15, 0.15);
+            color: #f1c40f;
+        }
+        
+        .tag-ux {
+            background: rgba(230, 126, 34, 0.15);
+            color: #e67e22;
+        }
+        
+        .tag-dependency {
+            background: rgba(155, 89, 182, 0.15);
+            color: #9b59b6;
+            border: 1px dashed #9b59b6;
+        }
+        
+        .tag-hardware {
+            background: rgba(52, 73, 94, 0.15);
+            color: #34495e;
+            border: 1px solid #34495e;
+        }
+        
+        .roadmap-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+        
+        .roadmap-category {
+            flex: 1;
+            min-width: 300px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .roadmap-category h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--heading-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .roadmap-category h3 i {
+            color: var(--primary-color);
+        }
+        
+        .roadmap-category ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .roadmap-category li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+        
+        .roadmap-category li:last-child {
+            border-bottom: none;
+        }
+        
+        .roadmap-category li i {
+            color: var(--primary-color);
+            margin-top: 0.3rem;
+        }
+        
+        .roadmap-category li .item-content {
+            flex: 1;
+        }
+        
+        .roadmap-category li .item-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--heading-color);
+        }
+        
+        .roadmap-category li .item-description {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+        
+        .roadmap-category li .item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .roadmap-progress {
+            margin: 3rem 0;
+        }
+        
+        .roadmap-progress h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--heading-color);
+        }
+        
+        .progress-container {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-item {
+            margin-bottom: 1.5rem;
+        }
+        
+        .progress-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-title {
+            font-weight: 600;
+            color: var(--heading-color);
+        }
+        
+        .progress-percentage {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .progress-bar-container {
+            height: 10px;
+            background: var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .contribute-section {
+            text-align: center;
+            margin: 4rem 0 2rem;
+        }
+        
+        .contribute-section h2 {
+            margin-bottom: 1rem;
+            color: var(--heading-color);
+        }
+        
+        .contribute-section p {
+            max-width: 800px;
+            margin: 0 auto 1.5rem;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .contribute-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .contribute-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        
+        .contribute-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .contribute-button.secondary {
+            background: var(--secondary-color);
+        }
+        
+        .contribute-button.secondary:hover {
+            background: var(--secondary-dark);
+        }
+        
+        @media (max-width: 768px) {
+            .roadmap-timeline::before {
+                left: 20px;
+            }
+            
+            .roadmap-item {
+                justify-content: flex-start !important;
+            }
+            
+            .roadmap-content {
+                width: calc(100% - 50px);
+                margin-left: 50px !important;
+                text-align: left !important;
+            }
+            
+            .roadmap-item:nth-child(odd) .roadmap-content::after,
+            .roadmap-item:nth-child(even) .roadmap-content::after {
+                left: -32px;
+            }
+            
+            .roadmap-item:nth-child(odd) .roadmap-tags {
+                justify-content: flex-start;
+            }
+        }
+        
+        /* Améliorations des barres de progression */
+        .progress-bar-wrapper {
+            height: 8px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin: 8px 0 12px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.8s ease-in-out;
+            position: relative;
+        }
+        
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.1) 25%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.1) 75%
+            );
+            background-size: 200% 100%;
+            animation: shine 1.5s infinite linear;
+        }
+        
+        @keyframes shine {
+            from { background-position: 200% 0; }
+            to { background-position: 0 0; }
+        }
+        
+        .category-progress {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .category-progress .progress-bar-wrapper {
+            flex-grow: 1;
+            margin: 0 10px 0 0;
+        }
+        
+        .category-progress .progress-percentage {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        /* Styles pour le mode sombre */
+        body.dark-mode .roadmap-content {
+            background: var(--dark-card-bg);
+        }
+        
+        body.dark-mode .roadmap-category {
+            background: var(--dark-card-bg);
+        }
+        
+        body.dark-mode .progress-container {
+            background: var(--dark-card-bg);
+        }
+
+        body.dark-mode .roadmap-category li {
+            border-bottom-color: var(--dark-border-color);
+        }
+
+        body.dark-mode .progress-bar-wrapper {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Amélioration du contraste et de la lisibilité - Conforme WCAG 1.4.3 */
+        :root {
+            --text-color: #212529;
+            --text-secondary: #495057;
+            --primary-color: #3a56d4;  /* Assombri pour meilleur contraste */
+            --primary-light: #4361ee;
+            --primary-dark: #2a3eb1;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --error-color: #d32f2f;    /* Rouge plus foncé pour meilleur contraste */
+            --warning-color: #e65100;  /* Orange plus foncé pour meilleur contraste */
+            --success-color: #2e7d32;  /* Vert plus foncé pour meilleur contraste */
+        }
+
+        /* Styles pour le tableau des quick wins - Amélioré pour accessibilité */
+        .quick-wins-section {
+            margin: 4rem 0;
+        }
+        
+        .quick-wins-section h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--heading-color);
+        }
+        
+        .quick-wins-section p {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        .quick-wins-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .quick-wins-table th,
+        .quick-wins-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            line-height: 1.5;  /* Améliore la lisibilité - WCAG 1.4.8 */
+        }
+
+        /* Amélioration de l'accessibilité des tableaux - WCAG 1.3.1 */
+        .quick-wins-table caption {
+            font-weight: bold;
+            padding: 0.5rem;
+            text-align: left;
+            color: var(--text-color);
+        }
+
+        /* Amélioration du focus dans les tableaux - WCAG 2.4.7 */
+        .quick-wins-table th:focus,
+        .quick-wins-table td:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: -2px;
+        }
+        
+        .quick-wins-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .quick-wins-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .quick-wins-table tr:hover {
+            background: rgba(67, 97, 238, 0.05);
+        }
+        
+        .quick-wins-table tr.completed {
+            background: rgba(46, 204, 113, 0.1);
+        }
+        
+        .quick-wins-table tr.completed:hover {
+            background: rgba(46, 204, 113, 0.15);
+        }
+        
+        .quick-wins-table td:first-child {
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        body.dark-mode .quick-wins-table {
+            background: var(--dark-card-bg);
+        }
+        
+        body.dark-mode .quick-wins-table th {
+            background: var(--primary-dark);
+        }
+        
+        body.dark-mode .quick-wins-table td {
+            border-bottom-color: var(--dark-border-color);
+        }
+        
+        body.dark-mode .quick-wins-table tr:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .quick-wins-table th,
+            .quick-wins-table td {
+                padding: 0.8rem 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body role="document">
+    <!-- Lien d'évitement pour l'accessibilité -->
+    <a href="#main-content" class="sr-only sr-only-focusable">Aller au contenu principal</a>
+    
+    <div class="container">
+        {% set active_page = 'roadmap' %}
+        {% include 'components/navigation.html' %}
+
+        <main id="main-content" class="roadmap-container">
+            <section class="roadmap-header">
+                <h1><i class="fas fa-map"></i> Roadmap de Whisp Assistant</h1>
+                <p>Découvrez les fonctionnalités futures, améliorations et optimisations prévues pour Whisp Assistant Vocal. Notre objectif est de créer l'assistant vocal le plus performant, versatile et adapté à vos besoins, avec une attention particulière à l'accessibilité et à la productivité.</p>
+            </section>
+            
+            <section class="roadmap-progress">
+                <h2>Progression globale du projet</h2>
+                <div class="progress-container">
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Version 1.0</div>
+                            <div class="progress-percentage">70%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 70%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Reconnaissance vocale avancée</div>
+                            <div class="progress-percentage">75%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Intégration multiplateforme</div>
+                            <div class="progress-percentage">50%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Fonctionnalités d'accessibilité</div>
+                            <div class="progress-percentage">80%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 80%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Synthèse vocale naturelle</div>
+                            <div class="progress-percentage">60%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Intégration IA et LLM</div>
+                            <div class="progress-percentage">70%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 70%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Stockage vectoriel et mémoire contextuelle</div>
+                            <div class="progress-percentage">15%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 15%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Automatisation et macros</div>
+                            <div class="progress-percentage">45%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Support Multilingue</div>
+                            <div class="progress-percentage">30%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 30%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <div class="progress-title">Persistance des données (SQLite)</div>
+                            <div class="progress-percentage">100%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="roadmap-categories">
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-star"></i> Reconnaissance vocale avancée</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 70%;"></div>
+                        </div>
+                        <div class="progress-percentage">70%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Reconnaissance ultra-précise</div>
+                                <div class="item-description">Précision jusqu'à 99% même dans des environnements acoustiques complexes.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Adaptation aux accents régionaux</div>
+                                <div class="item-description">Reconnaissance automatique et adaptation aux différents accents français et internationaux.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Support multilingue étendu</div>
+                                <div class="item-description">Reconnaissance et traitement de plus de 50 langues avec basculement automatique.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Gestion contextuelle des homophones</div>
+                                <div class="item-description">Analyse sémantique pour différencier les homophones selon le contexte d'utilisation.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Réduction active du bruit</div>
+                                <div class="item-description">Filtrage avancé des bruits ambiants pour une reconnaissance optimale en environnement bruyant.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-brain"></i> Intelligence &amp; Personnalisation</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 55%;"></div>
+                        </div>
+                        <div class="progress-percentage">55%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Mode hors-ligne complet</div>
+                                <div class="item-description">Fonctionnement intégral sans connexion internet avec modèles locaux optimisés via Ollama.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-security">Sécurité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Dictionnaires spécialisés</div>
+                                <div class="item-description">Création et importation de vocabulaires techniques, médicaux, juridiques ou personnalisés.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Apprentissage automatique des préférences</div>
+                                <div class="item-description">Adaptation progressive aux habitudes de l'utilisateur grâce au machine learning.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Analyse émotionnelle</div>
+                                <div class="item-description">Détection des émotions via l'analyse tonale et prosodique pour adapter les interactions.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Adaptation contextuelle automatique</div>
+                                <div class="item-description">Ajustement du comportement selon le domaine d'activité détecté (code, rédaction, navigation...).</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-magic"></i> Automatisation &amp; Contrôle</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 50%;"></div>
+                        </div>
+                        <div class="progress-percentage">50%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Contrôle vocal complet du système</div>
+                                <div class="item-description">Navigation web, gestion de fichiers et contrôle d'applications par commandes vocales naturelles.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Macros vocales personnalisées</div>
+                                <div class="item-description">Création de séquences d'actions complexes déclenchables par commandes vocales simples.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Intégration domotique avancée</div>
+                                <div class="item-description">Contrôle des appareils connectés et systèmes domotiques via commandes vocales naturelles.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Insertion d'éléments prédéfinis</div>
+                                <div class="item-description">Ajout rapide de signatures, coordonnées ou phrases standardisées par commandes vocales.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Mode conversation naturelle</div>
+                                <div class="item-description">Dialogue continu et contextuel avec compréhension améliorée des intentions de l'utilisateur.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-microphone-alt"></i> Transcription &amp; Traitement</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 45%;"></div>
+                        </div>
+                        <div class="progress-percentage">45%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Transcription temps réel instantanée</div>
+                                <div class="item-description">Affichage immédiat du texte avec latence minimale et haute précision.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-optimization">Optimisation</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Ponctuation automatique intelligente</div>
+                                <div class="item-description">Ajout contextuel de ponctuation adaptée au style et à l'intonation.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Horodatage précis mot-à-mot</div>
+                                <div class="item-description">Synchronisation temporelle exacte entre audio et texte pour navigation précise.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Séparation automatique des locuteurs</div>
+                                <div class="item-description">Identification et labellisation des différents intervenants dans une conversation.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Résumé automatique intelligent</div>
+                                <div class="item-description">Génération de synthèses pertinentes à partir de transcriptions longues.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-volume-up"></i> Synthèse vocale &amp; Interaction</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 65%;"></div>
+                        </div>
+                        <div class="progress-percentage">65%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-volume-up"></i>
+                            <div class="item-content">
+                                <div class="item-title">Voix synthétiques ultra-réalistes</div>
+                                <div class="item-description">Synthèse vocale naturelle avec intonations et expressions émotionnelles.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-volume-up"></i>
+                            <div class="item-content">
+                                <div class="item-title">Personnalisation vocale avancée</div>
+                                <div class="item-description">Création et ajustement de voix personnalisées selon les préférences utilisateur.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-volume-up"></i>
+                            <div class="item-content">
+                                <div class="item-title">Fonction "Rejouer ça"</div>
+                                <div class="item-description">Relecture audio synchronisée avec texte pour vérification rapide des passages.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-volume-up"></i>
+                            <div class="item-content">
+                                <div class="item-title">Assistant vocal conversationnel</div>
+                                <div class="item-description">Interaction naturelle pour répondre aux questions et exécuter des tâches complexes.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-volume-up"></i>
+                            <div class="item-content">
+                                <div class="item-title">Bibliothèque de voix multilingues</div>
+                                <div class="item-description">Large choix de voix dans différentes langues, accents et styles.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-universal-access"></i> Accessibilité avancée</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 75%;"></div>
+                        </div>
+                        <div class="progress-percentage">75%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-eye-slash"></i>
+                            <div class="item-content">
+                                <div class="item-title">Lecteur d'écran intelligent</div>
+                                <div class="item-description">Lecture contextuelle optimisée pour une navigation efficace sans vision.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Accessibilité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-eye-slash"></i>
+                            <div class="item-content">
+                                <div class="item-title">Navigation mains-libres complète</div>
+                                <div class="item-description">Contrôle total de l'interface par commandes vocales uniquement.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Accessibilité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-eye-slash"></i>
+                            <div class="item-content">
+                                <div class="item-title">Retour vocal instantané</div>
+                                <div class="item-description">Confirmation audio immédiate pour chaque action effectuée.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Accessibilité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-eye-slash"></i>
+                            <div class="item-content">
+                                <div class="item-title">Intégration avec outils d'accessibilité</div>
+                                <div class="item-description">Compatibilité native avec JAWS, NVDA et autres technologies d'assistance.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Accessibilité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-eye-slash"></i>
+                            <div class="item-content">
+                                <div class="item-title">Reconnaissance de gestes</div>
+                                <div class="item-description">Support des interfaces tactiles et gestuelles pour utilisateurs à mobilité réduite.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Accessibilité</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-wrench"></i> Améliorations techniques</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 60%;"></div>
+                        </div>
+                        <div class="progress-percentage">60%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Optimisation des performances</div>
+                                <div class="item-description">Réduction de l'empreinte mémoire et amélioration des temps de réponse.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-optimization">Optimisation</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Support GPU amélioré</div>
+                                <div class="item-description">Utilisation optimisée des ressources GPU pour les modèles locaux.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-optimization">Optimisation</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Edge computing optimisé</div>
+                                <div class="item-description">Fonctionnement efficace sur appareils à ressources limitées (IoT, mobiles).</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-optimization">Optimisation</span>
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Architecture modulaire</div>
+                                <div class="item-description">Refactorisation pour une meilleure extensibilité et maintenance.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">API ouverte et extensible</div>
+                                <div class="item-description">Interface de programmation complète pour intégrations tierces.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Base de données SQLite</div>
+                                <div class="item-description">Stockage persistant des configurations, alias, préférences utilisateur et autres données de l'application.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-vector-square"></i>
+                            <div class="item-content">
+                                <div class="item-title">Stockage vectoriel avec Qdrant</div>
+                                <div class="item-description">Implémentation d'une base de données vectorielle pour améliorer le cache et le contexte des discussions.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-user-shield"></i> Sécurité et confidentialité</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 80%;"></div>
+                        </div>
+                        <div class="progress-percentage">80%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-lock"></i>
+                            <div class="item-content">
+                                <div class="item-title">Chiffrement de bout en bout</div>
+                                <div class="item-description">Protection renforcée des données et communications.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-security">Sécurité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-lock"></i>
+                            <div class="item-content">
+                                <div class="item-title">Mode confidentialité avancé</div>
+                                <div class="item-description">Option pour limiter la collecte de données et garantir la vie privée.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-security">Sécurité</span>
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-lock"></i>
+                            <div class="item-content">
+                                <div class="item-title">Authentification biométrique</div>
+                                <div class="item-description">Sécurisation de l'accès par reconnaissance vocale ou faciale.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-security">Sécurité</span>
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-lock"></i>
+                            <div class="item-content">
+                                <div class="item-title">Audit de sécurité</div>
+                                <div class="item-description">Vérification complète du code et des pratiques de sécurité.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-security">Sécurité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-lock"></i>
+                            <div class="item-content">
+                                <div class="item-title">Conformité RGPD</div>
+                                <div class="item-description">Mise en conformité complète avec les réglementations sur la protection des données.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-security">Sécurité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-globe"></i> Support Multilingue</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 35%;"></div>
+                        </div>
+                        <div class="progress-percentage">35%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-language"></i>
+                            <div class="item-content">
+                                <div class="item-title">Interface utilisateur multilingue</div>
+                                <div class="item-description">Traduction complète de l'interface dans plus de 20 langues pour une accessibilité mondiale.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Accessibilité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-language"></i>
+                            <div class="item-content">
+                                <div class="item-title">Reconnaissance vocale multilingue</div>
+                                <div class="item-description">Support de la reconnaissance vocale dans plus de 50 langues avec détection automatique.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-language"></i>
+                            <div class="item-content">
+                                <div class="item-title">Traduction en temps réel</div>
+                                <div class="item-description">Traduction instantanée des commandes et réponses entre différentes langues.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-language"></i>
+                            <div class="item-content">
+                                <div class="item-title">Adaptation aux spécificités culturelles</div>
+                                <div class="item-description">Personnalisation des réponses et comportements selon les normes culturelles locales.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Expérience utilisateur</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-language"></i>
+                            <div class="item-content">
+                                <div class="item-title">Support des langues à écriture non-latine</div>
+                                <div class="item-description">Prise en charge complète des langues asiatiques, arabes, cyrilliques et autres systèmes d'écriture.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-ux">Accessibilité</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-project-diagram"></i> Intégrations &amp; Compatibilité</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 40%;"></div>
+                        </div>
+                        <div class="progress-percentage">40%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Intégration multiplateforme</div>
+                                <div class="item-description">Support complet pour Windows, macOS, Linux et versions mobiles.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Compatibilité applications tierces</div>
+                                <div class="item-description">Intégration avec Zoom, Teams, Google Workspace et autres outils populaires.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Écosystème d'extensions</div>
+                                <div class="item-description">Système de plugins permettant aux développeurs d'étendre les fonctionnalités.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Intégration avec IA génératives</div>
+                                <div class="item-description">Connexion avec modèles LLM locaux (Ollama) ou API (OpenAI, Mistral, etc.).</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-improvement">Amélioration</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div class="item-content">
+                                <div class="item-title">Support vision par ordinateur</div>
+                                <div class="item-description">Analyse d'images et reconnaissance visuelle pour interactions contextuelles.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="roadmap-category">
+                    <h3><i class="fas fa-microchip"></i> Matériel &amp; Dispositifs Dédiés</h3>
+                    <div class="category-progress">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: 40%;"></div>
+                        </div>
+                        <div class="progress-percentage">40%</div>
+                    </div>
+                    <ul>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Périphérique USB Whisp Dédié</div>
+                                <div class="item-description">Appareil USB tout-en-un avec microphone intégré et microordinateur embarqué, reconnu comme périphérique HID, permettant d'utiliser Whisp sans installation sur n'importe quel ordinateur.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-hardware">Matériel</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-cog"></i>
+                            <div class="item-content">
+                                <div class="item-title">Extension réalité augmentée</div>
+                                <div class="item-description">Module compatible avec lunettes AR pour interaction visuelle et vocale dans un environnement mixte.</div>
+                                <div class="item-tags">
+                                    <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                                    <span class="roadmap-tag tag-hardware">Matériel</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            
+            <section class="roadmap-timeline">
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q2 2025</div>
+                        <h3 class="roadmap-title">Version 0.9 Beta</h3>
+                        <p class="roadmap-description">Version bêta avec reconnaissance vocale avancée, base de données SQLite et contrôle système amélioré.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-improvement">Amélioration</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q3 2025</div>
+                        <h3 class="roadmap-title">Version 1.0 stable</h3>
+                        <p class="roadmap-description">Première version stable avec interface complète, stockage persistant et fonctionnalités optimisées + support des modèles locaux.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-improvement">Amélioration</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q3 2025</div>
+                        <h3 class="roadmap-title">Intégration Ollama et modèles locaux</h3>
+                        <p class="roadmap-description">Support complet des modèles IA locaux via Ollama pour un fonctionnement hors-ligne et une meilleure confidentialité.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-security">Sécurité</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q4 2025</div>
+                        <h3 class="roadmap-title">Stockage vectoriel avec Qdrant</h3>
+                        <p class="roadmap-description">Implémentation d'une base de données vectorielle pour améliorer le cache, le contexte des discussions et les recherches sémantiques.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-improvement">Amélioration</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q1 2026</div>
+                        <h3 class="roadmap-title">Système de plugins extensible</h3>
+                        <p class="roadmap-description">Architecture modulaire permettant aux développeurs d'étendre facilement les fonctionnalités de l'assistant.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-dependency">Fondation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q1 2026</div>
+                        <h3 class="roadmap-title">Support multilingue étendu</h3>
+                        <p class="roadmap-description">Interface et reconnaissance vocale dans plus de 30 langues avec détection automatique et basculement contextuel.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-ux">Accessibilité</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q2 2026</div>
+                        <h3 class="roadmap-title">Périphérique USB Whisp Dédié</h3>
+                        <p class="roadmap-description">Lancement du périphérique USB tout-en-un avec microphone intégré et microordinateur embarqué, reconnu comme périphérique HID pour une utilisation sans installation.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-hardware">Matériel</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q2 2026</div>
+                        <h3 class="roadmap-title">Mode conversation contextuelle avancé</h3>
+                        <p class="roadmap-description">Compréhension avancée du contexte et adaptation automatique aux situations grâce au stockage vectoriel + Intégration multiplateforme complète.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-improvement">Amélioration</span>
+                            <span class="roadmap-tag tag-dependency">Dépend de Qdrant</span>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q2 2026</div>
+                        <h3 class="roadmap-title">Version 2.0</h3>
+                        <p class="roadmap-description">Refonte majeure avec architecture nouvelle génération, système de plugins mature et fonctionnalités avancées.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-improvement">Amélioration</span>
+                            <span class="roadmap-tag tag-optimization">Optimisation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <div class="roadmap-date">Q2 2026</div>
+                        <h3 class="roadmap-title">Assistant Réalité Augmentée et Écosystème d'agents</h3>
+                        <p class="roadmap-description">Extension AR pour interaction visuelle et plateforme d'agents IA spécialisés collaborant pour des tâches complexes.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag tag-feature">Fonctionnalité</span>
+                            <span class="roadmap-tag tag-hardware">Matériel</span>
+                            <span class="roadmap-tag tag-dependency">Dépend de Plugins</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="quick-wins-section">
+                <h2><i class="fas fa-bolt"></i> Roadmap Opérationnelle</h2>
+                <p>Voici les tâches priorisées par temps de réalisation et impact, depuis les véritables "quick wins" jusqu'aux projets stratégiques à plus long terme.</p>
+                <div style="margin-bottom: 15px; text-align: left; padding: 0 20px;">
+                    <p><strong>Légende :</strong></p>
+                    <ul style="list-style-type: none; padding-left: 10px;">
+                        <li><span class="roadmap-tag tag-dependency">Fondation</span> : Tâche fondamentale dont dépendent d'autres fonctionnalités</li>
+                        <li><span class="roadmap-tag tag-dependency">Dépend de X</span> : Cette tâche nécessite que la fonctionnalité X soit implémentée au préalable</li>
+                        <li style="background: rgba(46, 204, 113, 0.1); padding: 5px; margin-top: 5px; border-radius: 5px;">✅ <strong>Tâche complétée</strong> : Fonctionnalité déjà implémentée et disponible</li>
+                    </ul>
+                    <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
+                        <div style="flex: 1; min-width: 200px; padding: 5px; background: rgba(46, 204, 113, 0.05); border-radius: 5px;">
+                            <strong>Quick Wins (1-2j)</strong>: Impact immédiat, faible complexité
+                        </div>
+                        <div style="flex: 1; min-width: 200px; padding: 5px; background: rgba(52, 152, 219, 0.05); border-radius: 5px;">
+                            <strong>Tâches à valeur rapide (2-4j)</strong>: Bon rapport temps/impact
+                        </div>
+                        <div style="flex: 1; min-width: 200px; padding: 5px; background: rgba(155, 89, 182, 0.05); border-radius: 5px;">
+                            <strong>Projets moyen terme (4-7j)</strong>: Valeur élevée, complexité moyenne
+                        </div>
+                        <div style="flex: 1; min-width: 200px; padding: 5px; background: rgba(231, 76, 60, 0.05); border-radius: 5px;">
+                            <strong>Projets stratégiques (7j+)</strong>: Complexité élevée, haute valeur ajoutée
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="quick-wins-table" aria-describedby="quick-wins-description">
+                        <caption id="quick-wins-description">Liste des tâches prioritaires classées par difficulté et impact</caption>
+                        <thead>
+                            <tr>
+                                <th>Priorité</th>
+                                <th>Tâche</th>
+                                <th>Description</th>
+                                <th>Difficulté</th>
+                                <th>Temps estimé</th>
+                                <th>Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- QUICK WINS (1-2 jours) -->
+                            <tr>
+                                <td>1</td>
+                                <td>Optimisation du cache de reconnaissance vocale</td>
+                                <td>Améliorer le système de cache pour réduire la latence et éviter les reconnaissances redondantes</td>
+                                <td>40%</td>
+                                <td>1-2 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Amélioration du système de logs</td>
+                                <td>Centralisation et visualisation améliorée des logs pour faciliter le débogage et la résolution de problèmes</td>
+                                <td>35%</td>
+                                <td>1 jour</td>
+                                <td>Moyen</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Historique des commandes amélioré</td>
+                                <td>Interface pour consulter, filtrer et réutiliser les commandes précédentes <span class="roadmap-tag tag-dependency">Dépend de SQLite</span></td>
+                                <td>30%</td>
+                                <td>1 jour</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Correctifs de bugs prioritaires</td>
+                                <td>Résolution des 5 bugs les plus critiques identifiés par les utilisateurs</td>
+                                <td>25%</td>
+                                <td>1-2 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Optimisation de la consommation mémoire</td>
+                                <td>Réduction immédiate de l'empreinte mémoire avec correction de fuites identifiées</td>
+                                <td>45%</td>
+                                <td>1-2 jours</td>
+                                <td>Moyen</td>
+                            </tr>
+                            
+                            <!-- TÂCHES À VALEUR RAPIDE (2-4 jours) -->
+                            <tr>
+                                <td>6</td>
+                                <td>Amélioration de la grille vocale</td>
+                                <td>Rendre la grille vocale plus précise et intuitive pour la navigation sans souris</td>
+                                <td>50%</td>
+                                <td>2-3 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Amélioration de la détection des commandes</td>
+                                <td>Réduire les faux positifs et augmenter la fiabilité de la reconnaissance des commandes vocales</td>
+                                <td>55%</td>
+                                <td>3 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>Détection contextuelle intelligente</td>
+                                <td>Identifier automatiquement l'application active et adapter les commandes disponibles</td>
+                                <td>60%</td>
+                                <td>2-3 jours</td>
+                                <td>Moyen</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>Améliorations de l'interface utilisateur</td>
+                                <td>Optimisation de l'interface pour une meilleure expérience et accessibilité</td>
+                                <td>30%</td>
+                                <td>2-3 jours</td>
+                                <td>Moyen</td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>Système de rappels simples</td>
+                                <td>Fonctionnalité de base pour créer et gérer des rappels vocaux</td>
+                                <td>40%</td>
+                                <td>2 jours</td>
+                                <td>Moyen</td>
+                            </tr>
+                            
+                            <!-- PROJETS À MOYEN TERME (4-7 jours) -->
+                            <tr>
+                                <td>11</td>
+                                <td>Intégration avec Ollama</td>
+                                <td>Ajouter le support des modèles locaux via Ollama pour fonctionnement hors-ligne</td>
+                                <td>70%</td>
+                                <td>5 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td>Mode hors-ligne complet</td>
+                                <td>Fonctionnement intégral sans connexion internet avec modèles locaux optimisés <span class="roadmap-tag tag-dependency">Dépend de Ollama</span></td>
+                                <td>75%</td>
+                                <td>4 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td>Stockage vectoriel avec Qdrant</td>
+                                <td>Implémentation d'une base de données vectorielle pour améliorer le cache et le contexte des discussions <span class="roadmap-tag tag-dependency">Fondation</span></td>
+                                <td>75%</td>
+                                <td>6 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td>Amélioration de la synthèse vocale</td>
+                                <td>Intégration de voix plus naturelles et support de l'intonation contextuelle</td>
+                                <td>60%</td>
+                                <td>4 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>Mode développeur</td>
+                                <td>Commandes spécialisées pour le développement logiciel et l'édition de code</td>
+                                <td>65%</td>
+                                <td>5 jours</td>
+                                <td>Moyen</td>
+                            </tr>
+                            
+                            <!-- PROJETS STRATÉGIQUES -->
+                            <tr>
+                                <td>16</td>
+                                <td>Architecture pour périphérique USB</td>
+                                <td>Développer l'architecture logicielle pour supporter le futur périphérique USB dédié <span class="roadmap-tag tag-dependency">Fondation</span> <span class="roadmap-tag tag-hardware">Matériel</span></td>
+                                <td>80%</td>
+                                <td>10 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>17</td>
+                                <td>Émulation de périphérique HID</td>
+                                <td>Développer une couche logicielle pour simuler un clavier/souris HID pour le périphérique USB <span class="roadmap-tag tag-dependency">Dépend de Architecture USB</span></td>
+                                <td>85%</td>
+                                <td>7 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>18</td>
+                                <td>Prototype de firmware USB HID</td>
+                                <td>Développer un prototype de firmware pour microcontrôleur intégré dans le périphérique USB <span class="roadmap-tag tag-dependency">Dépend de Architecture USB</span> <span class="roadmap-tag tag-hardware">Matériel</span></td>
+                                <td>90%</td>
+                                <td>12 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>19</td>
+                                <td>Mode conversation contextuelle</td>
+                                <td>Améliorer le suivi du contexte pour des échanges plus naturels et cohérents <span class="roadmap-tag tag-dependency">Dépend de Qdrant</span></td>
+                                <td>75%</td>
+                                <td>8 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr>
+                                <td>20</td>
+                                <td>Système de plugins extensible</td>
+                                <td>Architecture permettant l'ajout facile de nouvelles fonctionnalités via des plugins <span class="roadmap-tag tag-dependency">Fondation</span></td>
+                                <td>80%</td>
+                                <td>10 jours</td>
+                                <td>Élevé</td>
+                            </tr>
+                            
+                            <!-- COMPLÉTÉS -->
+                            <tr class="completed">
+                                <td>21</td>
+                                <td>Amélioration de la gestion des erreurs</td>
+                                <td>✅ Implémenté : Meilleure récupération après erreurs et feedback utilisateur plus clair</td>
+                                <td>100%</td>
+                                <td>Terminé</td>
+                                <td>Moyen</td>
+                            </tr>
+                            <tr class="completed">
+                                <td>22</td>
+                                <td>Optimisation du démarrage</td>
+                                <td>✅ Implémenté : Réduction du temps de démarrage avec lazy loading des modules</td>
+                                <td>100%</td>
+                                <td>Terminé</td>
+                                <td>Moyen</td>
+                            </tr>
+                            <tr class="completed">
+                                <td>23</td>
+                                <td>Implémentation base SQLite</td>
+                                <td>✅ Implémenté : Base de données pour stocker les alias, configurations, préférences utilisateur et autres données persistantes <span class="roadmap-tag tag-dependency">Fondation</span></td>
+                                <td>100%</td>
+                                <td>Terminé</td>
+                                <td>Élevé</td>
+                            </tr>
+                            <tr class="completed">
+                                <td>24</td>
+                                <td>Support des raccourcis personnalisés</td>
+                                <td>✅ Implémenté : Permettre aux utilisateurs de définir leurs propres raccourcis vocaux pour des actions spécifiques <span class="roadmap-tag tag-dependency">Dépend de SQLite</span></td>
+                                <td>100%</td>
+                                <td>Terminé</td>
+                                <td>Élevé</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section class="contribute-section">
+                <h2>Contribuez au projet</h2>
+                <p>Whisp Assistant est un projet open-source qui s'améliore grâce aux contributions de la communauté. Vous pouvez participer au développement, signaler des bugs, proposer des fonctionnalités ou simplement partager vos idées.</p>
+                <div class="contribute-buttons">
+                    <a href="https://github.com/Cyril-Meyer/whisp-assistant" class="contribute-button" target="_blank">
+                        <i class="fab fa-github"></i> Voir sur GitHub
+                    </a>
+                    <a href="https://github.com/Cyril-Meyer/whisp-assistant/issues/new" class="contribute-button secondary" target="_blank">
+                        <i class="fas fa-bug"></i> Signaler un bug
+                    </a>
+                    <a href="https://github.com/Cyril-Meyer/whisp-assistant/discussions" class="contribute-button secondary" target="_blank">
+                        <i class="fas fa-comments"></i> Participer aux discussions
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        {% include 'components/footer.html' %}
+    </div>
+
+    <script>
+        // Mettre à jour l'année automatiquement
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion du mode sombre
+            const darkModeButton = document.getElementById('toggle-dark-mode');
+            
+            // Vérifier si le mode sombre est activé
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                if (darkModeButton) {
+                    const icon = darkModeButton.querySelector('i');
+                    if (icon) icon.className = 'fas fa-sun';
+                }
+            }
+            
+            // Basculer le mode sombre
+            if (darkModeButton) {
+                darkModeButton.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    const isDarkMode = document.body.classList.contains('dark-mode');
+                    localStorage.setItem('darkMode', isDarkMode);
+                    
+                    // Changer l'icône
+                    const icon = darkModeButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+                    }
+                });
+            }
+            
+            // Gestion des animations
+            const animationsButton = document.getElementById('toggle-animations');
+            
+            // Vérifier si les animations sont désactivées
+            if (localStorage.getItem('animationsDisabled') === 'true') {
+                document.body.classList.add('reduced-motion');
+                if (animationsButton) {
+                    const icon = animationsButton.querySelector('i');
+                    if (icon) icon.className = 'fas fa-film-slash';
+                }
+            }
+            
+            // Basculer les animations
+            if (animationsButton) {
+                animationsButton.addEventListener('click', () => {
+                    document.body.classList.toggle('reduced-motion');
+                    const isReduced = document.body.classList.contains('reduced-motion');
+                    localStorage.setItem('animationsDisabled', isReduced);
+                    
+                    // Changer l'icône
+                    const icon = animationsButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isReduced ? 'fas fa-film-slash' : 'fas fa-film';
+                    }
+                });
+            }
+            
+            // Animation au défilement pour la timeline
+            const animateOnScroll = () => {
+                const roadmapItems = document.querySelectorAll('.roadmap-item');
+                
+                roadmapItems.forEach(item => {
+                    const itemPosition = item.getBoundingClientRect().top;
+                    const screenPosition = window.innerHeight / 1.2;
+                    
+                    if (itemPosition < screenPosition) {
+                        item.classList.add('visible');
+                    }
+                });
+            };
+            
+            // Ajouter la classe pour l'animation
+            document.querySelectorAll('.roadmap-item').forEach(item => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            });
+            
+            // Fonction pour animer les éléments visibles
+            const animateVisibleItems = () => {
+                document.querySelectorAll('.roadmap-item').forEach((item, index) => {
+                    const itemPosition = item.getBoundingClientRect().top;
+                    const screenPosition = window.innerHeight / 1.2;
+                    
+                    if (itemPosition < screenPosition) {
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'translateY(0)';
+                        }, index * 200);
+                    }
+                });
+            };
+            
+            // Exécuter l'animation au chargement et au défilement
+            window.addEventListener('load', animateVisibleItems);
+            window.addEventListener('scroll', animateVisibleItems);
+            
+            // Animation des barres de progression
+            const animateProgressBars = () => {
+                const progressBars = document.querySelectorAll('.progress-bar-fill');
+                
+                progressBars.forEach(bar => {
+                    const barPosition = bar.getBoundingClientRect().top;
+                    const screenPosition = window.innerHeight / 1.2;
+                    
+                    if (barPosition < screenPosition) {
+                        // Récupérer la largeur cible depuis le style inline
+                        const targetWidth = bar.style.width;
+                        
+                        // Réinitialiser temporairement à 0 puis animer vers la cible
+                        bar.style.width = '0%';
+                        setTimeout(() => {
+                            bar.style.width = targetWidth;
+                        }, 100);
+                    }
+                });
+            };
+            
+            // Exécuter l'animation des barres de progression au chargement
+            window.addEventListener('load', animateProgressBars);
+        });
+    </script>
+    
+    <!-- Scripts de vérification d'accessibilité (à désactiver en production) -->
+    <script src="{{ url_for('static', filename='js/accessibility-checker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/aria-validator.js') }}"></script>
+</body>
+</html>

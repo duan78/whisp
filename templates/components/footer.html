@@ -1,0 +1,60 @@
+<footer role="contentinfo">
+    <p>Whisp Assistant Vocal &copy; <span id="current-year">2025</span> - <a href="#" id="help-button" aria-label="Ouvrir l'aide rapide">Aide rapide</a> | <a href="/presentation">Présentation</a> | <a href="/roadmap">Roadmap</a> | <a href="/bugs">Bugs</a></p>
+    <div class="footer-actions">
+        <button id="toggle-dark-mode" class="icon-button" title="Changer de thème">
+            <i class="fas fa-moon"></i>
+        </button>
+        <button id="toggle-animations" class="icon-button" title="Activer/désactiver les animations">
+            <i class="fas fa-film"></i>
+        </button>
+    </div>
+</footer>
+
+<script>
+    // Mettre à jour l'année automatiquement
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+    
+    // Gestion du mode sombre
+    const darkModeButton = document.getElementById('toggle-dark-mode');
+    if (darkModeButton) {
+        // Vérifier si le mode sombre est activé
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+            darkModeButton.querySelector('i').className = 'fas fa-sun';
+        }
+        
+        darkModeButton.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark-mode');
+            const isDarkMode = document.documentElement.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            
+            // Changer l'icône
+            const icon = darkModeButton.querySelector('i');
+            if (icon) {
+                icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+    }
+    
+    // Gestion des animations
+    const animationsButton = document.getElementById('toggle-animations');
+    if (animationsButton) {
+        // Vérifier si les animations sont désactivées
+        if (localStorage.getItem('animationsDisabled') === 'true') {
+            document.documentElement.classList.add('reduced-motion');
+            animationsButton.querySelector('i').className = 'fas fa-film-slash';
+        }
+        
+        animationsButton.addEventListener('click', function() {
+            document.documentElement.classList.toggle('reduced-motion');
+            const isReduced = document.documentElement.classList.contains('reduced-motion');
+            localStorage.setItem('animationsDisabled', isReduced);
+            
+            // Changer l'icône
+            const icon = animationsButton.querySelector('i');
+            if (icon) {
+                icon.className = isReduced ? 'fas fa-film-slash' : 'fas fa-film';
+            }
+        });
+    }
+</script>

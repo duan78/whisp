@@ -1,0 +1,3306 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Configuration de Whisp Assistant Vocal - Personnalisez votre assistant vocal.">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Configuration - Whisp Assistant Vocal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%234361ee' d='M256 32C114.52 32 0 146.496 0 288v48a32 32 0 0 0 17.689 28.622l14.383 7.191C34.083 431.903 83.421 480 144 480h24c13.255 0 24-10.745 24-24V280c0-13.255-10.745-24-24-24h-24c-31.342 0-59.671 12.879-80 33.627V288c0-105.869 86.131-192 192-192s192 86.131 192 192v1.627C427.671 268.879 399.342 256 368 256h-24c-13.255 0-24 10.745-24 24v176c0 13.255 10.745 24 24 24h24c60.579 0 109.917-48.098 111.928-108.187l14.382-7.191A32 32 0 0 0 512 336v-48c0-141.479-114.496-256-256-256z'/%3E%3C/svg%3E">
+    <!-- Script de détection précoce pour éviter les flashs de contenu non stylisé -->
+    <script>
+        // Supprimer la classe no-js dès que possible
+        document.documentElement.classList.remove('no-js');
+        
+        // Détection des préférences de réduction de mouvement
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.classList.add('reduced-motion');
+        }
+        
+        // Vérifier le mode sombre
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+    
+    <style>
+        /* Styles spécifiques à la page de configuration */
+        .config-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark-mode .config-section {
+            background-color: #2d3748;
+        }
+        
+        .config-section h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #4361ee;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .config-section h3 i {
+            margin-right: 0.5rem;
+        }
+        
+        .dark-mode .config-section h3 {
+            color: #90cdf4;
+        }
+        
+        .preference-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background-color: #f8fafc;
+            border-radius: 0.25rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .dark-mode .preference-item {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        
+        .preference-key {
+            font-weight: 600;
+            color: #1a202c;
+        }
+        
+        .dark-mode .preference-key {
+            color: #e2e8f0;
+        }
+        
+        .preference-value {
+            color: #4a5568;
+            max-width: 50%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .dark-mode .preference-value {
+            color: #cbd5e0;
+        }
+        
+        .preference-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .preference-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f1f5f9;
+            border-radius: 0.25rem;
+        }
+        
+        .dark-mode .preference-form {
+            background-color: #1e293b;
+        }
+        
+        .preference-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.25rem;
+            background-color: #fff;
+        }
+        
+        .dark-mode .preference-form input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .preference-form button {
+            padding: 0.5rem 1rem;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .preference-form button:hover {
+            background-color: #3651d4;
+        }
+        
+        .engine-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .engine-option {
+            flex: 1;
+            min-width: 250px;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .dark-mode .engine-option {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        
+        .engine-option:hover {
+            border-color: #4361ee;
+            box-shadow: 0 2px 5px rgba(67, 97, 238, 0.1);
+        }
+        
+        .engine-option.active {
+            border-color: #4361ee;
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .dark-mode .engine-option.active {
+            border-color: #90cdf4;
+            background-color: rgba(144, 205, 244, 0.05);
+        }
+        
+        .engine-option h4 {
+            margin-top: 0;
+            color: #4361ee;
+            font-size: 1rem;
+        }
+        
+        .dark-mode .engine-option h4 {
+            color: #90cdf4;
+        }
+        
+        .engine-option p {
+            margin-bottom: 0;
+            color: #4a5568;
+            font-size: 0.875rem;
+        }
+        
+        .dark-mode .engine-option p {
+            color: #cbd5e0;
+        }
+        
+        .api-key-section {
+            margin-top: 1rem;
+        }
+        
+        .api-key-input {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        .api-key-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.25rem 0 0 0.25rem;
+            background-color: #fff;
+        }
+        
+        .dark-mode .api-key-input input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .api-key-input button {
+            padding: 0.5rem;
+            background-color: #e2e8f0;
+            border: 1px solid #cbd5e0;
+            border-left: none;
+            border-radius: 0 0.25rem 0.25rem 0;
+            cursor: pointer;
+        }
+        
+        .dark-mode .api-key-input button {
+            background-color: #4b5563;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .api-key-status {
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .api-key-status.configured {
+            color: #48bb78;
+        }
+        
+        .api-key-status.not-configured {
+            color: #f56565;
+        }
+        
+        .dark-mode .api-key-status.configured {
+            color: #68d391;
+        }
+        
+        .dark-mode .api-key-status.not-configured {
+            color: #fc8181;
+        }
+        
+        .save-button {
+            padding: 0.5rem 1rem;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .save-button:hover {
+            background-color: #3651d4;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            background-color: #4361ee;
+            color: white;
+            border-radius: 0.25rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.success {
+            background-color: #48bb78;
+        }
+        
+        .notification.error {
+            background-color: #f56565;
+        }
+        
+        .notification.warning {
+            background-color: #ed8936;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #a0aec0;
+        }
+        
+        .dark-mode .empty-state {
+            color: #718096;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Nouveaux styles pour la page de configuration améliorée */
+        .config-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        
+        .dark-mode .config-tabs {
+            border-color: #4b5563;
+        }
+        
+        .config-tab {
+            padding: 0.75rem 1rem;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .dark-mode .config-tab {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .config-tab:hover {
+            border-color: #4361ee;
+            box-shadow: 0 2px 5px rgba(67, 97, 238, 0.1);
+        }
+        
+        .config-tab.active {
+            border-color: #4361ee;
+            background-color: #4361ee;
+            color: white;
+        }
+        
+        .dark-mode .config-tab.active {
+            border-color: #90cdf4;
+            background-color: #3182ce;
+        }
+        
+        .config-content {
+            display: none;
+        }
+        
+        .config-content.active {
+            display: block;
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .config-card {
+            background-color: #f8fafc;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+        
+        .dark-mode .config-card {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        
+        .config-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        .config-card h4 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #4361ee;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .dark-mode .config-card h4 {
+            color: #90cdf4;
+        }
+        
+        .config-card-content {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        
+        .dark-mode .config-card-content {
+            color: #cbd5e0;
+        }
+        
+        .config-card-footer {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .dark-mode .config-card-footer {
+            border-color: #4b5563;
+        }
+        
+        .config-card-button {
+            padding: 0.5rem 0.75rem;
+            background-color: #e2e8f0;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .dark-mode .config-card-button {
+            background-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .config-card-button:hover {
+            background-color: #cbd5e0;
+        }
+        
+        .dark-mode .config-card-button:hover {
+            background-color: #6b7280;
+        }
+        
+        .config-card-button.primary {
+            background-color: #4361ee;
+            color: white;
+        }
+        
+        .config-card-button.primary:hover {
+            background-color: #3651d4;
+        }
+        
+        .config-card-button.danger {
+            background-color: #f56565;
+            color: white;
+        }
+        
+        .config-card-button.danger:hover {
+            background-color: #e53e3e;
+        }
+        
+        .config-card-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .config-stat {
+            flex: 1;
+            min-width: 100px;
+            padding: 0.75rem;
+            background-color: #fff;
+            border-radius: 0.25rem;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .dark-mode .config-stat {
+            background-color: #2d3748;
+            border-color: #4b5563;
+        }
+        
+        .config-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4361ee;
+            margin-bottom: 0.25rem;
+        }
+        
+        .dark-mode .config-stat-value {
+            color: #90cdf4;
+        }
+        
+        .config-stat-label {
+            font-size: 0.75rem;
+            color: #718096;
+        }
+        
+        .dark-mode .config-stat-label {
+            color: #a0aec0;
+        }
+        
+        .config-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .config-list-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dark-mode .config-list-item {
+            border-color: #4b5563;
+        }
+        
+        .config-list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .config-list-item-content {
+            flex: 1;
+        }
+        
+        .config-list-item-title {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+        }
+        
+        .dark-mode .config-list-item-title {
+            color: #e2e8f0;
+        }
+        
+        .config-list-item-subtitle {
+            font-size: 0.875rem;
+            color: #718096;
+        }
+        
+        .dark-mode .config-list-item-subtitle {
+            color: #a0aec0;
+        }
+        
+        .config-list-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .config-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .dark-mode .config-badge {
+            background-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .config-badge.success {
+            background-color: #c6f6d5;
+            color: #2f855a;
+        }
+        
+        .dark-mode .config-badge.success {
+            background-color: #276749;
+            color: #c6f6d5;
+        }
+        
+        .config-badge.warning {
+            background-color: #feebc8;
+            color: #c05621;
+        }
+        
+        .dark-mode .config-badge.warning {
+            background-color: #c05621;
+            color: #feebc8;
+        }
+        
+        .config-badge.error {
+            background-color: #fed7d7;
+            color: #c53030;
+        }
+        
+        .dark-mode .config-badge.error {
+            background-color: #c53030;
+            color: #fed7d7;
+        }
+        
+        .config-badge.info {
+            background-color: #bee3f8;
+            color: #2b6cb0;
+        }
+        
+        .dark-mode .config-badge.info {
+            background-color: #2b6cb0;
+            color: #bee3f8;
+        }
+        
+        .config-search {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .config-search input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            font-size: 1rem;
+        }
+        
+        .dark-mode .config-search input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e2e8f0;
+        }
+        
+        .config-search i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+        
+        .dark-mode .config-search i {
+            color: #718096;
+        }
+        
+        .config-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: #a0aec0;
+        }
+        
+        .dark-mode .config-loading {
+            color: #718096;
+        }
+        
+        .config-loading i {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+        
+        .config-error {
+            padding: 1.5rem;
+            background-color: #fed7d7;
+            color: #c53030;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .dark-mode .config-error {
+            background-color: rgba(197, 48, 48, 0.2);
+            color: #fc8181;
+        }
+        
+        .config-error h4 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .config-error pre {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 0.25rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        
+        .dark-mode .config-error pre {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            table-layout: fixed;
+        }
+        
+        .config-table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        
+        .config-table th,
+        .config-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .dark-mode .config-table th,
+        .dark-mode .config-table td {
+            border-color: #4b5563;
+        }
+        
+        .config-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .dark-mode .config-table th {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        
+        .config-table tr:hover td {
+            background-color: #f1f5f9;
+        }
+        
+        .dark-mode .config-table tr:hover td {
+            background-color: #374151;
+        }
+        
+        .config-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .config-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .config-modal-content {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .dark-mode .config-modal-content {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        
+        .config-modal.show .config-modal-content {
+            transform: translateY(0);
+        }
+        
+        .config-modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dark-mode .config-modal-header {
+            border-color: #4b5563;
+        }
+        
+        .config-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin: 0;
+        }
+        
+        .dark-mode .config-modal-title {
+            color: #e2e8f0;
+        }
+        
+        .config-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #a0aec0;
+        }
+        
+        .dark-mode .config-modal-close {
+            color: #718096;
+        }
+        
+        .config-modal-body {
+            padding: 1.5rem;
+        }
+        
+        .config-modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .dark-mode .config-modal-footer {
+            border-color: #4b5563;
+        }
+        
+        .config-progress {
+            height: 0.5rem;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        
+        .dark-mode .config-progress {
+            background-color: #4b5563;
+        }
+        
+        .config-progress-bar {
+            height: 100%;
+            background-color: #4361ee;
+            border-radius: 9999px;
+            transition: width 0.3s;
+        }
+        
+        .config-progress-bar.success {
+            background-color: #48bb78;
+        }
+        
+        .config-progress-bar.warning {
+            background-color: #ed8936;
+        }
+        
+        .config-progress-bar.error {
+            background-color: #f56565;
+        }
+    </style>
+</head>
+<body role="application">
+    <!-- Lien d'évitement pour l'accessibilité -->
+    <a href="#main-content" class="sr-only sr-only-focusable">Aller au contenu principal</a>
+    
+    <div class="container">
+        {% set active_page = 'config' %}
+        {% include 'components/navigation.html' %}
+
+        <main id="main-content">
+            <h2><i class="fas fa-cog"></i> Configuration de l'assistant</h2>
+            
+            <!-- Barre de recherche -->
+            <div class="config-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="config-search-input" placeholder="Rechercher dans les configurations..." aria-label="Rechercher">
+            </div>
+            
+            <!-- Onglets de configuration -->
+            <div class="config-tabs">
+                <button class="config-tab active" data-tab="general">
+                    <i class="fas fa-sliders-h"></i> Général
+                </button>
+                <button class="config-tab" data-tab="speech">
+                    <i class="fas fa-microphone"></i> Reconnaissance vocale
+                </button>
+                <button class="config-tab" data-tab="tts">
+                    <i class="fas fa-volume-up"></i> Synthèse vocale
+                </button>
+                <button class="config-tab" data-tab="api">
+                    <i class="fas fa-key"></i> Clés API
+                </button>
+                <button class="config-tab" data-tab="commands">
+                    <i class="fas fa-terminal"></i> Commandes
+                </button>
+                <button class="config-tab" data-tab="custom-shortcuts">
+                    <i class="fas fa-magic"></i> Raccourcis personnalisés
+                </button>
+                <button class="config-tab" data-tab="database">
+                    <i class="fas fa-database"></i> Base de données
+                </button>
+                <button class="config-tab" data-tab="system">
+                    <i class="fas fa-server"></i> Système
+                </button>
+            </div>
+            
+            <!-- Contenu de l'onglet Général -->
+            <div class="config-content active" id="general-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-sliders-h"></i> Préférences utilisateur</h3>
+                    <div id="preferences-container">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement des préférences...
+                        </div>
+                    </div>
+                    
+                    <div class="preference-form">
+                        <input type="text" id="preference-key" placeholder="Clé" aria-label="Clé de préférence">
+                        <input type="text" id="preference-value" placeholder="Valeur" aria-label="Valeur de préférence">
+                        <button id="add-preference-btn" type="button">Ajouter</button>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-chart-line"></i> Statistiques générales</h3>
+                    <div class="config-grid">
+                        <div class="config-card">
+                            <h4><i class="fas fa-microphone"></i> Reconnaissance vocale</h4>
+                            <div class="config-card-stats" id="stt-stats">
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="total-stt-requests">0</div>
+                                    <div class="config-stat-label">Requêtes</div>
+                                </div>
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="stt-success-rate">0%</div>
+                                    <div class="config-stat-label">Taux de succès</div>
+                                </div>
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="avg-stt-latency">0ms</div>
+                                    <div class="config-stat-label">Latence moyenne</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="config-card" style="width: 100%;">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Erreurs</h4>
+                            <div class="config-card-stats" id="error-stats">
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="total-errors">0</div>
+                                    <div class="config-stat-label">Total</div>
+                                </div>
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="critical-errors">0</div>
+                                    <div class="config-stat-label">Critiques</div>
+                                </div>
+                            </div>
+                            <div class="config-card-footer">
+                                <button class="config-card-button" id="view-errors-btn">
+                                    <i class="fas fa-eye"></i> Voir les erreurs
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="config-card">
+                            <h4><i class="fas fa-tasks"></i> Tâches et rappels</h4>
+                            <div class="config-card-stats" id="tasks-stats">
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="active-tasks">0</div>
+                                    <div class="config-stat-label">Tâches actives</div>
+                                </div>
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="active-reminders">0</div>
+                                    <div class="config-stat-label">Rappels actifs</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-history"></i> Activité récente</h3>
+                    <div id="recent-logs-container">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement des logs...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu de l'onglet Reconnaissance vocale -->
+            <div class="config-content" id="speech-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-microphone"></i> Moteurs de reconnaissance vocale (STT)</h3>
+                    <p>Sélectionnez le moteur de reconnaissance vocale à utiliser :</p>
+                    
+                    <div class="engine-selector" id="stt-engine-selector">
+                        <div class="engine-option" data-engine="speechrecognition">
+                            <h4>SpeechRecognition</h4>
+                            <p>Moteur par lot utilisant l'API Web Speech. Fonctionne par défaut dans la plupart des navigateurs.</p>
+                            <p><strong>Type :</strong> Par lot</p>
+                            <p><strong>Connexion Internet :</strong> Requise</p>
+                        </div>
+                        
+                        <div class="engine-option" data-engine="whisper">
+                            <h4>OpenAI Whisper API</h4>
+                            <p>Haute précision, supporte de nombreuses langues. Nécessite une clé API OpenAI.</p>
+                            <p><strong>Type :</strong> Continu</p>
+                            <p><strong>Connexion Internet :</strong> Requise</p>
+                        </div>
+                        
+                        <div class="engine-option" data-engine="vosk">
+                            <h4>Vosk</h4>
+                            <p>Moteur de reconnaissance vocale hors ligne. Fonctionne sans connexion Internet.</p>
+                            <p><strong>Type :</strong> Continu</p>
+                            <p><strong>Connexion Internet :</strong> Non requise</p>
+                        </div>
+                        
+                        <div class="engine-option" data-engine="whisper_ct2">
+                            <h4>Whisper CT2</h4>
+                            <p>Version optimisée de Whisper fonctionnant localement. Bonne précision sans connexion Internet.</p>
+                            <p><strong>Type :</strong> Continu</p>
+                            <p><strong>Connexion Internet :</strong> Non requise</p>
+                        </div>
+                        
+                        <div class="engine-option" data-engine="whisper_french">
+                            <h4>Whisper French</h4>
+                            <p>Modèle optimisé spécifiquement pour le français, basé sur Whisper Large-v3. Excellente précision pour la langue française.</p>
+                            <p><strong>Type :</strong> Continu</p>
+                            <p><strong>Connexion Internet :</strong> Non requise</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-sliders-h"></i> Réglages avancés STT</h3>
+                    <div class="config-card">
+                        <h4><i class="fas fa-cogs"></i> Paramètres de reconnaissance vocale</h4>
+                        <div id="stt-settings-container" class="config-card-content">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i> Chargement des paramètres STT...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-chart-bar"></i> Métriques de reconnaissance vocale</h3>
+                    <div class="config-card" id="stt-metrics-card">
+                        <h4><i class="fas fa-tachometer-alt"></i> Performance</h4>
+                        <div class="config-card-content" style="width: 100%;">
+                            <div class="config-table-container" style="width: 100%; overflow-x: auto;">
+                                <table class="config-table" id="stt-metrics-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%;">Moteur</th>
+                                            <th style="width: 15%;">Requêtes</th>
+                                            <th style="width: 15%;">Succès</th>
+                                            <th style="width: 15%;">Erreurs</th>
+                                            <th style="width: 25%;">Latence moy.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Les données seront ajoutées ici dynamiquement -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="config-card-footer">
+                            <button class="config-card-button" id="reset-stt-metrics-btn">
+                                <i class="fas fa-redo"></i> Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-tools"></i> Actions</h3>
+                    <div class="config-grid">
+                        <div class="config-card">
+                            <h4><i class="fas fa-sync"></i> Redémarrer la reconnaissance</h4>
+                            <div class="config-card-content">
+                                <p>Redémarrez le service de reconnaissance vocale en cas de problème.</p>
+                            </div>
+                            <div class="config-card-footer">
+                                <button class="config-card-button primary" id="restart-recognition-btn">
+                                    <i class="fas fa-play"></i> Redémarrer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu de l'onglet Synthèse vocale -->
+            <div class="config-content" id="tts-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-volume-up"></i> Moteurs de synthèse vocale (TTS)</h3>
+                    <p>Sélectionnez le moteur de synthèse vocale à utiliser :</p>
+                    
+                    <div class="engine-selector" id="tts-engine-selector">
+                        <div class="engine-option" data-engine="pyttsx3">
+                            <h4>Windows TTS (natif)</h4>
+                            <p>Utilise le moteur de synthèse vocale intégré à Windows. Fonctionne hors ligne.</p>
+                            <p><strong>Qualité :</strong> Basique</p>
+                            <p><strong>Connexion Internet :</strong> Non requise</p>
+                        </div>
+                        
+                        <div class="engine-option" data-engine="gtts">
+                            <h4>Google TTS</h4>
+                            <p>Utilise l'API Google Text-to-Speech. Voix plus naturelle mais nécessite une connexion Internet.</p>
+                            <p><strong>Qualité :</strong> Bonne</p>
+                            <p><strong>Connexion Internet :</strong> Requise</p>
+                        </div>
+                        
+                        <div class="engine-option" data-engine="coqui">
+                            <h4>CoquiTTS</h4>
+                            <p>Moteur de synthèse vocale haute qualité fonctionnant localement. Voix très naturelle.</p>
+                            <p><strong>Qualité :</strong> Excellente</p>
+                            <p><strong>Connexion Internet :</strong> Non requise</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="coqui-models-container" style="display: none;">
+                    <div class="config-section">
+                        <h3><i class="fas fa-microchip"></i> Modèles CoquiTTS disponibles</h3>
+                        <div id="coqui-models-list" class="engine-selector">
+                            <!-- Les modèles seront ajoutés ici dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-hdd"></i> Cache TTS</h3>
+                    <div class="config-grid">
+                        <div class="config-card" id="tts-cache-card">
+                            <h4><i class="fas fa-database"></i> Statistiques du cache</h4>
+                            <div class="config-card-stats" id="tts-cache-stats">
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="tts-cache-entries">0</div>
+                                    <div class="config-stat-label">Entrées</div>
+                                </div>
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="tts-cache-size">0 Mo</div>
+                                    <div class="config-stat-label">Taille</div>
+                                </div>
+                                <div class="config-stat">
+                                    <div class="config-stat-value" id="tts-cache-hit-rate">0%</div>
+                                    <div class="config-stat-label">Taux de succès</div>
+                                </div>
+                            </div>
+                            <div class="config-card-footer">
+                                <button class="config-card-button danger" id="clear-tts-cache-btn">
+                                    <i class="fas fa-trash"></i> Vider le cache
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu de l'onglet Clés API -->
+            <div class="config-content" id="api-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-key"></i> Clés API</h3>
+                    <p>Configurez les clés API nécessaires pour certaines fonctionnalités :</p>
+                    
+                    <div class="api-key-section">
+                        <h4>OpenAI API (pour Whisper)</h4>
+                        <div class="api-key-input">
+                            <input type="password" id="openai-api-key" placeholder="sk-..." aria-label="Clé API OpenAI">
+                            <button id="toggle-openai-visibility" type="button" aria-label="Afficher/masquer la clé">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="openai-key-status" class="api-key-status not-configured">
+                            Clé API non configurée
+                        </div>
+                        <button id="save-openai-key" class="save-button">Enregistrer</button>
+                    </div>
+                    
+                    <div class="api-key-section">
+                        <h4>Mistral API</h4>
+                        <div class="api-key-input">
+                            <input type="password" id="mistral-api-key" placeholder="..." aria-label="Clé API Mistral">
+                            <button id="toggle-mistral-visibility" type="button" aria-label="Afficher/masquer la clé">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="mistral-key-status" class="api-key-status not-configured">
+                            Clé API non configurée
+                        </div>
+                        <button id="save-mistral-key" class="save-button">Enregistrer</button>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-chart-pie"></i> Utilisation des API</h3>
+                    <div class="config-grid">
+                        <div class="config-card" id="api-usage-card">
+                            <h4><i class="fas fa-dollar-sign"></i> Coûts estimés</h4>
+                            <div class="config-card-content">
+                                <div class="config-table-container">
+                                    <table class="config-table" id="api-usage-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Requêtes</th>
+                                                <th>Coût estimé</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Les données seront ajoutées ici dynamiquement -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu de l'onglet Commandes -->
+            <div class="config-content" id="commands-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-terminal"></i> Alias de commandes</h3>
+                    <div id="aliases-container">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement des alias...
+                        </div>
+                    </div>
+                    
+                    <div class="preference-form">
+                        <input type="text" id="command-input" placeholder="Commande" aria-label="Commande">
+                        <input type="text" id="alias-input" placeholder="Alias" aria-label="Alias">
+                        <button id="add-alias-btn" type="button">Ajouter</button>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-keyboard"></i> Raccourcis clavier</h3>
+                    <div id="shortcuts-container">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement des raccourcis...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu de l'onglet Raccourcis personnalisés -->
+            <div class="config-content" id="custom-shortcuts-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-magic"></i> Raccourcis vocaux personnalisés</h3>
+                    <p>Créez des raccourcis vocaux personnalisés pour effectuer des actions spécifiques avec votre voix.</p>
+                    
+                    <div class="config-card" style="margin-bottom: 1.5rem;">
+                        <h4><i class="fas fa-plus-circle"></i> Nouveau raccourci</h4>
+                        <div class="config-card-content">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label for="shortcut-name">Nom du raccourci</label>
+                                    <input type="text" id="shortcut-name" class="form-control" placeholder="Ex: Ouvrir Gmail" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                                </div>
+                                <div>
+                                    <label for="shortcut-command">Commande vocale</label>
+                                    <input type="text" id="shortcut-command" class="form-control" placeholder="Ex: lance gmail" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label for="shortcut-type">Type d'action</label>
+                                <select id="shortcut-type" class="form-control" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                                    <option value="keyboard">Raccourci clavier</option>
+                                    <option value="text">Saisie de texte</option>
+                                    <option value="url">Ouvrir URL</option>
+                                    <option value="app">Lancer application</option>
+                                    <option value="script">Exécuter script</option>
+                                </select>
+                            </div>
+                            
+                            <div id="action-config-container" style="margin-bottom: 1rem;">
+                                <!-- Le contenu change en fonction du type d'action sélectionné -->
+                                <div id="keyboard-config" class="action-config">
+                                    <label for="keyboard-shortcut">Touches à simuler</label>
+                                    <input type="text" id="keyboard-shortcut" class="form-control" placeholder="Ex: ctrl+c" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                                    <small>Séparez les touches par des + (ex: ctrl+shift+p)</small>
+                                </div>
+                                
+                                <div id="text-config" class="action-config" style="display: none;">
+                                    <label for="text-content">Texte à saisir</label>
+                                    <textarea id="text-content" class="form-control" placeholder="Texte à saisir automatiquement" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem; min-height: 100px;"></textarea>
+                                </div>
+                                
+                                <div id="url-config" class="action-config" style="display: none;">
+                                    <label for="url-address">Adresse URL</label>
+                                    <input type="url" id="url-address" class="form-control" placeholder="https://www.example.com" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                                </div>
+                                
+                                <div id="app-config" class="action-config" style="display: none;">
+                                    <label for="app-path">Chemin de l'application</label>
+                                    <input type="text" id="app-path" class="form-control" placeholder="C:\Program Files\App\app.exe" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                                </div>
+                                
+                                <div id="script-config" class="action-config" style="display: none;">
+                                    <label for="script-content">Script à exécuter</label>
+                                    <textarea id="script-content" class="form-control" placeholder="Code Python à exécuter" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem; min-height: 100px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="config-card-footer">
+                            <button class="config-card-button primary" id="add-shortcut-btn">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="custom-shortcuts-container">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement des raccourcis personnalisés...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-info-circle"></i> Aide sur les raccourcis personnalisés</h3>
+                    <div class="config-card">
+                        <h4><i class="fas fa-question-circle"></i> Comment utiliser les raccourcis personnalisés</h4>
+                        <div class="config-card-content">
+                            <p>Les raccourcis personnalisés vous permettent d'effectuer des actions complexes avec de simples commandes vocales.</p>
+                            <p>Par exemple, vous pouvez créer un raccourci qui ouvre votre application de messagerie préférée en disant "ouvre ma messagerie".</p>
+                            
+                            <h5 style="margin-top: 1rem;">Types d'actions disponibles :</h5>
+                            <ul style="padding-left: 1.5rem;">
+                                <li><strong>Raccourci clavier</strong> : Simule l'appui sur des touches (ex: ctrl+c pour copier)</li>
+                                <li><strong>Saisie de texte</strong> : Saisit automatiquement un texte prédéfini</li>
+                                <li><strong>Ouvrir URL</strong> : Ouvre une page web dans votre navigateur par défaut</li>
+                                <li><strong>Lancer application</strong> : Démarre un programme sur votre ordinateur</li>
+                                <li><strong>Exécuter script</strong> : Exécute un script Python personnalisé</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu de l'onglet Base de données -->
+            <div class="config-content" id="database-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-database"></i> Informations sur la base de données</h3>
+                    <div class="config-card" id="database-info-card" style="margin-bottom: 1.5rem;">
+                        <h4><i class="fas fa-info-circle"></i> Détails</h4>
+                        <div class="config-card-content">
+                            <div class="config-list">
+                                <div class="config-list-item">
+                                    <div class="config-list-item-title">Type</div>
+                                    <div class="config-list-item-subtitle">SQLite</div>
+                                </div>
+                                <div class="config-list-item">
+                                    <div class="config-list-item-title">Chemin</div>
+                                    <div class="config-list-item-subtitle" id="db-path">...</div>
+                                </div>
+                                <div class="config-list-item">
+                                    <div class="config-list-item-title">Taille</div>
+                                    <div class="config-list-item-subtitle" id="db-size">...</div>
+                                </div>
+                                <div class="config-list-item">
+                                    <div class="config-list-item-title">Tables</div>
+                                    <div class="config-list-item-subtitle" id="db-tables">...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-card">
+                        <h4><i class="fas fa-table"></i> Tables</h4>
+                        <div class="config-card-content">
+                            <div id="tables-list">
+                                <div class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Chargement des tables...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-tools"></i> Maintenance</h3>
+                    <div class="config-grid">
+                        <div class="config-card">
+                            <h4><i class="fas fa-compress-arrows-alt"></i> Optimisation</h4>
+                            <div class="config-card-content">
+                                <p>Optimisez la base de données pour améliorer les performances.</p>
+                            </div>
+                            <div class="config-card-footer">
+                                <button class="config-card-button primary" id="optimize-db-btn">
+                                    <i class="fas fa-bolt"></i> Optimiser
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="config-card">
+                            <h4><i class="fas fa-file-export"></i> Sauvegarde</h4>
+                            <div class="config-card-content">
+                                <p>Créez une sauvegarde de la base de données.</p>
+                            </div>
+                            <div class="config-card-footer">
+                                <button class="config-card-button primary" id="backup-db-btn">
+                                    <i class="fas fa-download"></i> Sauvegarder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu de l'onglet Système -->
+            <div class="config-content" id="system-content">
+                <div class="config-section">
+                    <h3><i class="fas fa-server"></i> Informations système</h3>
+                    <div>
+                        <div class="config-card" id="system-info-card" style="margin-bottom: 1.5rem;">
+                            <h4><i class="fas fa-info-circle"></i> Détails</h4>
+                            <div class="config-card-content">
+                                <div class="config-list">
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">Système d'exploitation</div>
+                                        <div class="config-list-item-subtitle" id="os-info">...</div>
+                                    </div>
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">Python</div>
+                                        <div class="config-list-item-subtitle" id="python-version">...</div>
+                                    </div>
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">GPU</div>
+                                        <div class="config-list-item-subtitle" id="gpu-info">Non détecté</div>
+                                    </div>
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">CUDA</div>
+                                        <div class="config-list-item-subtitle" id="cuda-info">Non disponible</div>
+                                    </div>
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">Mémoire utilisée</div>
+                                        <div class="config-list-item-subtitle" id="memory-usage">...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="config-card">
+                            <h4><i class="fas fa-microchip"></i> Ressources</h4>
+                            <div class="config-card-content">
+                                <div class="config-list">
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">CPU</div>
+                                        <div class="config-progress">
+                                            <div class="config-progress-bar" id="cpu-usage-bar" style="width: 0%"></div>
+                                        </div>
+                                        <div class="config-list-item-subtitle" id="cpu-usage">0%</div>
+                                    </div>
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">Mémoire</div>
+                                        <div class="config-progress">
+                                            <div class="config-progress-bar" id="memory-usage-bar" style="width: 0%"></div>
+                                        </div>
+                                        <div class="config-list-item-subtitle" id="memory-usage-percent">0%</div>
+                                    </div>
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">Mémoire GPU</div>
+                                        <div class="config-progress">
+                                            <div class="config-progress-bar" id="gpu-memory-usage-bar" style="width: 0%"></div>
+                                        </div>
+                                        <div class="config-list-item-subtitle" id="gpu-memory-usage-percent">0%</div>
+                                    </div>
+                                    <div class="config-list-item">
+                                        <div class="config-list-item-title">Disque</div>
+                                        <div class="config-progress">
+                                            <div class="config-progress-bar" id="disk-usage-bar" style="width: 0%"></div>
+                                        </div>
+                                        <div class="config-list-item-subtitle" id="disk-usage">0%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3><i class="fas fa-tools"></i> Actions système</h3>
+                    <div class="config-grid">
+                        <div class="config-card">
+                            <h4><i class="fas fa-sync"></i> Redémarrer l'assistant</h4>
+                            <div class="config-card-content">
+                                <p>Redémarrez complètement l'assistant vocal.</p>
+                            </div>
+                            <div class="config-card-footer">
+                                <button class="config-card-button primary" id="restart-assistant-btn">
+                                    <i class="fas fa-redo"></i> Redémarrer
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="config-card">
+                            <h4><i class="fas fa-broom"></i> Nettoyer les fichiers temporaires</h4>
+                            <div class="config-card-content">
+                                <p>Supprimez les fichiers temporaires pour libérer de l'espace disque.</p>
+                            </div>
+                            <div class="config-card-footer">
+                                <button class="config-card-button primary" id="clean-temp-files-btn">
+                                    <i class="fas fa-trash"></i> Nettoyer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        {% include 'components/footer.html' %}
+    </div>
+    
+    <!-- Conteneur pour les notifications -->
+    <div id="notifications-container"></div>
+    
+    <!-- Modales -->
+    <div class="config-modal" id="error-details-modal">
+        <div class="config-modal-content">
+            <div class="config-modal-header">
+                <h3 class="config-modal-title">Détails de l'erreur</h3>
+                <button class="config-modal-close" id="close-error-modal">&times;</button>
+            </div>
+            <div class="config-modal-body" id="error-details-content">
+                <!-- Le contenu sera ajouté dynamiquement -->
+            </div>
+            <div class="config-modal-footer">
+                <button class="config-card-button" id="close-error-modal-btn">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/stt_settings.js') }}"></script>
+    <script>
+        // Mettre à jour l'année automatiquement
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables globales
+            let currentSTTEngine = 'speechrecognition';
+            let currentTTSEngine = 'pyttsx3';
+            let apiKeys = {
+                openai: false,
+                mistral: false
+            };
+            let allConfig = null;
+            
+            // Fonction pour mettre à jour les informations système
+            function updateSystemInfo(systemInfo) {
+                if (!systemInfo) return;
+                
+                // Mettre à jour les informations de base
+                document.getElementById('os-info').textContent = `${systemInfo.os} ${systemInfo.os_version || ''} ${systemInfo.os_release || ''}`;
+                document.getElementById('python-version').textContent = systemInfo.python_version || 'Non disponible';
+                
+                // Mettre à jour les informations GPU si disponibles
+                if (systemInfo.gpu) {
+                    const gpuInfo = systemInfo.gpu;
+                    if (gpuInfo.available) {
+                        document.getElementById('gpu-info').textContent = gpuInfo.name || 'Détecté';
+                        document.getElementById('cuda-info').textContent = gpuInfo.cuda_version 
+                            ? `Version ${gpuInfo.cuda_version}` 
+                            : 'Disponible';
+                        
+                        // Mettre à jour l'utilisation de la mémoire GPU si disponible
+                        if (gpuInfo.memory_total && gpuInfo.memory_allocated) {
+                            const gpuMemoryUsagePercent = gpuInfo.memory_usage_percent || 
+                                Math.round((gpuInfo.memory_allocated / gpuInfo.memory_total) * 100);
+                            
+                            // Mettre à jour la barre de progression
+                            const gpuMemoryBar = document.getElementById('gpu-memory-usage-bar');
+                            if (gpuMemoryBar) {
+                                gpuMemoryBar.style.width = `${gpuMemoryUsagePercent}%`;
+                                
+                                // Changer la couleur en fonction de l'utilisation
+                                if (gpuMemoryUsagePercent > 90) {
+                                    gpuMemoryBar.className = 'config-progress-bar error';
+                                } else if (gpuMemoryUsagePercent > 70) {
+                                    gpuMemoryBar.className = 'config-progress-bar warning';
+                                } else {
+                                    gpuMemoryBar.className = 'config-progress-bar success';
+                                }
+                            }
+                            
+                            document.getElementById('gpu-memory-usage-percent').textContent = `${gpuMemoryUsagePercent}%`;
+                        } else {
+                            document.getElementById('gpu-memory-usage-percent').textContent = 'N/A';
+                        }
+                    } else {
+                        document.getElementById('gpu-info').textContent = 'Non détecté';
+                        document.getElementById('cuda-info').textContent = 'Non disponible';
+                        document.getElementById('gpu-memory-usage-percent').textContent = 'N/A';
+                    }
+                }
+                
+                // Mettre à jour les informations de mémoire si disponibles
+                if (systemInfo.memory_total && systemInfo.memory_available) {
+                    const memoryUsed = systemInfo.memory_total - systemInfo.memory_available;
+                    const memoryUsedPercent = Math.round((memoryUsed / systemInfo.memory_total) * 100);
+                    
+                    document.getElementById('memory-usage').textContent = systemInfo.memory_total_formatted 
+                        ? `${memoryUsedPercent}% (${systemInfo.memory_available_formatted} disponible)` 
+                        : 'Non disponible';
+                    
+                    // Mettre à jour la barre de progression
+                    const memoryBar = document.getElementById('memory-usage-bar');
+                    if (memoryBar) {
+                        memoryBar.style.width = `${memoryUsedPercent}%`;
+                        
+                        // Changer la couleur en fonction de l'utilisation
+                        if (memoryUsedPercent > 90) {
+                            memoryBar.className = 'config-progress-bar error';
+                        } else if (memoryUsedPercent > 70) {
+                            memoryBar.className = 'config-progress-bar warning';
+                        } else {
+                            memoryBar.className = 'config-progress-bar success';
+                        }
+                    }
+                    
+                    document.getElementById('memory-usage-percent').textContent = `${memoryUsedPercent}%`;
+                }
+            }
+            
+            // Fonction pour mettre à jour les informations de la base de données
+            function updateDatabaseInfo(dbInfo) {
+                if (!dbInfo) return;
+                
+                // Mettre à jour les informations de base
+                document.getElementById('db-path').textContent = dbInfo.path || 'Non disponible';
+                document.getElementById('db-size').textContent = dbInfo.size_formatted || `${Math.round(dbInfo.size / 1024)} Ko`;
+                document.getElementById('db-tables').textContent = dbInfo.tables ? dbInfo.tables.length : 0;
+                
+                // Mettre à jour la liste des tables
+                const tablesListContainer = document.getElementById('tables-list');
+                if (tablesListContainer && dbInfo.tables && dbInfo.table_counts) {
+                    let tablesHtml = '<div class="config-list">';
+                    
+                    dbInfo.tables.forEach(table => {
+                        const count = dbInfo.table_counts[table] || 0;
+                        tablesHtml += `
+                            <div class="config-list-item">
+                                <div class="config-list-item-content">
+                                    <div class="config-list-item-title">${table}</div>
+                                    <div class="config-list-item-subtitle">${count} entrées</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    tablesHtml += '</div>';
+                    tablesListContainer.innerHTML = tablesHtml;
+                }
+            }
+            
+            // Éléments DOM
+            const preferencesContainer = document.getElementById('preferences-container');
+            const preferenceKeyInput = document.getElementById('preference-key');
+            const preferenceValueInput = document.getElementById('preference-value');
+            const addPreferenceBtn = document.getElementById('add-preference-btn');
+            const sttEngineSelector = document.getElementById('stt-engine-selector');
+            const ttsEngineSelector = document.getElementById('tts-engine-selector');
+            const coquiModelsContainer = document.getElementById('coqui-models-container');
+            const coquiModelsList = document.getElementById('coqui-models-list');
+            const openaiApiKeyInput = document.getElementById('openai-api-key');
+            const mistralApiKeyInput = document.getElementById('mistral-api-key');
+            const toggleOpenaiVisibilityBtn = document.getElementById('toggle-openai-visibility');
+            const toggleMistralVisibilityBtn = document.getElementById('toggle-mistral-visibility');
+            const saveOpenaiKeyBtn = document.getElementById('save-openai-key');
+            const saveMistralKeyBtn = document.getElementById('save-mistral-key');
+            const openaiKeyStatus = document.getElementById('openai-key-status');
+            const mistralKeyStatus = document.getElementById('mistral-key-status');
+            const darkModeButton = document.getElementById('toggle-dark-mode');
+            const animationsButton = document.getElementById('toggle-animations');
+            const configTabs = document.querySelectorAll('.config-tab');
+            const configContents = document.querySelectorAll('.config-content');
+            const searchInput = document.getElementById('config-search-input');
+            const recentLogsContainer = document.getElementById('recent-logs-container');
+            const aliasesContainer = document.getElementById('aliases-container');
+            const shortcutsContainer = document.getElementById('shortcuts-container');
+            const tablesListContainer = document.getElementById('tables-list');
+            const errorDetailsModal = document.getElementById('error-details-modal');
+            const closeErrorModalBtn = document.getElementById('close-error-modal');
+            const closeErrorModalFooterBtn = document.getElementById('close-error-modal-btn');
+            const errorDetailsContent = document.getElementById('error-details-content');
+            const viewErrorsBtn = document.getElementById('view-errors-btn');
+            
+            // Charger toutes les configurations
+            loadAllConfig();
+            
+            // Gestionnaire d'événements pour les onglets
+            configTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Désactiver tous les onglets et contenus
+                    configTabs.forEach(t => t.classList.remove('active'));
+                    configContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Activer l'onglet et le contenu sélectionnés
+                    this.classList.add('active');
+                    document.getElementById(`${tabId}-content`).classList.add('active');
+                });
+            });
+            
+            // Gestionnaire d'événements pour la recherche
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    
+                    if (searchTerm.length < 2) {
+                        // Réinitialiser l'affichage si la recherche est trop courte
+                        document.querySelectorAll('.config-section, .config-card, .preference-item, .config-list-item').forEach(el => {
+                            el.style.display = '';
+                        });
+                        return;
+                    }
+                    
+                    // Rechercher dans les préférences
+                    document.querySelectorAll('.preference-item').forEach(item => {
+                        const key = item.querySelector('.preference-key').textContent.toLowerCase();
+                        const value = item.querySelector('.preference-value').textContent.toLowerCase();
+                        
+                        if (key.includes(searchTerm) || value.includes(searchTerm)) {
+                            item.style.display = '';
+                            // S'assurer que la section parente est visible
+                            item.closest('.config-section').style.display = '';
+                            // Activer l'onglet général
+                            showTab('general');
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                    
+                    // Rechercher dans les moteurs
+                    document.querySelectorAll('.engine-option').forEach(option => {
+                        const title = option.querySelector('h4').textContent.toLowerCase();
+                        const desc = option.querySelector('p').textContent.toLowerCase();
+                        
+                        if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                            option.style.display = '';
+                            // S'assurer que la section parente est visible
+                            option.closest('.config-section').style.display = '';
+                            // Activer l'onglet approprié
+                            if (option.closest('#stt-engine-selector')) {
+                                showTab('speech');
+                            } else if (option.closest('#tts-engine-selector')) {
+                                showTab('tts');
+                            }
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    });
+                    
+                    // Rechercher dans les alias
+                    document.querySelectorAll('#aliases-container .config-list-item').forEach(item => {
+                        const command = item.querySelector('.config-list-item-title').textContent.toLowerCase();
+                        const alias = item.querySelector('.config-list-item-subtitle').textContent.toLowerCase();
+                        
+                        if (command.includes(searchTerm) || alias.includes(searchTerm)) {
+                            item.style.display = '';
+                            // S'assurer que la section parente est visible
+                            item.closest('.config-section').style.display = '';
+                            // Activer l'onglet commandes
+                            showTab('commands');
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Fonction pour afficher un onglet spécifique
+            function showTab(tabId) {
+                configTabs.forEach(tab => {
+                    if (tab.getAttribute('data-tab') === tabId) {
+                        tab.click();
+                    }
+                });
+            }
+            
+            // Gestionnaire d'événements pour la modal des erreurs
+            if (closeErrorModalBtn) {
+                closeErrorModalBtn.addEventListener('click', function() {
+                    errorDetailsModal.classList.remove('show');
+                });
+            }
+            
+            if (closeErrorModalFooterBtn) {
+                closeErrorModalFooterBtn.addEventListener('click', function() {
+                    errorDetailsModal.classList.remove('show');
+                });
+            }
+            
+            if (viewErrorsBtn) {
+                viewErrorsBtn.addEventListener('click', function() {
+                    showErrorDetails();
+                });
+            }
+            
+            // Fonction pour afficher les détails des erreurs
+            function showErrorDetails() {
+                if (!allConfig || !allConfig.errors) {
+                    showNotification('Impossible de charger les erreurs', 'error');
+                    return;
+                }
+                
+                let errorHtml = '<div class="config-table-container"><table class="config-table">';
+                errorHtml += '<thead><tr><th>Date</th><th>Catégorie</th><th>Sévérité</th><th>Message</th><th>Actions</th></tr></thead>';
+                errorHtml += '<tbody>';
+                
+                allConfig.errors.forEach(error => {
+                    const timestamp = error.timestamp ? new Date(error.timestamp).toLocaleString() : 'N/A';
+                    const category = error.category || 'Inconnue';
+                    const severity = error.severity || 'MEDIUM';
+                    const message = error.message || 'Erreur inconnue';
+                    
+                    errorHtml += `<tr>
+                        <td>${timestamp}</td>
+                        <td>${category}</td>
+                        <td><span class="config-badge ${getSeverityClass(severity)}">${severity}</span></td>
+                        <td>${message.substring(0, 50)}${message.length > 50 ? '...' : ''}</td>
+                        <td>
+                            <button class="config-card-button" onclick="showErrorDetail('${error.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                
+                errorHtml += '</tbody></table></div>';
+                
+                errorDetailsContent.innerHTML = errorHtml;
+                errorDetailsModal.classList.add('show');
+                
+                // Définir la fonction globale pour afficher les détails d'une erreur
+                window.showErrorDetail = function(errorId) {
+                    const error = allConfig.errors.find(e => e.id === errorId);
+                    if (!error) return;
+                    
+                    let detailHtml = `<h4>${error.message}</h4>`;
+                    detailHtml += `<p><strong>ID:</strong> ${error.id}</p>`;
+                    detailHtml += `<p><strong>Date:</strong> ${new Date(error.timestamp).toLocaleString()}</p>`;
+                    detailHtml += `<p><strong>Catégorie:</strong> ${error.category}</p>`;
+                    detailHtml += `<p><strong>Sévérité:</strong> <span class="config-badge ${getSeverityClass(error.severity)}">${error.severity}</span></p>`;
+                    
+                    if (error.traceback) {
+                        detailHtml += `<p><strong>Traceback:</strong></p>`;
+                        detailHtml += `<pre>${error.traceback}</pre>`;
+                    }
+                    
+                    if (error.context) {
+                        detailHtml += `<p><strong>Contexte:</strong></p>`;
+                        detailHtml += `<pre>${JSON.stringify(error.context, null, 2)}</pre>`;
+                    }
+                    
+                    errorDetailsContent.innerHTML = detailHtml;
+                };
+            }
+            
+            // Fonction pour obtenir la classe CSS en fonction de la sévérité
+            function getSeverityClass(severity) {
+                switch (severity) {
+                    case 'LOW':
+                        return 'info';
+                    case 'MEDIUM':
+                        return 'warning';
+                    case 'HIGH':
+                    case 'CRITICAL':
+                        return 'error';
+                    default:
+                        return 'info';
+                }
+            }
+            
+            // Charger toutes les configurations
+            function loadAllConfig() {
+                fetch('/get_all_config')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            allConfig = data;
+                            
+                            // Mettre à jour l'interface avec les données
+                            updateInterface(data);
+                        } else {
+                            showNotification('Erreur lors du chargement des configurations: ' + data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Erreur de communication avec le serveur', 'error');
+                    });
+            }
+            
+            // Mettre à jour l'interface avec les données de configuration
+            function updateInterface(data) {
+                // Mettre à jour les préférences
+                if (data.preferences) {
+                    displayPreferences(data.preferences);
+                }
+                
+                // Mettre à jour les moteurs
+                if (data.engines) {
+                    currentSTTEngine = data.engines.stt;
+                    currentTTSEngine = data.engines.tts;
+                    updateSTTEngineUI(currentSTTEngine);
+                    updateTTSEngineUI(currentTTSEngine);
+                    
+                    // Afficher les modèles Coqui si nécessaire
+                    if (currentTTSEngine === 'coqui') {
+                        coquiModelsContainer.style.display = 'block';
+                    }
+                }
+                
+                // Mettre à jour les modèles Coqui
+                if (data.coqui && data.coqui.models) {
+                    displayCoquiModels(data.coqui.models, data.coqui.current_model);
+                }
+                
+                // Mettre à jour les clés API
+                if (data.api_keys) {
+                    apiKeys.openai = data.api_keys.openai;
+                    apiKeys.mistral = data.api_keys.mistral;
+                    updateApiKeyStatus('openai', apiKeys.openai);
+                    updateApiKeyStatus('mistral', apiKeys.mistral);
+                }
+                
+                // Mettre à jour les statistiques STT
+                if (data.metrics) {
+                    updateSTTMetrics(data.metrics);
+                }
+                
+                // Mettre à jour les logs récents
+                if (data.logs) {
+                    displayRecentLogs(data.logs);
+                }
+                
+                // Mettre à jour les alias de commandes
+                if (data.command_aliases) {
+                    displayCommandAliases(data.command_aliases);
+                }
+                
+                // Mettre à jour les raccourcis clavier
+                if (data.shortcuts) {
+                    displayShortcuts(data.shortcuts);
+                }
+                
+                // Mettre à jour les statistiques d'erreurs
+                if (data.errors) {
+                    updateErrorStats(data.errors);
+                }
+                
+                // Mettre à jour les statistiques de tâches et rappels
+                if (data.tasks && data.reminders) {
+                    updateTasksStats(data.tasks, data.reminders);
+                }
+                
+                // Mettre à jour les informations système
+                if (data.system_info) {
+                    updateSystemInfo(data.system_info);
+                }
+                
+                // Mettre à jour les informations de la base de données
+                if (data.db_info) {
+                    updateDatabaseInfo(data.db_info);
+                }
+            }
+            
+            // Fonction pour afficher les logs récents
+            function displayRecentLogs(logs) {
+                if (!recentLogsContainer) return;
+                
+                if (logs.length === 0) {
+                    recentLogsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <p>Aucun log récent</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let logsHtml = '<div class="config-table-container"><table class="config-table">';
+                logsHtml += '<thead><tr><th style="width: 15%;">Heure</th><th style="width: 15%;">Type</th><th style="width: 70%;">Message</th></tr></thead>';
+                logsHtml += '<tbody>';
+                
+                // Afficher les 10 logs les plus récents
+                logs.slice(0, 10).forEach(log => {
+                    const typeClass = getLogTypeClass(log.type);
+                    logsHtml += `<tr>
+                        <td>${log.timestamp}</td>
+                        <td><span class="config-badge ${typeClass}">${log.type}</span></td>
+                        <td>${log.message}</td>
+                    </tr>`;
+                });
+                
+                logsHtml += '</tbody></table></div>';
+                recentLogsContainer.innerHTML = logsHtml;
+            }
+            
+            // Fonction pour obtenir la classe CSS en fonction du type de log
+            function getLogTypeClass(type) {
+                switch (type) {
+                    case 'info':
+                        return 'info';
+                    case 'warning':
+                        return 'warning';
+                    case 'error':
+                        return 'error';
+                    case 'command':
+                        return 'success';
+                    case 'response':
+                        return '';
+                    default:
+                        return '';
+                }
+            }
+            
+            // Fonction pour afficher les alias de commandes
+            function displayCommandAliases(aliases) {
+                if (!aliasesContainer) return;
+                
+                if (Object.keys(aliases).length === 0) {
+                    aliasesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-terminal"></i>
+                            <p>Aucun alias de commande défini</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let aliasesHtml = '<div class="config-list">';
+                
+                for (const [command, aliasList] of Object.entries(aliases)) {
+                    aliasesHtml += `
+                        <div class="config-list-item">
+                            <div class="config-list-item-content">
+                                <div class="config-list-item-title">${command}</div>
+                                <div class="config-list-item-subtitle">${aliasList.join(', ')}</div>
+                            </div>
+                            <div class="config-list-item-actions">
+                                <button class="config-card-button" onclick="editCommandAliases('${command}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                aliasesHtml += '</div>';
+                aliasesContainer.innerHTML = aliasesHtml;
+                
+                // Définir la fonction globale pour éditer les alias
+                window.editCommandAliases = function(command) {
+                    // Remplir le formulaire avec la commande
+                    document.getElementById('command-input').value = command;
+                    document.getElementById('alias-input').focus();
+                };
+            }
+            
+            // Fonction pour afficher les raccourcis clavier
+            function displayShortcuts(shortcuts) {
+                if (!shortcutsContainer) return;
+                
+                if (Object.keys(shortcuts).length === 0) {
+                    shortcutsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-keyboard"></i>
+                            <p>Aucun raccourci clavier défini</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let shortcutsHtml = '';
+                
+                // Pour chaque système d'exploitation
+                for (const [os, apps] of Object.entries(shortcuts)) {
+                    shortcutsHtml += `<h4>${getOSName(os)}</h4>`;
+                    shortcutsHtml += '<div class="config-table-container"><table class="config-table">';
+                    shortcutsHtml += '<thead><tr><th>Application</th><th>Commande</th><th>Raccourci</th></tr></thead>';
+                    shortcutsHtml += '<tbody>';
+                    
+                    // Pour chaque application
+                    for (const [app, commands] of Object.entries(apps)) {
+                        // Pour chaque commande
+                        for (const [cmd, shortcut] of Object.entries(commands)) {
+                            shortcutsHtml += `<tr>
+                                <td>${app}</td>
+                                <td>${cmd}</td>
+                                <td>${formatShortcut(shortcut)}</td>
+                            </tr>`;
+                        }
+                    }
+                    
+                    shortcutsHtml += '</tbody></table></div>';
+                }
+                
+                shortcutsContainer.innerHTML = shortcutsHtml;
+            }
+            
+            // Fonction pour formater un raccourci clavier
+            function formatShortcut(shortcut) {
+                if (Array.isArray(shortcut)) {
+                    return shortcut.map(key => `<kbd>${key}</kbd>`).join(' + ');
+                }
+                return `<kbd>${shortcut}</kbd>`;
+            }
+            
+            // Fonction pour obtenir le nom du système d'exploitation
+            function getOSName(os) {
+                switch (os) {
+                    case 'windows':
+                        return 'Windows';
+                    case 'mac':
+                        return 'macOS';
+                    case 'linux':
+                        return 'Linux';
+                    default:
+                        return os;
+                }
+            }
+            
+            // Gestionnaire d'événements pour les boutons de la base de données
+            document.getElementById('optimize-db-btn').addEventListener('click', function() {
+                // Afficher un message de confirmation
+                if (confirm('Voulez-vous optimiser la base de données ? Cette opération peut prendre quelques instants.')) {
+                    // Afficher un indicateur de chargement
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Optimisation...';
+                    this.disabled = true;
+                    
+                    // Appeler l'API pour optimiser la base de données
+                    fetch('/optimize_database', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Base de données optimisée avec succès', 'success');
+                            // Recharger les informations de la base de données
+                            loadAllConfig();
+                        } else {
+                            showNotification('Erreur lors de l\'optimisation de la base de données: ' + data.error, 'error');
+                        }
+                        // Restaurer le bouton
+                        this.innerHTML = '<i class="fas fa-bolt"></i> Optimiser';
+                        this.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Erreur de communication avec le serveur', 'error');
+                        // Restaurer le bouton
+                        this.innerHTML = '<i class="fas fa-bolt"></i> Optimiser';
+                        this.disabled = false;
+                    });
+                }
+            });
+            
+            document.getElementById('backup-db-btn').addEventListener('click', function() {
+                // Afficher un message de confirmation
+                if (confirm('Voulez-vous créer une sauvegarde de la base de données ?')) {
+                    // Afficher un indicateur de chargement
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sauvegarde...';
+                    this.disabled = true;
+                    
+                    // Appeler l'API pour sauvegarder la base de données
+                    fetch('/backup_database', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Base de données sauvegardée avec succès: ' + data.backup_path, 'success');
+                        } else {
+                            showNotification('Erreur lors de la sauvegarde de la base de données: ' + data.error, 'error');
+                        }
+                        // Restaurer le bouton
+                        this.innerHTML = '<i class="fas fa-download"></i> Sauvegarder';
+                        this.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Erreur de communication avec le serveur', 'error');
+                        // Restaurer le bouton
+                        this.innerHTML = '<i class="fas fa-download"></i> Sauvegarder';
+                        this.disabled = false;
+                    });
+                }
+            });
+            
+            // Fonction pour mettre à jour les statistiques STT
+            function updateSTTMetrics(metrics) {
+                // Mettre à jour les statistiques globales
+                let totalRequests = 0;
+                let totalSuccess = 0;
+                let totalErrors = 0;
+                let totalLatency = 0;
+                let latencyCount = 0;
+                
+                // Tableau des métriques
+                const metricsTable = document.getElementById('stt-metrics-table');
+                if (metricsTable) {
+                    const tbody = metricsTable.querySelector('tbody');
+                    tbody.innerHTML = '';
+                    
+                    for (const [engine, engineMetrics] of Object.entries(metrics)) {
+                        // Ajouter au total
+                        totalRequests += engineMetrics.requests || 0;
+                        totalSuccess += engineMetrics.success || 0;
+                        totalErrors += engineMetrics.errors || 0;
+                        
+                        if (engineMetrics.avg_latency) {
+                            totalLatency += engineMetrics.avg_latency;
+                            latencyCount++;
+                        }
+                        
+                        // Ajouter une ligne au tableau
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${getEngineDisplayName(engine, 'stt')}</td>
+                            <td>${engineMetrics.requests || 0}</td>
+                            <td>${engineMetrics.success || 0}</td>
+                            <td>${engineMetrics.errors || 0}</td>
+                            <td>${engineMetrics.avg_latency ? Math.round(engineMetrics.avg_latency) + 'ms' : 'N/A'}</td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                }
+                
+                // Mettre à jour les statistiques sur la page d'accueil
+                const totalSttRequests = document.getElementById('total-stt-requests');
+                const sttSuccessRate = document.getElementById('stt-success-rate');
+                const avgSttLatency = document.getElementById('avg-stt-latency');
+                
+                if (totalSttRequests) totalSttRequests.textContent = totalRequests;
+                if (sttSuccessRate) {
+                    const rate = totalRequests > 0 ? Math.round((totalSuccess / totalRequests) * 100) : 0;
+                    sttSuccessRate.textContent = `${rate}%`;
+                }
+                if (avgSttLatency) {
+                    const avgLatency = latencyCount > 0 ? Math.round(totalLatency / latencyCount) : 0;
+                    avgSttLatency.textContent = `${avgLatency}ms`;
+                }
+            }
+            
+            // Fonction pour mettre à jour les statistiques d'erreurs
+            function updateErrorStats(errors) {
+                const totalErrors = document.getElementById('total-errors');
+                const criticalErrors = document.getElementById('critical-errors');
+                
+                if (totalErrors) totalErrors.textContent = errors.length;
+                if (criticalErrors) {
+                    const critical = errors.filter(e => e.severity === 'HIGH' || e.severity === 'CRITICAL').length;
+                    criticalErrors.textContent = critical;
+                }
+            }
+            
+            // Fonction pour mettre à jour les statistiques de tâches et rappels
+            function updateTasksStats(tasks, reminders) {
+                const activeTasks = document.getElementById('active-tasks');
+                const activeReminders = document.getElementById('active-reminders');
+                
+                if (activeTasks) {
+                    const active = tasks.filter(t => t.status !== 'completed').length;
+                    activeTasks.textContent = active;
+                }
+                
+                if (activeReminders) {
+                    const active = reminders.filter(r => !r.completed).length;
+                    activeReminders.textContent = active;
+                }
+            }
+            
+            // Gestionnaire d'événements pour le bouton de réinitialisation des métriques STT
+            const resetMetricsBtn = document.getElementById('reset-stt-metrics-btn');
+            if (resetMetricsBtn) {
+                resetMetricsBtn.addEventListener('click', function() {
+                    if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les métriques de reconnaissance vocale ?')) {
+                        fetch('/reset_stt_metrics', {
+                            method: 'POST'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showNotification('Métriques STT réinitialisées avec succès', 'success');
+                                
+                                // Recharger les statistiques
+                                loadAllConfig();
+                            } else {
+                                showNotification('Erreur lors de la réinitialisation des métriques: ' + (data.error || 'Erreur inconnue'), 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            showNotification('Erreur de communication avec le serveur', 'error');
+                        });
+                    }
+                });
+            }
+            
+            // Gestionnaire d'événements pour le type d'action des raccourcis personnalisés
+            const shortcutTypeSelect = document.getElementById('shortcut-type');
+            if (shortcutTypeSelect) {
+                shortcutTypeSelect.addEventListener('change', function() {
+                    const actionType = this.value;
+                    
+                    // Masquer toutes les configurations d'action
+                    document.querySelectorAll('.action-config').forEach(config => {
+                        config.style.display = 'none';
+                    });
+                    
+                    // Afficher la configuration correspondante au type sélectionné
+                    const configElement = document.getElementById(`${actionType}-config`);
+                    if (configElement) {
+                        configElement.style.display = 'block';
+                    }
+                });
+            }
+            
+            // Gestionnaire d'événements pour ajouter un raccourci personnalisé
+            const addShortcutBtn = document.getElementById('add-shortcut-btn');
+            if (addShortcutBtn) {
+                addShortcutBtn.addEventListener('click', function() {
+                    const name = document.getElementById('shortcut-name').value.trim();
+                    const voiceCommand = document.getElementById('shortcut-command').value.trim();
+                    const actionType = document.getElementById('shortcut-type').value;
+                    
+                    if (!name || !voiceCommand) {
+                        showNotification('Le nom et la commande vocale sont requis', 'error');
+                        return;
+                    }
+                    
+                    // Récupérer les données d'action en fonction du type
+                    let actionData;
+                    switch (actionType) {
+                        case 'keyboard':
+                            actionData = document.getElementById('keyboard-shortcut').value.trim();
+                            if (!actionData) {
+                                showNotification('Veuillez spécifier les touches à simuler', 'error');
+                                return;
+                            }
+                            break;
+                        case 'text':
+                            actionData = document.getElementById('text-content').value.trim();
+                            if (!actionData) {
+                                showNotification('Veuillez saisir le texte à insérer', 'error');
+                                return;
+                            }
+                            break;
+                        case 'url':
+                            actionData = document.getElementById('url-address').value.trim();
+                            if (!actionData || !actionData.startsWith('http')) {
+                                showNotification('Veuillez saisir une URL valide', 'error');
+                                return;
+                            }
+                            break;
+                        case 'app':
+                            actionData = document.getElementById('app-path').value.trim();
+                            if (!actionData) {
+                                showNotification('Veuillez spécifier le chemin de l\'application', 'error');
+                                return;
+                            }
+                            break;
+                        case 'script':
+                            actionData = document.getElementById('script-content').value.trim();
+                            if (!actionData) {
+                                showNotification('Veuillez saisir le script à exécuter', 'error');
+                                return;
+                            }
+                            break;
+                        default:
+                            showNotification('Type d\'action non valide', 'error');
+                            return;
+                    }
+                    
+                    // Envoyer la requête pour ajouter le raccourci
+                    fetch('/add_custom_shortcut', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            voice_command: voiceCommand,
+                            action_type: actionType,
+                            action_data: actionData
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification(`Raccourci "${name}" ajouté avec succès`, 'success');
+                            
+                            // Réinitialiser le formulaire
+                            document.getElementById('shortcut-name').value = '';
+                            document.getElementById('shortcut-command').value = '';
+                            document.getElementById('keyboard-shortcut').value = '';
+                            document.getElementById('text-content').value = '';
+                            document.getElementById('url-address').value = '';
+                            document.getElementById('app-path').value = '';
+                            document.getElementById('script-content').value = '';
+                            
+                            // Recharger la liste des raccourcis
+                            loadCustomShortcuts();
+                        } else {
+                            showNotification('Erreur: ' + data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Erreur de communication avec le serveur', 'error');
+                    });
+                });
+            }
+            
+            // Fonction pour charger les raccourcis personnalisés
+            function loadCustomShortcuts() {
+                const container = document.getElementById('custom-shortcuts-container');
+                if (!container) return;
+                
+                container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Chargement des raccourcis personnalisés...</div>';
+                
+                fetch('/get_custom_shortcuts')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            displayCustomShortcuts(data.shortcuts);
+                        } else {
+                            showNotification('Erreur lors du chargement des raccourcis personnalisés: ' + data.error, 'error');
+                            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Erreur lors du chargement des raccourcis</p></div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Erreur de communication avec le serveur', 'error');
+                        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Erreur de communication avec le serveur</p></div>';
+                    });
+            }
+            
+            // Fonction pour afficher les raccourcis personnalisés
+            function displayCustomShortcuts(shortcuts) {
+                const container = document.getElementById('custom-shortcuts-container');
+                if (!container) return;
+                
+                if (shortcuts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-magic"></i>
+                            <p>Aucun raccourci personnalisé défini</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                
+                // Grouper les raccourcis par type d'action
+                const groupedShortcuts = {};
+                shortcuts.forEach(shortcut => {
+                    if (!groupedShortcuts[shortcut.action_type]) {
+                        groupedShortcuts[shortcut.action_type] = [];
+                    }
+                    groupedShortcuts[shortcut.action_type].push(shortcut);
+                });
+                
+                // Noms conviviaux pour les types d'action
+                const actionTypeNames = {
+                    'keyboard': 'Raccourcis clavier',
+                    'text': 'Saisie de texte',
+                    'url': 'Ouverture d\'URL',
+                    'app': 'Lancement d\'applications',
+                    'script': 'Scripts personnalisés'
+                };
+                
+                // Icônes pour les types d'action
+                const actionTypeIcons = {
+                    'keyboard': 'keyboard',
+                    'text': 'font',
+                    'url': 'globe',
+                    'app': 'window-restore',
+                    'script': 'code'
+                };
+                
+                // Créer une section pour chaque type d'action
+                for (const [actionType, shortcuts] of Object.entries(groupedShortcuts)) {
+                    const typeName = actionTypeNames[actionType] || actionType;
+                    const typeIcon = actionTypeIcons[actionType] || 'cog';
+                    
+                    html += `
+                        <div class="config-card" style="margin-bottom: 1rem;">
+                            <h4><i class="fas fa-${typeIcon}"></i> ${typeName}</h4>
+                            <div class="config-card-content">
+                                <div class="config-table-container">
+                                    <table class="config-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Commande vocale</th>
+                                                <th>Action</th>
+                                                <th>Utilisations</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    `;
+                    
+                    shortcuts.forEach(shortcut => {
+                        // Formater l'action pour l'affichage
+                        let actionDisplay = '';
+                        switch (actionType) {
+                            case 'keyboard':
+                                actionDisplay = `<kbd>${shortcut.action_data.replace(/\+/g, '</kbd> + <kbd>')}</kbd>`;
+                                break;
+                            case 'text':
+                                actionDisplay = shortcut.action_data.length > 30 
+                                    ? `${shortcut.action_data.substring(0, 30)}...` 
+                                    : shortcut.action_data;
+                                break;
+                            case 'url':
+                                actionDisplay = `<a href="${shortcut.action_data}" target="_blank">${shortcut.action_data}</a>`;
+                                break;
+                            case 'app':
+                                const appName = shortcut.action_data.split('\\').pop().split('/').pop();
+                                actionDisplay = appName || shortcut.action_data;
+                                break;
+                            case 'script':
+                                actionDisplay = 'Script Python';
+                                break;
+                            default:
+                                actionDisplay = shortcut.action_data;
+                        }
+                        
+                        // Formater la date de dernière utilisation
+                        let lastUsed = 'Jamais';
+                        if (shortcut.last_used) {
+                            try {
+                                const date = new Date(shortcut.last_used);
+                                lastUsed = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                            } catch (e) {
+                                lastUsed = shortcut.last_used;
+                            }
+                        }
+                        
+                        html += `
+                            <tr>
+                                <td>${shortcut.name}</td>
+                                <td>${shortcut.voice_command}</td>
+                                <td>${actionDisplay}</td>
+                                <td>${shortcut.usage_count || 0}</td>
+                                <td>
+                                    <button class="config-card-button" onclick="editCustomShortcut(${shortcut.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="config-card-button danger" onclick="deleteCustomShortcut(${shortcut.id}, '${shortcut.name}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = html;
+                
+                // Définir les fonctions globales pour éditer et supprimer les raccourcis
+                window.editCustomShortcut = function(id) {
+                    // Trouver le raccourci dans la liste
+                    const shortcut = shortcuts.find(s => s.id === id);
+                    if (!shortcut) return;
+                    
+                    // Remplir le formulaire avec les données du raccourci
+                    document.getElementById('shortcut-name').value = shortcut.name;
+                    document.getElementById('shortcut-command').value = shortcut.voice_command;
+                    document.getElementById('shortcut-type').value = shortcut.action_type;
+                    
+                    // Déclencher l'événement change pour afficher le bon formulaire
+                    const event = new Event('change');
+                    document.getElementById('shortcut-type').dispatchEvent(event);
+                    
+                    // Remplir les données d'action
+                    switch (shortcut.action_type) {
+                        case 'keyboard':
+                            document.getElementById('keyboard-shortcut').value = shortcut.action_data;
+                            break;
+                        case 'text':
+                            document.getElementById('text-content').value = shortcut.action_data;
+                            break;
+                        case 'url':
+                            document.getElementById('url-address').value = shortcut.action_data;
+                            break;
+                        case 'app':
+                            document.getElementById('app-path').value = shortcut.action_data;
+                            break;
+                        case 'script':
+                            document.getElementById('script-content').value = shortcut.action_data;
+                            break;
+                    }
+                    
+                    // Modifier le bouton d'ajout pour qu'il mette à jour le raccourci
+                    const addButton = document.getElementById('add-shortcut-btn');
+                    addButton.innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
+                    addButton.setAttribute('data-edit-id', id);
+                    
+                    // Faire défiler jusqu'au formulaire
+                    document.getElementById('shortcut-name').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Remplacer le gestionnaire d'événements du bouton
+                    addButton.removeEventListener('click', addButton.clickHandler);
+                    addButton.clickHandler = function() {
+                        const name = document.getElementById('shortcut-name').value.trim();
+                        const voiceCommand = document.getElementById('shortcut-command').value.trim();
+                        const actionType = document.getElementById('shortcut-type').value;
+                        
+                        if (!name || !voiceCommand) {
+                            showNotification('Le nom et la commande vocale sont requis', 'error');
+                            return;
+                        }
+                        
+                        // Récupérer les données d'action en fonction du type
+                        let actionData;
+                        switch (actionType) {
+                            case 'keyboard':
+                                actionData = document.getElementById('keyboard-shortcut').value.trim();
+                                break;
+                            case 'text':
+                                actionData = document.getElementById('text-content').value.trim();
+                                break;
+                            case 'url':
+                                actionData = document.getElementById('url-address').value.trim();
+                                break;
+                            case 'app':
+                                actionData = document.getElementById('app-path').value.trim();
+                                break;
+                            case 'script':
+                                actionData = document.getElementById('script-content').value.trim();
+                                break;
+                        }
+                        
+                        // Envoyer la requête pour mettre à jour le raccourci
+                        fetch('/update_custom_shortcut', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id: id,
+                                name: name,
+                                voice_command: voiceCommand,
+                                action_type: actionType,
+                                action_data: actionData
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showNotification(`Raccourci "${name}" mis à jour avec succès`, 'success');
+                                
+                                // Réinitialiser le formulaire
+                                document.getElementById('shortcut-name').value = '';
+                                document.getElementById('shortcut-command').value = '';
+                                document.getElementById('keyboard-shortcut').value = '';
+                                document.getElementById('text-content').value = '';
+                                document.getElementById('url-address').value = '';
+                                document.getElementById('app-path').value = '';
+                                document.getElementById('script-content').value = '';
+                                
+                                // Restaurer le bouton d'ajout
+                                addButton.innerHTML = '<i class="fas fa-save"></i> Enregistrer';
+                                addButton.removeAttribute('data-edit-id');
+                                
+                                // Restaurer le gestionnaire d'événements original
+                                addButton.removeEventListener('click', addButton.clickHandler);
+                                addButton.addEventListener('click', window.originalAddShortcutHandler);
+                                
+                                // Recharger la liste des raccourcis
+                                loadCustomShortcuts();
+                            } else {
+                                showNotification('Erreur: ' + data.error, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            showNotification('Erreur de communication avec le serveur', 'error');
+                        });
+                    };
+                    
+                    // Sauvegarder le gestionnaire original si ce n'est pas déjà fait
+                    if (!window.originalAddShortcutHandler) {
+                        window.originalAddShortcutHandler = addButton.onclick;
+                    }
+                    
+                    // Ajouter le nouveau gestionnaire
+                    addButton.addEventListener('click', addButton.clickHandler);
+                };
+                
+                window.deleteCustomShortcut = function(id, name) {
+                    if (confirm(`Êtes-vous sûr de vouloir supprimer le raccourci "${name}" ?`)) {
+                        fetch('/delete_custom_shortcut', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ id: id })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showNotification(`Raccourci "${name}" supprimé avec succès`, 'success');
+                                loadCustomShortcuts();
+                            } else {
+                                showNotification('Erreur: ' + data.error, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            showNotification('Erreur de communication avec le serveur', 'error');
+                        });
+                    }
+                };
+            }
+            
+            // Charger les raccourcis personnalisés au chargement de la page
+            loadCustomShortcuts();
+            
+            // Gestionnaire d'événements pour ajouter une préférence
+            addPreferenceBtn.addEventListener('click', function() {
+                const key = preferenceKeyInput.value.trim();
+                const value = preferenceValueInput.value.trim();
+                
+                if (!key) {
+                    showNotification('Veuillez saisir une clé de préférence', 'error');
+                    return;
+                }
+                
+                // Essayer de parser la valeur comme JSON si possible
+                let parsedValue;
+                try {
+                    parsedValue = JSON.parse(value);
+                } catch (e) {
+                    // Si ce n'est pas du JSON valide, utiliser la valeur telle quelle
+                    parsedValue = value;
+                }
+                
+                savePreference(key, parsedValue);
+            });
+            
+            // Gestionnaire d'événements pour les moteurs STT
+            if (sttEngineSelector) {
+                const sttOptions = sttEngineSelector.querySelectorAll('.engine-option');
+                sttOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const engine = this.getAttribute('data-engine');
+                        changeSTTEngine(engine);
+                    });
+                });
+            }
+            
+            // Gestionnaire d'événements pour les moteurs TTS
+            if (ttsEngineSelector) {
+                const ttsOptions = ttsEngineSelector.querySelectorAll('.engine-option');
+                ttsOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const engine = this.getAttribute('data-engine');
+                        changeTTSEngine(engine);
+                        
+                        // Afficher les modèles Coqui si nécessaire
+                        if (engine === 'coqui') {
+                            coquiModelsContainer.style.display = 'block';
+                        } else {
+                            coquiModelsContainer.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Gestionnaire d'événements pour la visibilité des clés API
+            if (toggleOpenaiVisibilityBtn) {
+                toggleOpenaiVisibilityBtn.addEventListener('click', function() {
+                    togglePasswordVisibility('openai-api-key', 'toggle-openai-visibility');
+                });
+            }
+            
+            if (toggleMistralVisibilityBtn) {
+                toggleMistralVisibilityBtn.addEventListener('click', function() {
+                    togglePasswordVisibility('mistral-api-key', 'toggle-mistral-visibility');
+                });
+            }
+            
+            // Gestionnaire d'événements pour enregistrer les clés API
+            if (saveOpenaiKeyBtn) {
+                saveOpenaiKeyBtn.addEventListener('click', function() {
+                    const key = openaiApiKeyInput.value.trim();
+                    saveApiKey('openai', key);
+                });
+            }
+            
+            if (saveMistralKeyBtn) {
+                saveMistralKeyBtn.addEventListener('click', function() {
+                    const key = mistralApiKeyInput.value.trim();
+                    saveApiKey('mistral', key);
+                });
+            }
+            
+            // Gestion du mode sombre
+            if (darkModeButton) {
+                // Vérifier si le mode sombre est activé
+                if (localStorage.getItem('darkMode') === 'true') {
+                    document.documentElement.classList.add('dark-mode');
+                    darkModeButton.querySelector('i').className = 'fas fa-sun';
+                }
+                
+                darkModeButton.addEventListener('click', function() {
+                    document.documentElement.classList.toggle('dark-mode');
+                    const isDarkMode = document.documentElement.classList.contains('dark-mode');
+                    localStorage.setItem('darkMode', isDarkMode);
+                    
+                    // Changer l'icône
+                    const icon = darkModeButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+                    }
+                });
+            }
+            
+            // Gestion des animations
+            if (animationsButton) {
+                // Vérifier si les animations sont désactivées
+                if (localStorage.getItem('animationsDisabled') === 'true') {
+                    document.documentElement.classList.add('reduced-motion');
+                    animationsButton.querySelector('i').className = 'fas fa-film-slash';
+                }
+                
+                animationsButton.addEventListener('click', function() {
+                    document.documentElement.classList.toggle('reduced-motion');
+                    const isReduced = document.documentElement.classList.contains('reduced-motion');
+                    localStorage.setItem('animationsDisabled', isReduced);
+                    
+                    // Changer l'icône
+                    const icon = animationsButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isReduced ? 'fas fa-film-slash' : 'fas fa-film';
+                    }
+                });
+            }
+            
+            // Fonction pour charger les préférences
+            function loadPreferences() {
+                fetch('/get_preferences')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            displayPreferences(data.preferences);
+                        } else {
+                            showNotification('Erreur lors du chargement des préférences: ' + data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Erreur de communication avec le serveur', 'error');
+                    });
+            }
+            
+            // Fonction pour afficher les préférences
+            function displayPreferences(preferences) {
+                preferencesContainer.innerHTML = '';
+                
+                if (Object.keys(preferences).length === 0) {
+                    preferencesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-cog"></i>
+                            <p>Aucune préférence définie</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                for (const [key, value] of Object.entries(preferences)) {
+                    const preferenceItem = document.createElement('div');
+                    preferenceItem.className = 'preference-item';
+                    
+                    const preferenceKey = document.createElement('div');
+                    preferenceKey.className = 'preference-key';
+                    preferenceKey.textContent = key;
+                    
+                    const preferenceValue = document.createElement('div');
+                    preferenceValue.className = 'preference-value';
+                    preferenceValue.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
+                    
+                    const preferenceActions = document.createElement('div');
+                    preferenceActions.className = 'preference-actions';
+                    
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'icon-button';
+                    deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    deleteButton.setAttribute('aria-label', `Supprimer la préférence ${key}`);
+                    deleteButton.addEventListener('click', function() {
+                        if (confirm(`Êtes-vous sûr de vouloir supprimer la préférence "${key}" ?`)) {
+                            savePreference(key, null);
+                        }
+                    });
+                    
+                    preferenceActions.appendChild(deleteButton);
+                    preferenceItem.appendChild(preferenceKey);
+                    preferenceItem.appendChild(preferenceValue);
+                    preferenceItem.appendChild(preferenceActions);
+                    
+                    preferencesContainer.appendChild(preferenceItem);
+                }
+            }
+            
+            // Fonction pour enregistrer une préférence
+            function savePreference(key, value) {
+                fetch('/set_preference', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ key: key, value: value })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Préférence "${key}" ${value === null ? 'supprimée' : 'enregistrée'} avec succès`, 'success');
+                        loadPreferences();
+                        
+                        // Réinitialiser les champs du formulaire
+                        preferenceKeyInput.value = '';
+                        preferenceValueInput.value = '';
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur', 'error');
+                });
+            }
+            
+            // Fonction pour charger l'état actuel
+            function loadStatus() {
+                fetch('/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        currentSTTEngine = data.stt_engine;
+                        currentTTSEngine = data.tts_engine;
+                        
+                        // Mettre à jour l'interface pour les moteurs STT
+                        updateSTTEngineUI(currentSTTEngine);
+                        
+                        // Mettre à jour l'interface pour les moteurs TTS
+                        updateTTSEngineUI(currentTTSEngine);
+                        
+                        // Afficher les modèles Coqui si nécessaire
+                        if (currentTTSEngine === 'coqui') {
+                            coquiModelsContainer.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showNotification('Erreur de communication avec le serveur', 'error');
+                    });
+            }
+            
+            // Fonction pour mettre à jour l'interface des moteurs STT
+            function updateSTTEngineUI(engine) {
+                if (!sttEngineSelector) return;
+                
+                const options = sttEngineSelector.querySelectorAll('.engine-option');
+                options.forEach(option => {
+                    if (option.getAttribute('data-engine') === engine) {
+                        option.classList.add('active');
+                    } else {
+                        option.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Fonction pour mettre à jour l'interface des moteurs TTS
+            function updateTTSEngineUI(engine) {
+                if (!ttsEngineSelector) return;
+                
+                const options = ttsEngineSelector.querySelectorAll('.engine-option');
+                options.forEach(option => {
+                    if (option.getAttribute('data-engine') === engine) {
+                        option.classList.add('active');
+                    } else {
+                        option.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Fonction pour charger les clés API
+            function loadApiKeys() {
+                fetch('/get_api_keys')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            apiKeys.openai = !!data.openai;
+                            apiKeys.mistral = !!data.mistral;
+                            
+                            // Mettre à jour l'interface
+                            updateApiKeyStatus('openai', apiKeys.openai);
+                            updateApiKeyStatus('mistral', apiKeys.mistral);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+            
+            // Fonction pour mettre à jour le statut d'une clé API
+            function updateApiKeyStatus(type, configured) {
+                const statusElement = type === 'openai' ? openaiKeyStatus : mistralKeyStatus;
+                
+                if (configured) {
+                    statusElement.textContent = 'Clé API configurée';
+                    statusElement.className = 'api-key-status configured';
+                } else {
+                    statusElement.textContent = 'Clé API non configurée';
+                    statusElement.className = 'api-key-status not-configured';
+                }
+            }
+            
+            // Fonction pour enregistrer une clé API
+            function saveApiKey(type, key) {
+                fetch('/set_api_key', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ type: type, key: key })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Clé API ${type === 'openai' ? 'OpenAI' : 'Mistral'} enregistrée avec succès`, 'success');
+                        
+                        // Mettre à jour le statut
+                        apiKeys[type] = !!key;
+                        updateApiKeyStatus(type, apiKeys[type]);
+                        
+                        // Effacer le champ
+                        if (type === 'openai') {
+                            openaiApiKeyInput.value = '';
+                        } else {
+                            mistralApiKeyInput.value = '';
+                        }
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur', 'error');
+                });
+            }
+            
+            // Fonction pour changer le moteur STT
+            function changeSTTEngine(engine) {
+                if (engine === currentSTTEngine) return;
+                
+                // Vérifier si la clé API OpenAI est configurée pour Whisper
+                if (engine === 'whisper' && !apiKeys.openai) {
+                    showNotification('Clé API OpenAI requise pour utiliser Whisper. Veuillez configurer une clé.', 'warning');
+                    return;
+                }
+                
+                fetch('/change_stt_engine', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ engine: engine })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Moteur STT changé pour ${getEngineDisplayName(engine, 'stt')}`, 'success');
+                        currentSTTEngine = engine;
+                        updateSTTEngineUI(engine);
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur', 'error');
+                });
+            }
+            
+            // Fonction pour changer le moteur TTS
+            function changeTTSEngine(engine) {
+                if (engine === currentTTSEngine) return;
+                
+                fetch('/change_tts_engine', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ engine: engine })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Moteur TTS changé pour ${getEngineDisplayName(engine, 'tts')}`, 'success');
+                        currentTTSEngine = engine;
+                        updateTTSEngineUI(engine);
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur', 'error');
+                });
+            }
+            
+            // Fonction pour charger les modèles Coqui
+            function loadCoquiModels() {
+                fetch('/get_coqui_models')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.models) {
+                            displayCoquiModels(data.models, data.current_model);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+            
+            // Fonction pour afficher les modèles Coqui
+            function displayCoquiModels(models, currentModel) {
+                if (!coquiModelsList) return;
+                
+                coquiModelsList.innerHTML = '';
+                
+                if (models.length === 0) {
+                    coquiModelsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>Aucun modèle Coqui disponible</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                models.forEach(model => {
+                    const modelOption = document.createElement('div');
+                    modelOption.className = 'engine-option';
+                    if (model.id === currentModel) {
+                        modelOption.classList.add('active');
+                    }
+                    modelOption.setAttribute('data-model-id', model.id);
+                    
+                    modelOption.innerHTML = `
+                        <h4>${model.name}</h4>
+                        <p>${model.description || 'Aucune description disponible'}</p>
+                        <p><strong>Langue:</strong> ${model.language || 'Non spécifiée'}</p>
+                    `;
+                    
+                    modelOption.addEventListener('click', function() {
+                        changeCoquiModel(model.id);
+                    });
+                    
+                    coquiModelsList.appendChild(modelOption);
+                });
+            }
+            
+            // Fonction pour changer le modèle Coqui
+            function changeCoquiModel(modelId) {
+                fetch('/change_coqui_model', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ model_id: modelId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Modèle Coqui changé avec succès`, 'success');
+                        
+                        // Mettre à jour l'interface
+                        const options = coquiModelsList.querySelectorAll('.engine-option');
+                        options.forEach(option => {
+                            if (option.getAttribute('data-model-id') === modelId) {
+                                option.classList.add('active');
+                            } else {
+                                option.classList.remove('active');
+                            }
+                        });
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Erreur de communication avec le serveur', 'error');
+                });
+            }
+            
+            // Fonction pour basculer la visibilité du mot de passe
+            function togglePasswordVisibility(inputId, buttonId) {
+                const input = document.getElementById(inputId);
+                const button = document.getElementById(buttonId);
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    button.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                } else {
+                    input.type = 'password';
+                    button.innerHTML = '<i class="fas fa-eye"></i>';
+                }
+            }
+            
+            // Fonction pour afficher une notification
+            function showNotification(message, type = 'info') {
+                const container = document.getElementById('notifications-container');
+                
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                container.appendChild(notification);
+                
+                // Afficher la notification avec un délai pour l'animation
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+                
+                // Masquer et supprimer la notification après un délai
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 5000);
+            }
+            
+            // Fonction pour obtenir le nom d'affichage d'un moteur
+            function getEngineDisplayName(engine, type) {
+                if (type === 'stt') {
+                    const sttEngines = {
+                        'speechrecognition': 'SpeechRecognition (par lot)',
+                        'nemo': 'NVIDIA NeMo (continu)',
+                        'whisper': 'OpenAI Whisper API (continu)',
+                        'vosk': 'Vosk (continu, hors ligne)',
+                        'sherpa_ncnn': 'Sherpa NCNN (continu, hors ligne)',
+                        'whisper_ct2': 'Whisper CT2 (continu, hors ligne)'
+                    };
+                    return sttEngines[engine] || engine;
+                } else {
+                    const ttsEngines = {
+                        'pyttsx3': 'Windows TTS (natif)',
+                        'gtts': 'Google TTS (en ligne)',
+                        'coqui': 'CoquiTTS (haute qualité)'
+                    };
+                    return ttsEngines[engine] || engine;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

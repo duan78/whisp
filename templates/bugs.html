@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bugs et Faiblesses - Assistant Whisp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bugs.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        {% set active_page = 'bugs' %}
+        {% include 'components/navigation.html' %}
+
+        <main>
+            <section class="bugs-header">
+                <h1>Bugs et Améliorations</h1>
+                <p class="bugs-intro">Cette page présente les problèmes connus et les améliorations prévues pour l'assistant Whisp. Les erreurs sont classées par catégorie et priorité pour une meilleure visibilité.</p>
+                
+                <div class="bugs-stats">
+                    <div class="bug-stat">
+                        <i class="fas fa-bug"></i>
+                        <span class="stat-value">{{ errors|default([])|length }}</span>
+                        <span class="stat-label">Erreurs récentes</span>
+                    </div>
+                    <div class="bug-stat">
+                        <i class="fas fa-tools"></i>
+                        <span class="stat-value">6</span>
+                        <span class="stat-label">En cours</span>
+                    </div>
+                    <div class="bug-stat">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="stat-value">13</span>
+                        <span class="stat-label">Résolus</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bugs-section">
+                <h2><i class="fas fa-microphone-alt"></i> Problèmes de Reconnaissance Vocale</h2>
+                <div class="bug-list">
+                    <div class="bug-item">
+                        <h3>Reconnaissance imprécise des commandes</h3>
+                        <p>La reconnaissance vocale peut mal interpréter certaines commandes, particulièrement dans des environnements bruyants ou avec des accents régionaux prononcés.</p>
+                        <div class="bug-status">
+                            <span class="status-badge medium">Priorité moyenne</span>
+                            <span class="status-badge in-progress">En cours</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution en cours :</strong> Implémentation d'un système d'alias de commandes plus robuste et d'un mécanisme de correction contextuelle.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Latence élevée avec Whisper API</h3>
+                        <p>Le moteur Whisper API présente une latence de 2-3 secondes, ce qui peut rendre l'interaction moins fluide pour certaines commandes rapides.</p>
+                        <div class="bug-status">
+                            <span class="status-badge high">Priorité haute</span>
+                            <span class="status-badge in-progress">En cours</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution en cours :</strong> Optimisation du modèle Whisper CT2 local pour réduire la latence tout en maintenant la précision.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Problèmes d'initialisation du microphone</h3>
+                        <p>Certains utilisateurs rencontrent des difficultés lors de l'initialisation du microphone, nécessitant parfois un redémarrage de l'application.</p>
+                        <div class="bug-status">
+                            <span class="status-badge medium">Priorité moyenne</span>
+                            <span class="status-badge fixed">Résolu</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution :</strong> Ajout d'une fonction de réinitialisation automatique du microphone et amélioration de la gestion des erreurs.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bugs-section">
+                <h2><i class="fas fa-volume-up"></i> Problèmes de Synthèse Vocale (TTS)</h2>
+                <div class="bug-list">
+                    <div class="bug-item">
+                        <h3>Qualité variable selon les moteurs TTS</h3>
+                        <p>La qualité de la synthèse vocale varie considérablement entre les différents moteurs, avec des problèmes de prononciation sur certains.</p>
+                        <div class="bug-status">
+                            <span class="status-badge medium">Priorité moyenne</span>
+                            <span class="status-badge in-progress">En cours</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution en cours :</strong> Intégration de modèles TTS plus récents et optimisation des paramètres de prononciation pour le français.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Chargement lent des modèles Coqui TTS</h3>
+                        <p>Les modèles Coqui TTS peuvent prendre jusqu'à 30 secondes à charger sur certaines configurations, causant des délais lors du premier lancement.</p>
+                        <div class="bug-status">
+                            <span class="status-badge low">Priorité basse</span>
+                            <span class="status-badge in-progress">En cours</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution en cours :</strong> Implémentation d'un système de préchargement en arrière-plan et optimisation des modèles pour un chargement plus rapide.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Interruption parfois non fonctionnelle</h3>
+                        <p>La commande d'interruption de la synthèse vocale peut ne pas fonctionner immédiatement avec certains moteurs TTS.</p>
+                        <div class="bug-status">
+                            <span class="status-badge medium">Priorité moyenne</span>
+                            <span class="status-badge fixed">Résolu</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution :</strong> Refactorisation du système d'interruption pour une réponse plus rapide et plus fiable.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bugs-section">
+                <h2><i class="fas fa-desktop"></i> Problèmes d'Interface</h2>
+                <div class="bug-list">
+                    <div class="bug-item">
+                        <h3>Compatibilité limitée avec certains navigateurs</h3>
+                        <p>L'interface web peut présenter des problèmes d'affichage ou de fonctionnalité sur certains navigateurs moins courants.</p>
+                        <div class="bug-status">
+                            <span class="status-badge low">Priorité basse</span>
+                            <span class="status-badge open">Ouvert</span>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Déconnexions occasionnelles du flux SSE</h3>
+                        <p>Le flux Server-Sent Events peut parfois se déconnecter après une période d'inactivité, nécessitant un rafraîchissement de la page.</p>
+                        <div class="bug-status">
+                            <span class="status-badge medium">Priorité moyenne</span>
+                            <span class="status-badge in-progress">En cours</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution en cours :</strong> Implémentation d'un mécanisme de reconnexion automatique et d'un système de ping pour maintenir la connexion active.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Affichage des métriques parfois incorrect</h3>
+                        <p>Les métriques de performance STT peuvent parfois afficher des valeurs incorrectes après un changement de moteur.</p>
+                        <div class="bug-status">
+                            <span class="status-badge low">Priorité basse</span>
+                            <span class="status-badge fixed">Résolu</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution :</strong> Correction du système de calcul et d'affichage des métriques pour une meilleure précision.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bugs-section">
+                <h2><i class="fas fa-cogs"></i> Limitations Fonctionnelles</h2>
+                <div class="bug-list">
+                    <div class="bug-item">
+                        <h3>Support limité des langues autres que le français</h3>
+                        <p>L'assistant est principalement optimisé pour le français, avec un support limité pour d'autres langues.</p>
+                        <div class="bug-status">
+                            <span class="status-badge low">Priorité basse</span>
+                            <span class="status-badge planned">Planifié</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Plan :</strong> Ajout progressif du support pour l'anglais et l'espagnol dans les prochaines versions.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Gestion des API keys non persistante</h3>
+                        <p>Dans certains cas, les clés API peuvent ne pas être correctement sauvegardées entre les sessions ou après une mise à jour.</p>
+                        <div class="bug-status">
+                            <span class="status-badge high">Priorité haute</span>
+                            <span class="status-badge fixed">Résolu</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution :</strong> Refonte du système de stockage des clés API avec chiffrement et vérification de l'intégrité des données. Implémentation complète avec SQLite pour une persistance fiable.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Consommation élevée de ressources</h3>
+                        <p>L'application peut consommer beaucoup de ressources système, particulièrement avec les modèles de reconnaissance vocale locaux comme Whisper CT2.</p>
+                        <div class="bug-status">
+                            <span class="status-badge medium">Priorité moyenne</span>
+                            <span class="status-badge in-progress">En cours</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution en cours :</strong> Optimisation des modèles locaux et implémentation d'un système de gestion dynamique des ressources. L'implémentation de SQLite a permis d'améliorer la gestion de la mémoire pour certaines fonctionnalités.</p>
+                        </div>
+                    </div>
+                    <div class="bug-item">
+                        <h3>Perte de données entre les sessions</h3>
+                        <p>Certaines données utilisateur (préférences, historique) pouvaient être perdues entre les sessions.</p>
+                        <div class="bug-status">
+                            <span class="status-badge medium">Priorité moyenne</span>
+                            <span class="status-badge fixed">Résolu</span>
+                        </div>
+                        <div class="bug-details">
+                            <p><strong>Solution :</strong> Implémentation complète de SQLite pour assurer la persistance des données entre les sessions et les redémarrages de l'application.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bugs-section">
+                <h2><i class="fas fa-history"></i> Erreurs Récentes</h2>
+                <div class="recent-errors">
+                    {% if errors is defined and errors is not none and errors|length > 0 %}
+                        <div class="error-list">
+                            {% for error in errors %}
+                            <div class="error-item">
+                                <div class="error-header">
+                                    <span class="error-timestamp">{{ error.timestamp|default('') }}</span>
+                                    <span class="error-category">{{ error.category|default('Erreur') }}</span>
+                                    <span class="error-severity {{ error.severity|lower|default('medium') }}">{{ error.severity|default('Moyenne') }}</span>
+                                </div>
+                                <div class="error-message">{{ error.message|default('Erreur inconnue') }}</div>
+                                {% if error.context %}
+                                <div class="error-context">
+                                    <strong>Contexte:</strong> {{ error.context|tojson }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-errors">
+                            <i class="fas fa-check-circle"></i>
+                            <p>Aucune erreur récente n'a été enregistrée.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="bugs-section">
+                <h2><i class="fas fa-ticket-alt"></i> Tickets de Bugs</h2>
+                <div class="tickets-container">
+                    <div class="tickets-header">
+                        <div class="tickets-filters">
+                            <select id="ticket-status-filter">
+                                <option value="all">Tous les statuts</option>
+                                <option value="open">Ouverts</option>
+                                <option value="in-progress">En cours</option>
+                                <option value="resolved">Résolus</option>
+                                <option value="closed">Fermés</option>
+                            </select>
+                            <select id="ticket-category-filter">
+                                <option value="all">Toutes les catégories</option>
+                                <option value="speech_recognition">Reconnaissance vocale</option>
+                                <option value="tts">Synthèse vocale</option>
+                                <option value="interface">Interface</option>
+                                <option value="commands">Commandes</option>
+                                <option value="other">Autre</option>
+                            </select>
+                            <select id="ticket-priority-filter">
+                                <option value="all">Toutes les priorités</option>
+                                <option value="high">Haute</option>
+                                <option value="medium">Moyenne</option>
+                                <option value="low">Basse</option>
+                            </select>
+                        </div>
+                        <button id="new-ticket-btn" class="btn-primary">
+                            <i class="fas fa-plus"></i> Nouveau ticket
+                        </button>
+                    </div>
+                    
+                    <div id="tickets-list" class="tickets-list">
+                        {% if bug_tickets is defined and bug_tickets is not none and bug_tickets|length > 0 %}
+                            {% for ticket in bug_tickets %}
+                            <div class="ticket-item" data-id="{{ ticket.id }}" data-status="{{ ticket.status }}" data-category="{{ ticket.category }}" data-priority="{{ ticket.priority }}">
+                                <div class="ticket-header">
+                                    <div class="ticket-title">{{ ticket.title }}</div>
+                                    <div class="ticket-meta">
+                                        <span class="ticket-id">#{{ ticket.id[:8] }}</span>
+                                        <span class="ticket-date">{{ ticket.created_at|replace('T', ' ')|truncate(16, True, '') }}</span>
+                                    </div>
+                                </div>
+                                <div class="ticket-content">
+                                    <div class="ticket-description">{{ ticket.description|truncate(150) }}</div>
+                                    <div class="ticket-badges">
+                                        <span class="status-badge {{ ticket.status }}">{{ ticket.status }}</span>
+                                        <span class="status-badge {{ ticket.priority }}">{{ ticket.priority }}</span>
+                                        <span class="status-badge category">{{ ticket.category }}</span>
+                                    </div>
+                                </div>
+                                <div class="ticket-actions">
+                                    <button class="btn-view-ticket" data-id="{{ ticket.id }}">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </button>
+                                    <button class="btn-edit-ticket" data-id="{{ ticket.id }}">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-tickets">
+                                <i class="fas fa-ticket-alt"></i>
+                                <p>Aucun ticket de bug n'a été créé.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="bugs-section">
+                <h2><i class="fas fa-flag"></i> Signaler un Bug</h2>
+                <div class="report-bug">
+                    <p>Si vous avez rencontré un bug qui n'est pas listé ici, vous pouvez le signaler en utilisant le formulaire ci-dessous :</p>
+                    <form id="bug-report-form">
+                        <div class="form-group">
+                            <label for="bug-title">Titre du bug :</label>
+                            <input type="text" id="bug-title" name="bug-title" required placeholder="Ex: Problème de reconnaissance avec l'accent du sud">
+                        </div>
+                        <div class="form-group">
+                            <label for="bug-description">Description :</label>
+                            <textarea id="bug-description" name="bug-description" rows="4" required placeholder="Décrivez le problème rencontré de manière aussi précise que possible..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="bug-steps">Étapes pour reproduire :</label>
+                            <textarea id="bug-steps" name="bug-steps" rows="3" placeholder="1. Ouvrir l'assistant&#10;2. Dire la commande '...'&#10;3. Observer le problème"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bug-category">Catégorie :</label>
+                                <select id="bug-category" name="bug-category">
+                                    <option value="speech_recognition">Reconnaissance vocale</option>
+                                    <option value="tts">Synthèse vocale</option>
+                                    <option value="interface">Interface</option>
+                                    <option value="commands">Commandes</option>
+                                    <option value="other">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bug-priority">Priorité :</label>
+                                <select id="bug-priority" name="bug-priority">
+                                    <option value="low">Basse</option>
+                                    <option value="medium" selected>Moyenne</option>
+                                    <option value="high">Haute</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Soumettre le rapport
+                        </button>
+                    </form>
+                    <div id="bug-report-status" class="hidden"></div>
+                </div>
+            </section>
+
+            <!-- Modals pour la gestion des tickets -->
+            <div id="ticket-detail-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modal-ticket-title">Détails du ticket</h3>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div id="ticket-detail-content">
+                            <!-- Contenu chargé dynamiquement -->
+                        </div>
+                        <div class="ticket-comments-section">
+                            <h4>Commentaires</h4>
+                            <div id="ticket-comments">
+                                <!-- Commentaires chargés dynamiquement -->
+                            </div>
+                            <div class="add-comment-form">
+                                <textarea id="new-comment-text" placeholder="Ajouter un commentaire..."></textarea>
+                                <button id="add-comment-btn" class="btn-primary">
+                                    <i class="fas fa-comment"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="close-ticket-btn" class="btn-secondary">Fermer</button>
+                        <button id="delete-ticket-btn" class="btn-danger">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="edit-ticket-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="edit-modal-title">Modifier le ticket</h3>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="edit-ticket-form">
+                            <input type="hidden" id="edit-ticket-id">
+                            <div class="form-group">
+                                <label for="edit-ticket-title">Titre :</label>
+                                <input type="text" id="edit-ticket-title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-ticket-description">Description :</label>
+                                <textarea id="edit-ticket-description" rows="4" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-ticket-steps">Étapes pour reproduire :</label>
+                                <textarea id="edit-ticket-steps" rows="3"></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="edit-ticket-category">Catégorie :</label>
+                                    <select id="edit-ticket-category">
+                                        <option value="speech_recognition">Reconnaissance vocale</option>
+                                        <option value="tts">Synthèse vocale</option>
+                                        <option value="interface">Interface</option>
+                                        <option value="commands">Commandes</option>
+                                        <option value="other">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit-ticket-priority">Priorité :</label>
+                                    <select id="edit-ticket-priority">
+                                        <option value="low">Basse</option>
+                                        <option value="medium">Moyenne</option>
+                                        <option value="high">Haute</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-ticket-status">Statut :</label>
+                                <select id="edit-ticket-status">
+                                    <option value="open">Ouvert</option>
+                                    <option value="in-progress">En cours</option>
+                                    <option value="resolved">Résolu</option>
+                                    <option value="closed">Fermé</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="cancel-edit-btn" class="btn-secondary">Annuler</button>
+                        <button id="save-ticket-btn" class="btn-primary">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        {% include 'components/footer.html' %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bugs.js') }}"></script>
+</body>
+</html>

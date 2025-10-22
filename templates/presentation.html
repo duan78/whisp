@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Whisp Assistant Vocal - Contrôlez votre ordinateur par la voix. Solution d'accessibilité pour personnes malvoyantes, non-voyantes et à mobilité réduite.">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="keywords" content="assistant vocal, accessibilité, malvoyant, non-voyant, mobilité réduite, commande vocale, reconnaissance vocale">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Présentation - Whisp Assistant Vocal - Solution d'accessibilité par commande vocale</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Balises pour améliorer l'accessibilité et le référencement -->
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://votre-domaine.com/presentation">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%234361ee' d='M256 32C114.52 32 0 146.496 0 288v48a32 32 0 0 0 17.689 28.622l14.383 7.191C34.083 431.903 83.421 480 144 480h24c13.255 0 24-10.745 24-24V280c0-13.255-10.745-24-24-24h-24c-31.342 0-59.671 12.879-80 33.627V288c0-105.869 86.131-192 192-192s192 86.131 192 192v1.627C427.671 268.879 399.342 256 368 256h-24c-13.255 0-24 10.745-24 24v176c0 13.255 10.745 24 24 24h24c60.579 0 109.917-48.098 111.928-108.187l14.382-7.191A32 32 0 0 0 512 336v-48c0-141.479-114.496-256-256-256z'/%3E%3C/svg%3E">
+    <!-- Balises pour l'accessibilité RGAA -->
+    <!-- Script de détection précoce pour éviter les flashs de contenu non stylisé -->
+    <script>
+        // Supprimer la classe no-js dès que possible
+        document.documentElement.classList.remove('no-js');
+        
+        // Détection des préférences de réduction de mouvement
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.classList.add('reduced-motion');
+        }
+        
+        // Vérifier le mode sombre
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+    
+    <style>
+        /* Styles pour le footer moderne */
+        .modern-footer {
+            position: relative;
+            margin-top: 4rem;
+            color: var(--text-color);
+            background-color: var(--bg-secondary);
+        }
+        
+        .footer-wave {
+            position: absolute;
+            top: -120px;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            overflow: hidden;
+            line-height: 0;
+        }
+        
+        .footer-wave svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .footer-wave svg path {
+            fill: var(--bg-secondary);
+        }
+        
+        .footer-main {
+            padding: 3rem 0 2rem;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+        
+        .footer-brand {
+            flex: 1 1 300px;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-logo i {
+            font-size: 1.75rem;
+            color: var(--primary-color);
+        }
+        
+        .footer-logo h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .footer-brand p {
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover, .social-link:focus {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .footer-links {
+            flex: 2 1 400px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .footer-links-column {
+            flex: 1 1 150px;
+        }
+        
+        .footer-links-column h4 {
+            margin-top: 0;
+            margin-bottom: 1.25rem;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .footer-links-column ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .footer-links-column li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links-column a {
+            color: var(--text-color);
+            text-decoration: none;
+            opacity: 0.85;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .footer-links-column a:hover, .footer-links-column a:focus {
+            opacity: 1;
+            color: var(--primary-color);
+            padding-left: 5px;
+        }
+        
+        .footer-links-column a[aria-current="page"] {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .accessibility-info p {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .accessibility-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .accessibility-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            background-color: var(--bg-tertiary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .footer-newsletter {
+            flex: 1 1 250px;
+        }
+        
+        .footer-newsletter h4 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .footer-newsletter p {
+            margin-bottom: 1.25rem;
+            opacity: 0.9;
+        }
+        
+        .newsletter-form {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        .newsletter-form input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px 0 0 8px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-color);
+        }
+        
+        .newsletter-form button {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .newsletter-form button:hover, .newsletter-form button:focus {
+            background-color: var(--primary-dark);
+        }
+        
+        .newsletter-privacy {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+        
+        .footer-bottom {
+            padding: 1.5rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-bottom .footer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-copyright p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .footer-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .icon-button, .back-to-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .icon-button:hover, .back-to-top:hover,
+        .icon-button:focus, .back-to-top:focus {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .back-to-top {
+            text-decoration: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .success-message {
+            color: var(--success-color, #28a745);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        
+        /* Styles pour la section roadmap */
+        .future-features {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .roadmap-timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        
+        .roadmap-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+            opacity: 0.3;
+            border-radius: 2px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 3rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+        
+        .timeline-icon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.2);
+        }
+        
+        .timeline-icon i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .timeline-content {
+            width: 45%;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover .timeline-content,
+        .timeline-item:focus .timeline-content {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .timeline-content h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+        
+        .timeline-content p {
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .timeline-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .timeline-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            background-color: var(--bg-tertiary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .timeline-date {
+            margin-left: auto;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        .timeline-item.highlight .timeline-icon {
+            background: var(--primary-color);
+        }
+        
+        .timeline-item.highlight .timeline-icon i {
+            color: white;
+        }
+        
+        .timeline-item.highlight .timeline-content {
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .roadmap-cta {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+        
+        .roadmap-cta p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .roadmap-timeline::before {
+                left: 30px;
+            }
+            
+            .timeline-item,
+            .timeline-item:nth-child(odd) {
+                flex-direction: row;
+            }
+            
+            .timeline-icon {
+                left: 30px;
+                width: 50px;
+                height: 50px;
+            }
+            
+            .timeline-content {
+                width: calc(100% - 80px);
+                margin-left: 80px;
+            }
+        }
+        
+        /* Adaptations pour le mode sombre */
+        .dark-mode .footer-wave svg path {
+            fill: var(--bg-secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .footer-container {
+                flex-direction: column;
+                gap: 2.5rem;
+            }
+            
+            .footer-links {
+                gap: 1.5rem;
+            }
+            
+            .footer-bottom .footer-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .footer-actions {
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body role="document">
+    <!-- Indicateur de chargement initial -->
+    <div id="loading-indicator" class="loading-indicator">
+        <div class="loading-logo">
+            <i class="fas fa-microphone-alt"></i>
+        </div>
+        <div class="loading-spinner"></div>
+        <p>Chargement de Whisp Assistant...</p>
+    </div>
+
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    
+    <!-- Lien d'évitement pour l'accessibilité -->
+    <a href="#main-content" class="sr-only sr-only-focusable">Aller au contenu principal</a>
+    
+    <div class="container">
+        {% set active_page = 'presentation' %}
+        {% include 'components/navigation.html' %}
+
+        <main id="main-content" class="presentation-main">
+            <section class="presentation-hero" aria-labelledby="hero-heading">
+                <div class="hero-content">
+                    <h2 id="hero-heading">Libérez-vous du clavier et de la souris</h2>
+                    <p class="hero-subtitle">Whisp est un assistant vocal intelligent qui transforme votre voix en actions, rendant l'informatique accessible à tous, quelles que soient vos capacités visuelles ou motrices.</p>
+                    <div class="hero-badges" aria-label="Avantages clés">
+                        <span class="badge"><i class="fas fa-universal-access" aria-hidden="true"></i> Accessible</span>
+                        <span class="badge"><i class="fas fa-bolt" aria-hidden="true"></i> Rapide</span>
+                        <span class="badge"><i class="fas fa-shield-alt" aria-hidden="true"></i> Sécurisé</span>
+                        <span class="badge"><i class="fas fa-brain" aria-hidden="true"></i> Intelligent</span>
+                    </div>
+                    <div class="hero-cta">
+                        <a href="/#try" class="cta-button primary"><i class="fas fa-play" aria-hidden="true"></i> Essayer maintenant</a>
+                        <a href="#fonctionnalites" class="cta-button secondary"><i class="fas fa-list-check" aria-hidden="true"></i> Voir les fonctionnalités</a>
+                    </div>
+                </div>
+                <div class="hero-image" aria-hidden="true">
+                    <i class="fas fa-microphone-alt"></i>
+                </div>
+            </section>
+
+            <section class="presentation-section" aria-labelledby="about-heading">
+                <h2 id="about-heading"><i class="fas fa-magic" aria-hidden="true"></i> Qu'est-ce que Whisp Assistant ?</h2>
+                <div class="section-content">
+                    <div class="text-content">
+                        <p>Whisp Assistant est un outil de reconnaissance vocale avancé qui transforme vos commandes vocales en actions sur votre ordinateur. Conçu pour être à la fois puissant et facile à utiliser, il vous permet de contrôler votre système d'exploitation, vos applications et d'effectuer des tâches complexes simplement en parlant.</p>
+                        <p>Que vous soyez une personne malvoyante ou non-voyante cherchant une solution adaptée, une personne à mobilité réduite ayant besoin d'une interface accessible, un professionnel souhaitant optimiser votre productivité, ou simplement quelqu'un qui préfère l'interaction vocale, Whisp Assistant est conçu pour répondre à vos besoins spécifiques.</p>
+                        <p>Notre mission est de rendre l'informatique véritablement accessible à tous, sans compromis sur les fonctionnalités ou la performance.</p>
+                    </div>
+                    <div class="video-container">
+                        <div class="video-placeholder">
+                            <i class="fas fa-play-circle" aria-hidden="true"></i>
+                            <span>Voir Whisp en action</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="presentation-section how-it-works" aria-labelledby="how-heading">
+                <h2 id="how-heading"><i class="fas fa-cogs" aria-hidden="true"></i> Comment ça fonctionne</h2>
+                <div class="feature-cards">
+                    <div class="feature-card" tabindex="0">
+                        <div class="feature-icon"><i class="fas fa-ear-listen" aria-hidden="true"></i></div>
+                        <h3>Écoute continue</h3>
+                        <p>Whisp écoute en permanence vos commandes vocales grâce à différents moteurs de reconnaissance vocale optimisés pour le français, avec une précision remarquable même dans des environnements bruyants.</p>
+                        <div class="feature-hover">
+                            <span class="feature-detail">Plusieurs moteurs disponibles : SpeechRecognition, Whisper, Whisper CT2, Vosk</span>
+                        </div>
+                    </div>
+                    <div class="feature-card" tabindex="0">
+                        <div class="feature-icon"><i class="fas fa-brain" aria-hidden="true"></i></div>
+                        <h3>Traitement intelligent</h3>
+                        <p>L'assistant analyse vos demandes et détermine les actions à effectuer, qu'il s'agisse de commandes système, de recherches ou d'analyses, en s'adaptant à votre façon de parler.</p>
+                        <div class="feature-hover">
+                            <span class="feature-detail">Comprend le langage naturel et s'adapte à votre façon de parler</span>
+                        </div>
+                    </div>
+                    <div class="feature-card" tabindex="0">
+                        <div class="feature-icon"><i class="fas fa-laptop-code" aria-hidden="true"></i></div>
+                        <h3>Exécution précise</h3>
+                        <p>Les commandes sont exécutées avec précision sur votre système, adaptées à votre environnement et à votre système d'exploitation, sans nécessiter de configuration complexe.</p>
+                        <div class="feature-hover">
+                            <span class="feature-detail">Compatible avec Windows, macOS et Linux</span>
+                        </div>
+                    </div>
+                    <div class="feature-card" tabindex="0">
+                        <div class="feature-icon"><i class="fas fa-comments" aria-hidden="true"></i></div>
+                        <h3>Retour vocal</h3>
+                        <p>Whisp vous répond par la voix pour confirmer les actions et vous fournir les informations demandées, créant une expérience conversationnelle naturelle.</p>
+                        <div class="feature-hover">
+                            <span class="feature-detail">Plusieurs voix et moteurs TTS disponibles</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="workflow-diagram">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Vous parlez</h4>
+                            <p>Dites votre commande à voix haute</p>
+                        </div>
+                    </div>
+                    <div class="workflow-arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Whisp écoute</h4>
+                            <p>Reconnaissance vocale précise</p>
+                        </div>
+                    </div>
+                    <div class="workflow-arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Whisp comprend</h4>
+                            <p>Analyse intelligente de votre demande</p>
+                        </div>
+                    </div>
+                    <div class="workflow-arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Whisp agit</h4>
+                            <p>Exécution de l'action demandée</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="fonctionnalites" class="presentation-section features-section" aria-labelledby="features-heading">
+                <h2 id="features-heading"><i class="fas fa-star" aria-hidden="true"></i> Fonctionnalités principales</h2>
+                <div class="features-tabs">
+                    <div class="tabs-navigation" role="tablist">
+                        <button id="tab-all" class="tab-button active" role="tab" aria-selected="true" aria-controls="panel-all">
+                            <i class="fas fa-th-large" aria-hidden="true"></i> Toutes
+                        </button>
+                        <button id="tab-accessibility" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-accessibility">
+                            <i class="fas fa-universal-access" aria-hidden="true"></i> Accessibilité
+                        </button>
+                        <button id="tab-productivity" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-productivity">
+                            <i class="fas fa-bolt" aria-hidden="true"></i> Productivité
+                        </button>
+                        <button id="tab-dev" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-dev">
+                            <i class="fas fa-code" aria-hidden="true"></i> Développement
+                        </button>
+                    </div>
+                    
+                    <div id="panel-all" class="tab-panel active" role="tabpanel" aria-labelledby="tab-all">
+                        <div class="features-grid">
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-keyboard" aria-hidden="true"></i>
+                                <h3>Contrôle du système</h3>
+                                <p>Exécutez des raccourcis clavier, naviguez entre les applications, gérez les fenêtres et contrôlez votre système d'exploitation par la voix.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Ouvre Chrome"</span>
+                                    <span class="example-command">"Ferme cette fenêtre"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-language" aria-hidden="true"></i>
+                                <h3>Traduction instantanée</h3>
+                                <p>Traduisez du texte à la volée dans de nombreuses langues et dictez directement dans la langue de votre choix.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Traduis en anglais"</span>
+                                    <span class="example-command">"Traduis ce texte en espagnol"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item highlight" tabindex="0">
+                                <i class="fas fa-universal-access" aria-hidden="true"></i>
+                                <h3>Accessibilité avancée</h3>
+                                <p>Navigation par grille vocale, lecture d'écran intelligente et contrôle complet de l'interface par la voix pour une accessibilité maximale.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Active la grille vocale"</span>
+                                    <span class="example-command">"Lis l'écran"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-code" aria-hidden="true"></i>
+                                <h3>Outils pour développeurs</h3>
+                                <p>Commandes Git, gestion de projets, et outils de développement accessibles par commandes vocales pour coder plus efficacement.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Git commit"</span>
+                                    <span class="example-command">"Crée une nouvelle branche"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-globe" aria-hidden="true"></i>
+                                <h3>Navigation web</h3>
+                                <p>Contrôlez votre navigateur, ouvrez des sites, effectuez des recherches et naviguez sur le web sans toucher votre clavier.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Recherche sur Google"</span>
+                                    <span class="example-command">"Ouvre YouTube"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-microphone-alt" aria-hidden="true"></i>
+                                <h3>Dictée intelligente</h3>
+                                <p>Dictez du texte avec une reconnaissance précise des accents et de la ponctuation pour une saisie rapide et naturelle.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Active la dictée"</span>
+                                    <span class="example-command">"Termine la dictée"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item highlight" tabindex="0">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                <h3>Analyse d'écran intelligente</h3>
+                                <p>L'assistant analyse ce qui est affiché à l'écran pour décrire le contenu visuel, identifier les éléments interactifs et faciliter la navigation pour les personnes malvoyantes.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Décris cet écran"</span>
+                                    <span class="example-command">"Trouve le bouton Envoyer"</span>
+                                    <span class="example-command">"Lis le texte à l'écran"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-tasks" aria-hidden="true"></i>
+                                <h3>Gestion de tâches</h3>
+                                <p>Créez et gérez des tâches et des rappels par commandes vocales pour rester organisé efficacement.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Ajoute une tâche"</span>
+                                    <span class="example-command">"Rappelle-moi de..."</span>
+                                </div>
+                            </div>
+                            <div class="feature-item highlight" tabindex="0">
+                                <i class="fas fa-bolt" aria-hidden="true"></i>
+                                <h3>Raccourcis personnalisés</h3>
+                                <p>Créez vos propres raccourcis vocaux pour automatiser des séquences de commandes fréquemment utilisées.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Crée raccourci mail pour ouvre gmail"</span>
+                                    <span class="example-command">"Exécute raccourci mail"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item highlight" tabindex="0">
+                                <i class="fas fa-bolt" aria-hidden="true"></i>
+                                <h3>Raccourcis personnalisés</h3>
+                                <p>Créez vos propres raccourcis vocaux pour automatiser des séquences de commandes fréquemment utilisées.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Crée raccourci mail pour ouvre gmail"</span>
+                                    <span class="example-command">"Exécute raccourci mail"</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="panel-accessibility" class="tab-panel" role="tabpanel" aria-labelledby="tab-accessibility">
+                        <div class="features-grid">
+                            <div class="feature-item highlight" tabindex="0">
+                                <i class="fas fa-universal-access" aria-hidden="true"></i>
+                                <h3>Accessibilité avancée</h3>
+                                <p>Navigation par grille vocale, lecture d'écran intelligente et contrôle complet de l'interface par la voix pour une accessibilité maximale.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Active la grille vocale"</span>
+                                    <span class="example-command">"Lis l'écran"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item highlight" tabindex="0">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                <h3>Analyse d'écran</h3>
+                                <p>L'assistant peut analyser ce qui est affiché à l'écran pour décrire le contenu visuel et faciliter l'interaction avec les éléments affichés.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Décris cet écran"</span>
+                                    <span class="example-command">"Trouve le bouton Envoyer"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-keyboard" aria-hidden="true"></i>
+                                <h3>Contrôle du système</h3>
+                                <p>Exécutez des raccourcis clavier, naviguez entre les applications, gérez les fenêtres et contrôlez votre système d'exploitation par la voix.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Ouvre Chrome"</span>
+                                    <span class="example-command">"Ferme cette fenêtre"</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="panel-productivity" class="tab-panel" role="tabpanel" aria-labelledby="tab-productivity">
+                        <div class="features-grid">
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-microphone-alt" aria-hidden="true"></i>
+                                <h3>Dictée intelligente</h3>
+                                <p>Dictez du texte avec une reconnaissance précise des accents et de la ponctuation pour une saisie rapide et naturelle.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Active la dictée"</span>
+                                    <span class="example-command">"Termine la dictée"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-language" aria-hidden="true"></i>
+                                <h3>Traduction instantanée</h3>
+                                <p>Traduisez du texte à la volée dans de nombreuses langues et dictez directement dans la langue de votre choix.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Traduis en anglais"</span>
+                                    <span class="example-command">"Traduis ce texte en espagnol"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-tasks" aria-hidden="true"></i>
+                                <h3>Gestion de tâches</h3>
+                                <p>Créez et gérez des tâches et des rappels par commandes vocales pour rester organisé efficacement.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Ajoute une tâche"</span>
+                                    <span class="example-command">"Rappelle-moi de..."</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="panel-dev" class="tab-panel" role="tabpanel" aria-labelledby="tab-dev">
+                        <div class="features-grid">
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-code" aria-hidden="true"></i>
+                                <h3>Outils pour développeurs</h3>
+                                <p>Commandes Git, gestion de projets, et outils de développement accessibles par commandes vocales pour coder plus efficacement.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Git commit"</span>
+                                    <span class="example-command">"Crée une nouvelle branche"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item" tabindex="0">
+                                <i class="fas fa-database" aria-hidden="true"></i>
+                                <h3>Commandes de base de données</h3>
+                                <p>Exécutez des requêtes SQL et gérez vos bases de données par commandes vocales.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Exécute la requête"</span>
+                                    <span class="example-command">"Affiche les tables"</span>
+                                </div>
+                            </div>
+                            <div class="feature-item highlight" tabindex="0">
+                                <i class="fas fa-terminal" aria-hidden="true"></i>
+                                <h3>Commandes système avancées</h3>
+                                <p>Contrôlez votre système d'exploitation avec des commandes vocales précises pour une productivité maximale.</p>
+                                <div class="feature-examples">
+                                    <span class="example-command">"Ouvre le terminal"</span>
+                                    <span class="example-command">"Exécute la commande"</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="presentation-section tech-section" aria-labelledby="tech-heading">
+                <h2 id="tech-heading"><i class="fas fa-microchip" aria-hidden="true"></i> Technologies utilisées</h2>
+                <div class="tech-stack">
+                    <div class="tech-item" tabindex="0">
+                        <div class="tech-icon"><i class="fas fa-microphone" aria-hidden="true"></i></div>
+                        <div class="tech-details">
+                            <h3>Moteurs de reconnaissance vocale</h3>
+                            <p>Whisp intègre plusieurs moteurs de reconnaissance vocale pour s'adapter à vos besoins :</p>
+                            <ul>
+                                <li><strong>SpeechRecognition</strong> - Reconnaissance par lot rapide et fiable</li>
+                                <li><strong>OpenAI Whisper</strong> - Haute précision avec support multilingue</li>
+                                <li><strong>Whisper CT2</strong> - Version optimisée de Whisper pour une utilisation locale</li>
+                                <li><strong>Vosk</strong> - Reconnaissance hors ligne pour la confidentialité</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="tech-item" tabindex="0">
+                        <div class="tech-icon"><i class="fas fa-brain" aria-hidden="true"></i></div>
+                        <div class="tech-details">
+                            <h3>Intelligence artificielle</h3>
+                            <p>L'assistant utilise des modèles d'IA avancés pour :</p>
+                            <ul>
+                                <li>Comprendre le contexte de vos demandes</li>
+                                <li>Analyser le contenu de l'écran</li>
+                                <li>Générer des réponses pertinentes</li>
+                                <li>Traduire avec précision entre les langues</li>
+                            </ul>
+                            <div class="tech-partners">
+                                <span class="tech-partner">OpenAI</span>
+                                <span class="tech-partner">Mistral AI</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tech-item" tabindex="0">
+                        <div class="tech-icon"><i class="fas fa-laptop-code" aria-hidden="true"></i></div>
+                        <div class="tech-details">
+                            <h3>Architecture système</h3>
+                            <p>Whisp est construit avec :</p>
+                            <ul>
+                                <li>Python pour le traitement principal</li>
+                                <li>Flask pour l'interface web</li>
+                                <li>PyAutoGUI pour l'automatisation</li>
+                                <li>APIs d'IA (OpenAI, Mistral) pour l'analyse avancée</li>
+                            </ul>
+                            <div class="compatibility-badges">
+                                <span class="compatibility-badge"><i class="fab fa-windows" aria-hidden="true"></i> Windows</span>
+                                <span class="compatibility-badge"><i class="fab fa-apple" aria-hidden="true"></i> macOS</span>
+                                <span class="compatibility-badge"><i class="fab fa-linux" aria-hidden="true"></i> Linux</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tech-comparison">
+                    <h3>Comparaison des moteurs de reconnaissance vocale</h3>
+                    <div class="comparison-table-wrapper">
+                        <table class="comparison-table">
+                            <caption class="sr-only">Comparaison des performances des différents moteurs de reconnaissance vocale</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Moteur</th>
+                                    <th scope="col">Précision</th>
+                                    <th scope="col">Vitesse</th>
+                                    <th scope="col">Hors ligne</th>
+                                    <th scope="col">Multilingue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">SpeechRecognition</th>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="no"><i class="fas fa-times" aria-hidden="true"></i></span></td>
+                                    <td><span class="yes"><i class="fas fa-check" aria-hidden="true"></i></span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">OpenAI Whisper</th>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="no"><i class="fas fa-times" aria-hidden="true"></i></span></td>
+                                    <td><span class="yes"><i class="fas fa-check" aria-hidden="true"></i></span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Whisper CT2</th>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="yes"><i class="fas fa-check" aria-hidden="true"></i></span></td>
+                                    <td><span class="yes"><i class="fas fa-check" aria-hidden="true"></i></span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Vosk</th>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="rating"><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i></span></td>
+                                    <td><span class="yes"><i class="fas fa-check" aria-hidden="true"></i></span></td>
+                                    <td><span class="yes"><i class="fas fa-check" aria-hidden="true"></i></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="presentation-section users-section" aria-labelledby="users-heading">
+                <h2 id="users-heading"><i class="fas fa-user-check" aria-hidden="true"></i> Pour qui est conçu Whisp ?</h2>
+                <div class="user-profiles">
+                    <div class="user-profile highlight" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-eye-slash" aria-hidden="true"></i></div>
+                        <h3>Personnes malvoyantes et non-voyantes</h3>
+                        <p>Naviguez sur votre ordinateur sans effort grâce à la lecture d'écran intelligente, la description de contenu visuel et le contrôle vocal complet de votre système.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Lecture d'écran vocale</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Navigation par grille</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Description d'images</span>
+                        </div>
+                    </div>
+                    <div class="user-profile highlight" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-universal-access" aria-hidden="true"></i></div>
+                        <h3>Personnes à mobilité réduite</h3>
+                        <p>Accédez à toutes les fonctionnalités de votre ordinateur grâce à une interface entièrement contrôlable par la voix, sans avoir besoin d'utiliser vos mains.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Contrôle total par la voix</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Dictée de texte</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Automatisation des tâches</span>
+                        </div>
+                    </div>
+                    <div class="user-profile" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-laptop" aria-hidden="true"></i></div>
+                        <h3>Professionnels</h3>
+                        <p>Optimisez votre flux de travail en contrôlant vos applications et en exécutant des tâches complexes par la voix, augmentant votre productivité de façon significative.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Gain de temps</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Multitâche facilité</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Gestion des rappels</span>
+                        </div>
+                    </div>
+                    <div class="user-profile" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-code" aria-hidden="true"></i></div>
+                        <h3>Développeurs</h3>
+                        <p>Codez plus efficacement avec des commandes Git, la gestion de projets et le contrôle de l'environnement de développement par la voix.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Commandes Git vocales</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Gestion de projets</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Commandes de terminal</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Prévention des TMS</span>
+                        </div>
+                    </div>
+                    <div class="user-profile" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-language" aria-hidden="true"></i></div>
+                        <h3>Multilingues</h3>
+                        <p>Traduisez et dictez dans différentes langues pour une communication internationale fluide, sans avoir à maîtriser les claviers spécifiques à chaque langue.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Traduction instantanée</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Dictée multilingue</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Support de nombreuses langues</span>
+                        </div>
+                    </div>
+                    <div class="user-profile" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-hand-paper" aria-hidden="true"></i></div>
+                        <h3>Personnes souffrant de TMS</h3>
+                        <p>Réduisez la douleur et prévenez l'aggravation des troubles musculosquelettiques en limitant l'utilisation du clavier et de la souris.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Réduction de la douleur</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Prévention des TMS</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Confort d'utilisation</span>
+                        </div>
+                    </div>
+                    <div class="user-profile" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+                        <h3>Utilisateurs multitâches</h3>
+                        <p>Accomplissez plusieurs tâches simultanément en contrôlant votre ordinateur par la voix pendant que vos mains sont occupées à d'autres activités.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Productivité améliorée</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Contrôle mains libres</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Gestion du temps optimisée</span>
+                        </div>
+                    </div>
+                    <div class="user-profile" tabindex="0">
+                        <div class="profile-icon"><i class="fas fa-graduation-cap" aria-hidden="true"></i></div>
+                        <h3>Étudiants et chercheurs</h3>
+                        <p>Facilitez vos recherches, la prise de notes et la rédaction de documents académiques grâce aux commandes vocales et à la dictée intelligente.</p>
+                        <div class="profile-benefits">
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Prise de notes rapide</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Recherche documentaire facilitée</span>
+                            <span class="benefit"><i class="fas fa-check-circle" aria-hidden="true"></i> Rédaction par dictée</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="presentation-section future-features" aria-labelledby="future-heading">
+                <h2 id="future-heading"><i class="fas fa-rocket" aria-hidden="true"></i> Fonctionnalités à venir</h2>
+                <p class="section-intro">Whisp Assistant est en constante évolution. Voici un aperçu des fonctionnalités prévues dans notre roadmap :</p>
+                
+                <div class="roadmap-timeline">
+                    <div class="timeline-item" tabindex="0">
+                        <div class="timeline-icon">
+                            <i class="fas fa-brain" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h3>Amélioration de l'IA contextuelle</h3>
+                            <p>Intégration d'une IA plus avancée pour mieux comprendre le contexte de vos demandes et fournir des réponses plus pertinentes.</p>
+                            <div class="timeline-details">
+                                <span class="timeline-tag">Intelligence artificielle</span>
+                                <span class="timeline-date">Court terme</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item" tabindex="0">
+                        <div class="timeline-icon">
+                            <i class="fas fa-language" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h3>Support multilingue amélioré</h3>
+                            <p>Extension du support linguistique avec une meilleure reconnaissance et dictée dans plus de langues, y compris des dialectes régionaux.</p>
+                            <div class="timeline-details">
+                                <span class="timeline-tag">Accessibilité</span>
+                                <span class="timeline-date">Court terme</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item highlight" tabindex="0">
+                        <div class="timeline-icon">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h3>Analyse d'écran avancée</h3>
+                            <p>Amélioration de la capacité à analyser et décrire le contenu visuel de l'écran, avec reconnaissance d'objets et d'interfaces plus précise.</p>
+                            <div class="timeline-details">
+                                <span class="timeline-tag">Accessibilité</span>
+                                <span class="timeline-tag">IA</span>
+                                <span class="timeline-date">Moyen terme</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item" tabindex="0">
+                        <div class="timeline-icon">
+                            <i class="fas fa-plug" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h3>Système de plugins</h3>
+                            <p>Création d'un système d'extensions permettant aux développeurs d'ajouter facilement de nouvelles fonctionnalités et intégrations.</p>
+                            <div class="timeline-details">
+                                <span class="timeline-tag">Développement</span>
+                                <span class="timeline-date">Moyen terme</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item" tabindex="0">
+                        <div class="timeline-icon">
+                            <i class="fas fa-mobile-alt" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h3>Application mobile</h3>
+                            <p>Développement d'applications mobiles pour iOS et Android permettant de contrôler votre ordinateur à distance par la voix.</p>
+                            <div class="timeline-details">
+                                <span class="timeline-tag">Mobilité</span>
+                                <span class="timeline-date">Long terme</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item highlight" tabindex="0">
+                        <div class="timeline-icon">
+                            <i class="fas fa-bolt" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h3>Raccourcis personnalisés</h3>
+                            <p>✅ Implémenté : Création de raccourcis vocaux personnalisés pour automatiser des séquences de commandes fréquemment utilisées.</p>
+                            <div class="timeline-details">
+                                <span class="timeline-tag">Productivité</span>
+                                <span class="timeline-date">Terminé</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item" tabindex="0">
+                        <div class="timeline-icon">
+                            <i class="fas fa-robot" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h3>Automatisation avancée</h3>
+                            <p>Création de workflows complexes et personnalisables activés par commandes vocales pour automatiser des séquences d'actions.</p>
+                            <div class="timeline-details">
+                                <span class="timeline-tag">Productivité</span>
+                                <span class="timeline-date">Long terme</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roadmap-cta">
+                    <p>Vous avez des suggestions pour de nouvelles fonctionnalités ?</p>
+                    <a href="/roadmap" class="cta-button secondary"><i class="fas fa-road" aria-hidden="true"></i> Consulter la roadmap complète</a>
+                </div>
+            </section>
+
+            <section class="presentation-section testimonials" aria-labelledby="testimonials-heading">
+                <h2 id="testimonials-heading"><i class="fas fa-quote-left" aria-hidden="true"></i> Ce que disent nos utilisateurs</h2>
+                <div class="testimonial-slider" role="region" aria-label="Témoignages d'utilisateurs">
+                    <div class="testimonial-track">
+                        <div class="testimonial" tabindex="0" id="testimonial-1" role="tabpanel" aria-labelledby="testimonial-tab-1">
+                            <div class="testimonial-content">
+                                <p class="quote">"En tant que personne non-voyante, Whisp a révolutionné ma façon d'utiliser l'ordinateur. Je peux enfin naviguer, lire et interagir avec le contenu de manière autonome et efficace."</p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-avatar">
+                                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="testimonial-info">
+                                        <p class="author">Marie L.</p>
+                                        <p class="role">Utilisatrice non-voyante</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial" tabindex="0" id="testimonial-2" role="tabpanel" aria-labelledby="testimonial-tab-2">
+                            <div class="testimonial-content">
+                                <p class="quote">"Depuis mon accident, utiliser un clavier était douloureux. Whisp m'a permis de retrouver mon indépendance numérique et de continuer à travailler sans douleur."</p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-avatar">
+                                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="testimonial-info">
+                                        <p class="author">Thomas D.</p>
+                                        <p class="role">Personne à mobilité réduite</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial" tabindex="0" id="testimonial-3" role="tabpanel" aria-labelledby="testimonial-tab-3">
+                            <div class="testimonial-content">
+                                <p class="quote">"En tant que développeur souffrant de syndrome du canal carpien, Whisp m'a permis de continuer à coder tout en soulageant mes poignets. Un outil indispensable !"</p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-avatar">
+                                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="testimonial-info">
+                                        <p class="author">Julien M.</p>
+                                        <p class="role">Développeur web</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-controls">
+                        <button class="testimonial-prev" aria-label="Témoignage précédent">
+                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                        </button>
+                        <div class="testimonial-indicators" role="tablist" aria-label="Sélection de témoignages">
+                            <button class="testimonial-indicator active" role="tab" aria-selected="true" aria-label="Témoignage 1" aria-controls="testimonial-1" id="testimonial-tab-1"></button>
+                            <button class="testimonial-indicator" role="tab" aria-selected="false" aria-label="Témoignage 2" aria-controls="testimonial-2" id="testimonial-tab-2"></button>
+                            <button class="testimonial-indicator" role="tab" aria-selected="false" aria-label="Témoignage 3" aria-controls="testimonial-3" id="testimonial-tab-3"></button>
+                        </div>
+                        <button class="testimonial-next" aria-label="Témoignage suivant">
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="presentation-section cta-section" aria-labelledby="cta-heading">
+                <div class="cta-background"></div>
+                <h2 id="cta-heading">Prêt à libérer tout votre potentiel numérique ?</h2>
+                <p>Découvrez comment Whisp Assistant peut transformer votre expérience informatique, quelle que soit votre situation.</p>
+                <div class="cta-buttons">
+                    <a href="/#try" class="cta-button primary" id="try-now-button"><i class="fas fa-play" aria-hidden="true"></i> Essayer gratuitement</a>
+                    <a href="/#help" class="cta-button secondary"><i class="fas fa-book" aria-hidden="true"></i> Consulter le guide</a>
+                </div>
+                <p class="cta-note">Aucune configuration complexe requise. Commencez à utiliser Whisp en quelques minutes seulement.</p>
+                <div class="cta-features">
+                    <div class="cta-feature">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        <span>Installation facile</span>
+                    </div>
+                    <div class="cta-feature">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        <span>Gratuit et open source</span>
+                    </div>
+                    <div class="cta-feature">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        <span>Support multiplateforme</span>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="presentation-section faq-section" aria-labelledby="faq-heading">
+                <h2 id="faq-heading"><i class="fas fa-question-circle" aria-hidden="true"></i> Questions fréquentes</h2>
+                <div class="faq-container">
+                    <div class="faq-item" tabindex="0">
+                        <div class="faq-question" aria-expanded="false">
+                            <h3>Whisp fonctionne-t-il sans connexion Internet ?</h3>
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Oui, Whisp peut fonctionner hors ligne avec les moteurs de reconnaissance vocale Vosk ou Whisper CT2. Certaines fonctionnalités avancées comme l'analyse d'écran ou la traduction peuvent nécessiter une connexion Internet.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item" tabindex="0">
+                        <div class="faq-question" aria-expanded="false">
+                            <h3>Quelles langues sont prises en charge ?</h3>
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Whisp est optimisé pour le français, mais prend également en charge l'anglais, l'espagnol, l'allemand, l'italien et plusieurs autres langues selon le moteur de reconnaissance vocale utilisé.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item" tabindex="0">
+                        <div class="faq-question" aria-expanded="false">
+                            <h3>Mes données vocales sont-elles envoyées à des serveurs externes ?</h3>
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Cela dépend du moteur de reconnaissance vocale que vous choisissez. Les moteurs Vosk et Whisper CT2 fonctionnent entièrement en local. SpeechRecognition et Whisper API envoient les données audio à des serveurs externes pour le traitement.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item" tabindex="0">
+                        <div class="faq-question" aria-expanded="false">
+                            <h3>Quelles sont les exigences système minimales ?</h3>
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Whisp fonctionne sur la plupart des ordinateurs modernes. Pour une expérience optimale, nous recommandons :</p>
+                            <ul>
+                                <li>Processeur : Intel Core i3 ou équivalent</li>
+                                <li>Mémoire : 4 Go de RAM (8 Go recommandés)</li>
+                                <li>Espace disque : 2 Go pour l'installation complète</li>
+                                <li>Microphone : De bonne qualité pour une reconnaissance précise</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item" tabindex="0">
+                        <div class="faq-question" aria-expanded="false">
+                            <h3>Comment puis-je personnaliser les commandes vocales ?</h3>
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Whisp offre plusieurs façons de personnaliser les commandes :</p>
+                            <ul>
+                                <li>Ajout de commandes personnalisées via l'interface</li>
+                                <li>Modification des fichiers de configuration</li>
+                                <li>Création de scripts personnalisés pour des fonctionnalités avancées</li>
+                            </ul>
+                            <p>Consultez notre guide d'utilisation pour plus de détails.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="modern-footer">
+            <div class="footer-wave">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+                </svg>
+            </div>
+            <div class="footer-main">
+                <div class="footer-container">
+                    <div class="footer-brand">
+                        <div class="footer-logo">
+                            <i class="fas fa-microphone-alt" aria-hidden="true"></i>
+                            <h3>Whisp Assistant Vocal</h3>
+                        </div>
+                        <p>Libérez votre potentiel numérique par la voix</p>
+                        <div class="social-links">
+                            <a href="#" class="social-link" aria-label="GitHub">
+                                <i class="fab fa-github" aria-hidden="true"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="Twitter">
+                                <i class="fab fa-twitter" aria-hidden="true"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="LinkedIn">
+                                <i class="fab fa-linkedin" aria-hidden="true"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="YouTube">
+                                <i class="fab fa-youtube" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="footer-links-column">
+                            <h4>Découvrir</h4>
+                            <ul>
+                                <li><a href="/">Accueil</a></li>
+                                <li><a href="/presentation" aria-current="page">Présentation</a></li>
+                                <li><a href="/roadmap">Roadmap</a></li>
+                                <li><a href="/#fonctionnalites">Fonctionnalités</a></li>
+                                <li><a href="/#try">Essayer</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-links-column">
+                            <h4>Ressources</h4>
+                            <ul>
+                                <li><a href="/#help">Guide d'utilisation</a></li>
+                                <li><a href="/#download">Téléchargement</a></li>
+                                <li><a href="/#faq">FAQ</a></li>
+                                <li><a href="/#support">Support</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-links-column">
+                            <h4>Accessibilité</h4>
+                            <div class="accessibility-info">
+                                <p>Application conçue selon les normes d'accessibilité</p>
+                                <div class="accessibility-badges">
+                                    <span class="accessibility-badge">WCAG 2.1 AA</span>
+                                    <span class="accessibility-badge">RGAA 4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-newsletter">
+                        <h4>Restez informé</h4>
+                        <p>Recevez nos actualités et mises à jour</p>
+                        <div class="newsletter-form">
+                            <input type="email" placeholder="Votre email" aria-label="Votre adresse email">
+                            <button type="submit" aria-label="S'abonner">
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p class="newsletter-privacy">Nous respectons votre vie privée</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-container">
+                    <div class="footer-copyright">
+                        <p>&copy; <span id="current-year">2025</span> Whisp Assistant Vocal - <a href="/">Accueil</a> | <a href="/presentation">Présentation</a> | <a href="/roadmap">Roadmap</a> | <a href="/bugs">Bugs</a></p>
+                    </div>
+                    <div class="footer-actions">
+                        <button id="toggle-dark-mode" class="icon-button" title="Changer de thème" aria-label="Activer/désactiver le mode sombre">
+                            <i class="fas fa-moon" aria-hidden="true"></i>
+                        </button>
+                        <button id="toggle-animations" class="icon-button" title="Activer/désactiver les animations" aria-label="Activer/désactiver les animations">
+                            <i class="fas fa-film" aria-hidden="true"></i>
+                        </button>
+                        <a href="#main-content" class="back-to-top" aria-label="Retour en haut de page">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Scripts pour l'accessibilité et l'interactivité -->
+    <script>
+        // Mettre à jour l'année automatiquement
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Masquer l'indicateur de chargement
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                setTimeout(() => {
+                    loadingIndicator.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingIndicator.style.display = 'none';
+                    }, 500);
+                }, 800);
+            }
+            
+            // Gestion des onglets de fonctionnalités
+            const tabButtons = document.querySelectorAll('.features-tabs .tab-button');
+            const tabPanels = document.querySelectorAll('.features-tabs .tab-panel');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Désactiver tous les onglets
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.setAttribute('aria-selected', 'false');
+                    });
+                    tabPanels.forEach(panel => panel.classList.remove('active'));
+                    
+                    // Activer l'onglet cliqué
+                    button.classList.add('active');
+                    button.setAttribute('aria-selected', 'true');
+                    const panelId = button.getAttribute('aria-controls');
+                    document.getElementById(panelId).classList.add('active');
+                });
+                
+                // Gestion des touches clavier pour l'accessibilité
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        button.click();
+                    }
+                });
+            });
+            
+            // Gestion du slider de témoignages
+            const testimonialTrack = document.querySelector('.testimonial-track');
+            const testimonials = document.querySelectorAll('.testimonial');
+            const prevButton = document.querySelector('.testimonial-prev');
+            const nextButton = document.querySelector('.testimonial-next');
+            const indicators = document.querySelectorAll('.testimonial-indicator');
+            let currentIndex = 0;
+            
+            function updateSlider() {
+                if (!testimonialTrack) return;
+                
+                const slideWidth = testimonials[0].offsetWidth;
+                testimonialTrack.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+                
+                // Mettre à jour les indicateurs et l'accessibilité
+                indicators.forEach((indicator, index) => {
+                    const isActive = index === currentIndex;
+                    indicator.classList.toggle('active', isActive);
+                    indicator.setAttribute('aria-selected', isActive);
+                    
+                    // Mettre à jour l'accessibilité des témoignages
+                    testimonials[index].setAttribute('aria-hidden', !isActive);
+                    testimonials[index].setAttribute('tabindex', isActive ? 0 : -1);
+                });
+                
+                // Annoncer le changement pour les lecteurs d'écran
+                const liveRegion = document.querySelector('.testimonial-live-region');
+                if (liveRegion) {
+                    liveRegion.textContent = `Témoignage ${currentIndex + 1} sur ${testimonials.length} affiché`;
+                }
+                
+                // Mettre le focus sur le témoignage actif pour les utilisateurs de clavier
+                if (document.activeElement === prevButton || document.activeElement === nextButton || 
+                    Array.from(indicators).includes(document.activeElement)) {
+                    testimonials[currentIndex].focus();
+                }
+            }
+            
+            // Ajouter une région live pour annoncer les changements
+            const liveRegion = document.createElement('div');
+            liveRegion.className = 'testimonial-live-region sr-only';
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('aria-atomic', 'true');
+            document.querySelector('.testimonial-slider').appendChild(liveRegion);
+            
+            if (prevButton && nextButton) {
+                prevButton.addEventListener('click', () => {
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                        updateSlider();
+                    }
+                });
+                
+                nextButton.addEventListener('click', () => {
+                    if (currentIndex < testimonials.length - 1) {
+                        currentIndex++;
+                        updateSlider();
+                    }
+                });
+                
+                // Ajouter des attributs ARIA pour les boutons
+                prevButton.setAttribute('aria-label', 'Témoignage précédent');
+                nextButton.setAttribute('aria-label', 'Témoignage suivant');
+                
+                // Gestion du clavier pour les boutons
+                prevButton.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        prevButton.click();
+                    }
+                });
+                
+                nextButton.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        nextButton.click();
+                    }
+                });
+            }
+            
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateSlider();
+                });
+                
+                // Gestion du clavier pour les indicateurs
+                indicator.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        indicator.click();
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        const nextIndex = (index + 1) % indicators.length;
+                        indicators[nextIndex].click();
+                        indicators[nextIndex].focus();
+                    } else if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        const prevIndex = (index - 1 + indicators.length) % indicators.length;
+                        indicators[prevIndex].click();
+                        indicators[prevIndex].focus();
+                    }
+                });
+            });
+            
+            // Initialiser l'état d'accessibilité
+            testimonials.forEach((testimonial, index) => {
+                testimonial.setAttribute('aria-hidden', index !== 0);
+                testimonial.setAttribute('tabindex', index === 0 ? 0 : -1);
+            });
+            
+            // Gestion des FAQ
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                const answer = item.querySelector('.faq-answer');
+                
+                // Ajouter un ID unique à la réponse pour l'accessibilité
+                const answerId = 'faq-answer-' + Math.random().toString(36).substring(2, 9);
+                answer.id = answerId;
+                question.setAttribute('aria-controls', answerId);
+                
+                question.addEventListener('click', () => {
+                    const isExpanded = question.getAttribute('aria-expanded') === 'true';
+                    
+                    // Fermer toutes les autres questions
+                    faqItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            const otherQuestion = otherItem.querySelector('.faq-question');
+                            const otherAnswer = otherItem.querySelector('.faq-answer');
+                            otherQuestion.setAttribute('aria-expanded', 'false');
+                            otherAnswer.style.maxHeight = '0';
+                            otherAnswer.setAttribute('aria-hidden', 'true');
+                        }
+                    });
+                    
+                    // Basculer l'état de la question actuelle
+                    question.setAttribute('aria-expanded', !isExpanded);
+                    if (!isExpanded) {
+                        answer.style.maxHeight = answer.scrollHeight + 'px';
+                        answer.setAttribute('aria-hidden', 'false');
+                    } else {
+                        answer.style.maxHeight = '0';
+                        answer.setAttribute('aria-hidden', 'true');
+                    }
+                });
+                
+                // Gestion des touches clavier pour l'accessibilité
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        question.click();
+                    }
+                });
+            });
+            
+            // Gestion du mode sombre
+            const darkModeButton = document.getElementById('toggle-dark-mode');
+            if (darkModeButton) {
+                darkModeButton.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    const isDarkMode = document.body.classList.contains('dark-mode');
+                    localStorage.setItem('darkMode', isDarkMode);
+                    
+                    // Changer l'icône
+                    const icon = darkModeButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+                    }
+                });
+            }
+            
+            // Gestion des animations
+            const animationsButton = document.getElementById('toggle-animations');
+            if (animationsButton) {
+                animationsButton.addEventListener('click', () => {
+                    document.body.classList.toggle('reduced-motion');
+                    const isReduced = document.body.classList.contains('reduced-motion');
+                    localStorage.setItem('animationsDisabled', isReduced);
+                    
+                    // Changer l'icône
+                    const icon = animationsButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isReduced ? 'fas fa-film-slash' : 'fas fa-film';
+                    }
+                });
+            }
+            
+            // Gestion du bouton "Retour en haut de page"
+            const backToTopButton = document.querySelector('.back-to-top');
+            if (backToTopButton) {
+                // Afficher/masquer le bouton en fonction du défilement
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 500) {
+                        backToTopButton.classList.add('visible');
+                    } else {
+                        backToTopButton.classList.remove('visible');
+                    }
+                });
+                
+                // Animation de défilement fluide
+                backToTopButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = backToTopButton.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            }
+            
+            // Gestion du formulaire de newsletter
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const emailInput = newsletterForm.querySelector('input[type="email"]');
+                    if (emailInput && emailInput.value) {
+                        // Simuler l'envoi du formulaire
+                        newsletterForm.innerHTML = '<p class="success-message"><i class="fas fa-check-circle"></i> Merci pour votre inscription!</p>';
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Scripts de vérification d'accessibilité (à désactiver en production) -->
+    <script src="{{ url_for('static', filename='js/accessibility-checker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/aria-validator.js') }}"></script>
+</body>
+</html>

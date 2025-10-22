@@ -1,0 +1,50 @@
+# Dépendances pour le développement
+# Installation : pip install -r requirements-dev.txt
+
+# Framework de tests
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.1
+pytest-asyncio>=0.21.1
+
+# Outils de linting et formatage
+black>=23.7.0
+flake8>=6.0.0
+isort>=5.12.0
+mypy>=1.5.0
+pylint>=2.17.0
+
+# Outils de sécurité
+bandit>=1.7.0
+safety>=2.3.0
+
+# Documentation
+sphinx>=7.1.0
+sphinx-rtd-theme>=1.3.0
+mkdocs>=1.5.0
+mkdocs-material>=9.1.0
+
+# Outils de développement
+pre-commit>=3.3.0
+tox>=4.6.0
+twine>=4.0.0
+wheel>=0.41.0
+
+# Débogage
+pdbpp>=0.10.0
+ipython>=8.14.0
+jupyter>=1.0.0
+
+# Profiling et performance
+memory-profiler>=0.61.0
+line-profiler>=4.0.0
+py-spy>=0.3.0
+
+# Analyse de code statique
+vulture>=2.7
+radon>=6.0.0
+xenon>=0.9.0
+
+# Gestion des dépendances
+pipdeptree>=2.11.0
+pip-audit>=2.6.0

@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisp - Gestion des données pour Fine-tuning</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6baf;
+            --secondary-color: #5bc0de;
+            --success-color: #28a745;
+            --warning-color: #fd7e14;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-radius: 8px;
+            --transition-speed: 0.2s;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+        }
+        
+        /* Layout principal et composants */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .app-header {
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .app-title {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .app-footer {
+            padding: 10px 15px;
+            background: white;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* Filtres et contrôles */
+        .filters-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filters-toggle {
+            cursor: pointer;
+            user-select: none;
+            padding: 5px 0;
+            margin-bottom: 10px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: var(--light-color);
+            border-radius: var(--border-radius);
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .actions-bar {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .view-toggle-btn {
+            padding: 5px 10px;
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            color: #555;
+        }
+        
+        .view-toggle-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Cartes d'échantillons */
+        .samples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .samples-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        /* Style amélioré pour les cartes en mode liste */
+        .samples-list .sample-card {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .samples-list .card-body {
+            display: grid;
+            grid-template-columns: minmax(200px, 25%) 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .samples-list .audio-container {
+            margin: 0;
+        }
+        
+        .samples-list .transcription-textarea {
+            margin-bottom: 0;
+        }
+        
+        .sample-card {
+            margin-bottom: 5px;
+            border-radius: var(--border-radius);
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            overflow: hidden;
+        }
+        
+        .sample-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #fbfbfb;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        /* Mode compact pour les cartes */
+        .compact-mode .samples-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+        
+        .compact-mode .sample-card {
+            margin-bottom: 5px;
+        }
+        
+        .compact-mode .card-body {
+            padding: 10px;
+        }
+        
+        .compact-mode .transcription-textarea {
+            min-height: 40px;
+        }
+        
+        .compact-mode .action-buttons button {
+            padding: 2px 6px;
+            font-size: 0.8rem;
+        }
+        
+        .compact-mode audio {
+            height: 30px;
+        }
+        
+        /* Audio et texte */
+        .audio-container {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        audio {
+            width: 100%;
+            border-radius: var(--border-radius);
+        }
+        
+        .transcription-textarea {
+            width: 100%;
+            resize: vertical;
+            min-height: 60px;
+            border-radius: var(--border-radius);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            transition: border-color var(--transition-speed);
+        }
+        
+        .transcription-textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 107, 175, 0.2);
+        }
+        
+        .transcription-textarea.modified {
+            border-color: var(--warning-color);
+            background-color: #fff9f0;
+        }
+        
+        /* Badges et étiquettes */
+        .stats-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-right: 5px;
+            background: #eee;
+            color: #555;
+        }
+        
+        .split-badge {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+            margin-right: 5px;
+            font-size: 0.75rem;
+        }
+        
+        .split-train {
+            background-color: var(--success-color);
+        }
+        
+        .split-validation {
+            background-color: var(--warning-color);
+        }
+        
+        .split-test {
+            background-color: var(--secondary-color);
+        }
+        
+        .split-unknown {
+            background-color: #6c757d;
+        }
+        
+        /* Boutons et contrôles */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-buttons button {
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            background: white;
+            color: #555;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        
+        .action-buttons button:hover {
+            background: #f5f5f5;
+        }
+        
+        .action-buttons .save-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .action-buttons .delete-btn:hover {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        button.btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        button.btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        /* Modals */
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Indicateurs visuels */
+        .quality-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .quality-high {
+            background-color: var(--success-color);
+        }
+        
+        .quality-medium {
+            background-color: var(--warning-color);
+        }
+        
+        .quality-low {
+            background-color: var(--danger-color);
+        }
+        
+        /* Eléments de chargement */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .samples-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions-bar {
+                flex-direction: column;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        /* Aide et raccourcis clavier */
+        .keyboard-shortcut {
+            display: inline-block;
+            padding: 2px 5px;
+            background: #eee;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            color: #555;
+            margin-left: 5px;
+        }
+        
+        .help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .help-container {
+            background: white;
+            max-width: 600px;
+            width: 100%;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .shortcut-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .shortcut-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        
+        .pagination-btn {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+        
+        .pagination-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Animation de chargement */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .loading-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Barre de sélection multiple */
+        .bulk-selection-bar {
+            position: sticky;
+            top: 60px;
+            z-index: 99;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .selection-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .selection-count {
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        /* Checkbox personnalisée */
+        .custom-checkbox {
+            position: relative;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            background-color: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .custom-checkbox:hover input ~ .checkmark {
+            border-color: var(--primary-color);
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+        
+        /* Sélection multiple sur les cartes */
+        .sample-card.selectable {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .sample-card .selection-checkbox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            display: none;
+        }
+        
+        .multi-select-mode .sample-card .selection-checkbox {
+            display: block;
+        }
+        
+        .sample-card.selected {
+            border: 2px solid var(--primary-color);
+            background-color: rgba(74, 107, 175, 0.05);
+        }
+        
+        /* Mode tableau pour sélection rapide */
+        .table-view {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table-view table {
+            width: 100%;
+            margin: 0;
+        }
+        
+        .table-view th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .table-view td {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .table-view tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .table-view .transcription-cell {
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Inline editing */
+        .transcription-inline-edit {
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 4px 8px;
+            border-radius: 4px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        
+        .transcription-inline-edit:hover {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        
+        .transcription-inline-edit:focus {
+            background: white;
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 107, 175, 0.2);
+        }
+        
+        /* Vue groupée */
+        .grouped-container {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .group-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .group-header:hover {
+            background: #e9ecef;
+        }
+        
+        .group-header.expanded {
+            background: #e9ecef;
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .group-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .group-transcription {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+            max-width: 500px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .group-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+        
+        .group-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .group-expand-icon {
+            transition: transform 0.3s;
+        }
+        
+        .group-header.expanded .group-expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .group-samples {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #fafafa;
+        }
+        
+        .group-samples.expanded {
+            max-height: 1000px;
+            overflow-y: auto;
+        }
+        
+        .group-sample-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .group-sample-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .group-sample-item .flex-grow-1 {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .unified-transcription {
+            width: 100%;
+            padding: 15px;
+            background: #fff3cd;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .unified-transcription textarea {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid #ffc107;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            font-size: 1.1rem;
+            resize: vertical;
+        }
+        
+        .unified-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">Gestion des données pour Fine-tuning</h1>
+            
+            {% if error %}
+            <div class="alert alert-danger mt-2">
+                <strong>Erreur :</strong> {{ error }}
+            </div>
+            {% endif %}
+        </header>
+        
+        <main class="app-content">
+            <!-- Barre de sélection multiple (cachée par défaut) -->
+            <div class="bulk-selection-bar" id="bulk-selection-bar" style="display: none;">
+                <div class="selection-info">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="select-all-checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                    <span class="selection-count">
+                        <strong id="selected-count">0</strong> échantillons sélectionnés
+                    </span>
+                </div>
+                <div class="bulk-actions">
+                    <button class="btn btn-sm btn-outline-success" id="bulk-set-train" title="Définir comme Train">
+                        <i class="fas fa-graduation-cap"></i> Train
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" id="bulk-set-validation" title="Définir comme Validation">
+                        <i class="fas fa-check-circle"></i> Validation
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" id="bulk-set-test" title="Définir comme Test">
+                        <i class="fas fa-flask"></i> Test
+                    </button>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" id="bulk-save" title="Sauvegarder les modifications">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" id="bulk-delete" title="Supprimer les échantillons">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" id="clear-selection" title="Désélectionner tout">
+                        <i class="fas fa-times"></i> Désélectionner
+                    </button>
+                </div>
+            </div>
+            
+            <div class="filters-container">
+                <div class="filters-toggle" id="filters-toggle">
+                    <i class="fas fa-filter"></i> Filtres et options <i class="fas fa-chevron-down"></i>
+                </div>
+                
+                <div id="filters-content">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <label for="engine-filter">Moteur :</label>
+                            <select class="form-control" id="engine-filter">
+                                <option value="">Tous</option>
+                                <!-- Sera rempli par JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="split-filter">Split :</label>
+                            <select class="form-control" id="split-filter">
+                                <option value="">Tous</option>
+                                <option value="train">Train</option>
+                                <option value="validation">Validation</option>
+                                <option value="test">Test</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="search-filter">Recherche :</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="search-filter" placeholder="Rechercher dans les transcriptions...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="clear-search">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="show-modifications-only">
+                                <label class="form-check-label" for="show-modifications-only">
+                                    Afficher uniquement les modifications
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="enable-multi-select">
+                                <label class="form-check-label" for="enable-multi-select">
+                                    <i class="fas fa-check-double"></i> Mode sélection multiple
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="group-similar">
+                                <label class="form-check-label" for="group-similar">
+                                    <i class="fas fa-layer-group"></i> Regrouper similaires
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-md-right">
+                            <button class="btn btn-sm btn-outline-secondary" id="help-btn" title="Aide et raccourcis">
+                                <i class="fas fa-keyboard"></i> Raccourcis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Échantillons :</span>
+                    <span class="stat-value"><span id="samples-count">0</span> / <span id="total-samples">0</span></span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Train :</span>
+                    <span class="stat-value" id="train-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Validation :</span>
+                    <span class="stat-value" id="validation-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Test :</span>
+                    <span class="stat-value" id="test-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Durée totale :</span>
+                    <span class="stat-value" id="total-duration">0s</span>
+                </div>
+            </div>
+            
+            <div class="actions-bar">
+                <div>
+                    <button class="view-toggle-btn" data-view="grid" id="grid-view-btn">
+                        <i class="fas fa-th"></i> Grille
+                    </button>
+                    <button class="view-toggle-btn active" data-view="list" id="list-view-btn">
+                        <i class="fas fa-list"></i> Liste
+                    </button>
+                    <button class="view-toggle-btn" data-view="table" id="table-view-btn">
+                        <i class="fas fa-table"></i> Tableau
+                    </button>
+                    <button class="view-toggle-btn" data-view="compact" id="compact-view-btn">
+                        <i class="fas fa-compress"></i> Compact
+                    </button>
+                </div>
+                
+                <div>
+                    <button class="btn btn-success" id="regenerate-dataset">
+                        <i class="fas fa-sync-alt"></i> Régénérer le dataset
+                    </button>
+                    <button class="btn btn-primary" id="export-dataset">
+                        <i class="fas fa-file-export"></i> Exporter le dataset
+                    </button>
+                </div>
+            </div>
+            
+            <div id="samples-container" class="samples-list">
+                <!-- Les échantillons seront chargés ici par JavaScript -->
+                <div class="text-center p-5" id="loading-indicator">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement des données...</p>
+                </div>
+            </div>
+            
+            <div class="pagination" id="pagination-container">
+                <!-- La pagination sera générée ici -->
+            </div>
+        </main>
+        
+        <footer class="app-footer">
+            <div class="d-flex justify-content-between">
+                <div>Appuyez sur <span class="keyboard-shortcut">?</span> pour afficher l'aide des raccourcis clavier</div>
+                <div>Dernière mise à jour: <span id="last-updated">-</span></div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Overlay d'aide pour les raccourcis clavier -->
+    <div class="help-overlay" id="help-overlay">
+        <div class="help-container">
+            <h3>Raccourcis clavier</h3>
+            <ul class="shortcut-list">
+                <li><span class="keyboard-shortcut">S</span> <span>Sauvegarder la transcription en cours</span></li>
+                <li><span class="keyboard-shortcut">Ctrl+S</span> <span>Sauvegarder toutes les modifications</span></li>
+                <li><span class="keyboard-shortcut">N</span> <span>Passer à l'échantillon suivant</span></li>
+                <li><span class="keyboard-shortcut">P</span> <span>Revenir à l'échantillon précédent</span></li>
+                <li><span class="keyboard-shortcut">1</span> <span>Définir comme "train"</span></li>
+                <li><span class="keyboard-shortcut">2</span> <span>Définir comme "validation"</span></li>
+                <li><span class="keyboard-shortcut">3</span> <span>Définir comme "test"</span></li>
+                <li><span class="keyboard-shortcut">F</span> <span>Mettre le focus sur la recherche</span></li>
+                <li><span class="keyboard-shortcut">G</span> <span>Vue en grille</span></li>
+                <li><span class="keyboard-shortcut">L</span> <span>Vue en liste</span></li>
+                <li><span class="keyboard-shortcut">T</span> <span>Vue tableau</span></li>
+                <li><span class="keyboard-shortcut">C</span> <span>Vue compacte</span></li>
+                <li><span class="keyboard-shortcut">M</span> <span>Activer/désactiver le mode sélection multiple</span></li>
+                <li><span class="keyboard-shortcut">Ctrl+A</span> <span>Sélectionner tout</span></li>
+                <li><span class="keyboard-shortcut">Ctrl+D</span> <span>Désélectionner tout</span></li>
+                <li><span class="keyboard-shortcut">Del</span> <span>Supprimer la sélection</span></li>
+                <li><span class="keyboard-shortcut">Space</span> <span>Lecture/Pause audio</span></li>
+                <li><span class="keyboard-shortcut">Esc</span> <span>Fermer les modales/l'aide</span></li>
+                <li><span class="keyboard-shortcut">?</span> <span>Afficher/masquer cette aide</span></li>
+            </ul>
+            <div class="text-center mt-3">
+                <button class="btn btn-secondary" id="close-help">Fermer</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour la confirmation de suppression -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer cet échantillon ? Cette action est irréversible.</p>
+                    <p>Fichiers qui seront supprimés :</p>
+                    <ul id="files-to-delete"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour le changement de split -->
+    <div class="modal fade" id="splitModal" tabindex="-1" role="dialog" aria-labelledby="splitModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="splitModalLabel">Changer le split</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Sélectionnez le nouveau split pour cet échantillon :</p>
+                    <div class="form-group">
+                        <select class="form-control" id="split-select">
+                            <option value="train">Train</option>
+                            <option value="validation">Validation</option>
+                            <option value="test">Test</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirm-split-change">Appliquer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/finetune-batch.js') }}"></script>
+    
+    <script>
+        // Variables globales
+        let allSamples = [];
+        let filteredSamples = [];
+        let currentSampleToDelete = null;
+        let currentSampleToChangeSplit = null;
+        let groupedSamples = new Map(); // Pour regrouper par transcription
+        let showGroupedView = false;
+        
+        // Fonction pour charger tous les échantillons
+        function loadSamples() {
+            fetch('/api/finetune/samples')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        allSamples = data.samples;
+                        filteredSamples = [...allSamples];
+                        
+                        // Remplir le filtre des moteurs
+                        const engines = new Set(allSamples.map(sample => sample.engine));
+                        const engineFilter = document.getElementById('engine-filter');
+                        engines.forEach(engine => {
+                            const option = document.createElement('option');
+                            option.value = engine;
+                            option.textContent = engine;
+                            engineFilter.appendChild(option);
+                        });
+                        
+                        // Regrouper les échantillons par transcription
+                        groupSamplesByTranscription();
+                        
+                        // Mettre à jour les compteurs
+                        document.getElementById('total-samples').textContent = allSamples.length;
+                        document.getElementById('samples-count').textContent = filteredSamples.length;
+                        
+                        // Afficher les échantillons
+                        displaySamples();
+                    } else {
+                        showError("Erreur lors du chargement des échantillons: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    showError("Erreur de connexion: " + error);
+                });
+        }
+        
+        // Variables pour la pagination
+        let currentPage = 1;
+        let itemsPerPage = 12; // Moins d'éléments en mode liste pour une meilleure lisibilité
+        let currentView = 'list'; // Vue par défaut: liste
+        let modifiedSamples = new Set();
+        
+        // Rendre les variables globales pour le module batch
+        window.allSamples = allSamples;
+        window.filteredSamples = filteredSamples;
+        window.modifiedSamples = modifiedSamples;
+        window.displaySamples = displaySamples;
+        
+        // Fonction pour normaliser le texte pour regroupement
+        function normalizeText(text) {
+            return text.toLowerCase()
+                      .trim()
+                      .replace(/[.,!?;:]/g, '') // Retirer la ponctuation
+                      .replace(/\s+/g, ' ') // Normaliser les espaces
+                      .replace(/'/g, "'"); // Normaliser les apostrophes
+        }
+        
+        // Fonction pour regrouper les échantillons par transcription
+        function groupSamplesByTranscription() {
+            groupedSamples.clear();
+            
+            allSamples.forEach(sample => {
+                const normalizedText = normalizeText(sample.transcription);
+                
+                if (!groupedSamples.has(normalizedText)) {
+                    groupedSamples.set(normalizedText, {
+                        originalText: sample.transcription,
+                        samples: [],
+                        totalDuration: 0
+                    });
+                }
+                
+                const group = groupedSamples.get(normalizedText);
+                group.samples.push(sample);
+                group.totalDuration += sample.duration || 0;
+            });
+            
+            // Trier les groupes par nombre d'échantillons (descendant)
+            const sortedGroups = new Map([...groupedSamples.entries()].sort((a, b) => 
+                b[1].samples.length - a[1].samples.length
+            ));
+            
+            groupedSamples = sortedGroups;
+            
+            // Mettre à jour l'affichage des statistiques de regroupement
+            updateGroupingStats();
+        }
+        
+        // Fonction pour mettre à jour les statistiques de regroupement
+        function updateGroupingStats() {
+            const duplicatesCount = Array.from(groupedSamples.values())
+                .filter(group => group.samples.length > 1)
+                .reduce((sum, group) => sum + group.samples.length, 0);
+            
+            const groupsCount = Array.from(groupedSamples.values())
+                .filter(group => group.samples.length > 1).length;
+            
+            // Ajouter ou mettre à jour un indicateur dans la stats bar
+            const statsBar = document.querySelector('.stats-bar');
+            let duplicatesInfo = document.getElementById('duplicates-info');
+            
+            if (!duplicatesInfo) {
+                duplicatesInfo = document.createElement('div');
+                duplicatesInfo.id = 'duplicates-info';
+                duplicatesInfo.className = 'stat-item';
+                statsBar.appendChild(duplicatesInfo);
+            }
+            
+            duplicatesInfo.innerHTML = `
+                <span class="stat-label">Doublons :</span>
+                <span class="stat-value">${duplicatesCount} dans ${groupsCount} groupes</span>
+            `;
+        }
+        
+        // Fonction pour afficher les échantillons filtrés
+        function displaySamples() {
+            const container = document.getElementById('samples-container');
+            // Masquer l'indicateur de chargement
+            document.getElementById('loading-indicator').style.display = 'none';
+            
+            // Vider le conteneur
+            container.innerHTML = '';
+            
+            if (filteredSamples.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">Aucun échantillon ne correspond aux critères de filtrage.</div>';
+                updatePagination(0);
+                return;
+            }
+            
+            // Calcul de la pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredSamples.length);
+            const samplesToDisplay = filteredSamples.slice(startIndex, endIndex);
+            
+            // Mettre à jour les compteurs et statistiques
+            updateStats();
+            
+            // Définir la classe du conteneur en fonction de la vue
+            container.className = currentView === 'grid' ? 'samples-grid' : 
+                                 currentView === 'list' ? 'samples-list' : 
+                                 currentView === 'table' ? 'table-view' :
+                                 currentView === 'compact' ? 'samples-grid compact-mode' : 'samples-list';
+            
+            // Ajouter la classe compact si nécessaire
+            document.body.classList.toggle('compact-mode', currentView === 'compact');
+            
+            // Si vue groupée, afficher les groupes
+            if (showGroupedView) {
+                displayGroupedView();
+                return;
+            }
+            
+            // Si vue tableau, créer la structure de table
+            if (currentView === 'table') {
+                displayTableView(samplesToDisplay);
+                return;
+            }
+            
+            // Créer les cartes pour chaque échantillon
+            samplesToDisplay.forEach(sample => {
+                const card = document.createElement('div');
+                card.className = 'card sample-card';
+                card.id = `sample-${sample.id}`;
+                card.setAttribute('tabindex', '0'); // Rendre focusable pour la navigation clavier
+                
+                // Déterminer la classe du badge de split
+                let splitClass = 'split-unknown';
+                if (sample.split === 'train') splitClass = 'split-train';
+                if (sample.split === 'validation') splitClass = 'split-validation';
+                if (sample.split === 'test') splitClass = 'split-test';
+                
+                // Calculer la qualité estimée (basée sur la durée et la longueur de transcription)
+                let qualityClass = 'quality-medium';
+                if (sample.duration && sample.transcription) {
+                    const charRate = sample.transcription.length / sample.duration;
+                    if (charRate > 8) qualityClass = 'quality-high';
+                    if (charRate < 3) qualityClass = 'quality-low';
+                }
+                
+                // Formater la durée en secondes
+                const duration = sample.duration ? `${sample.duration.toFixed(1)}s` : "?";
+                
+                // Formater la date
+                const date = sample.timestamp ? new Date(sample.timestamp * 1000).toLocaleString() : "?";
+                
+                // Structure HTML adaptée selon le mode d'affichage
+                if (currentView === 'list') {
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div>
+                                <span class="quality-indicator ${qualityClass}" title="Qualité estimée"></span>
+                                <span class="split-badge ${splitClass}">${sample.split}</span>
+                                <strong>${sample.engine}</strong>
+                            </div>
+                            <div>
+                                <span class="stats-badge" title="Date d'enregistrement">
+                                    <i class="far fa-calendar-alt"></i> ${date}
+                                </span>
+                                <span class="stats-badge" title="Durée">
+                                    <i class="far fa-clock"></i> ${duration}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="audio-container">
+                                <audio controls src="/${sample.audio_path.startsWith('/') ? sample.audio_path.substring(1) : sample.audio_path}" preload="auto" class="audio-player">
+                                    Votre navigateur ne supporte pas l'élément audio.
+                                </audio>
+                            </div>
+                            <textarea class="transcription-textarea" 
+                                    data-sample-id="${sample.id}" 
+                                    data-text-path="${sample.text_path}"
+                                    data-json-path="${sample.json_path}"
+                                    data-original="${sample.transcription}">${sample.transcription}</textarea>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm save-btn" data-sample-id="${sample.id}" title="Enregistrer (S)">
+                                    <i class="fas fa-save"></i> Enregistrer
+                                </button>
+                                <button class="btn btn-sm change-split-btn" data-sample-id="${sample.id}" title="Changer split (1-3)">
+                                    <i class="fas fa-exchange-alt"></i> Split
+                                </button>
+                                <button class="btn btn-sm delete-btn" data-sample-id="${sample.id}" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div>
+                                <span class="quality-indicator ${qualityClass}" title="Qualité estimée"></span>
+                                <span class="split-badge ${splitClass}">${sample.split}</span>
+                                <strong>${sample.engine}</strong>
+                            </div>
+                            <div>
+                                <span class="stats-badge" title="Date d'enregistrement">
+                                    <i class="far fa-calendar-alt"></i> ${date}
+                                </span>
+                                <span class="stats-badge" title="Durée">
+                                    <i class="far fa-clock"></i> ${duration}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="audio-container">
+                                <audio controls src="/${sample.audio_path.startsWith('/') ? sample.audio_path.substring(1) : sample.audio_path}" preload="auto" class="audio-player">
+                                    Votre navigateur ne supporte pas l'élément audio.
+                                </audio>
+                            </div>
+                            <textarea class="transcription-textarea" 
+                                    data-sample-id="${sample.id}" 
+                                    data-text-path="${sample.text_path}"
+                                    data-json-path="${sample.json_path}"
+                                    data-original="${sample.transcription}">${sample.transcription}</textarea>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm save-btn" data-sample-id="${sample.id}" title="Enregistrer (S)">
+                                        <i class="fas fa-save"></i> Enregistrer
+                                    </button>
+                                    <button class="btn btn-sm change-split-btn" data-sample-id="${sample.id}" title="Changer split (1-3)">
+                                        <i class="fas fa-exchange-alt"></i> Split
+                                    </button>
+                                </div>
+                                <button class="btn btn-sm delete-btn" data-sample-id="${sample.id}" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.appendChild(card);
+            });
+            
+            // Ajouter les événements aux boutons et champs
+            attachEventListeners();
+            
+            // Mettre à jour la pagination
+            updatePagination(filteredSamples.length);
+        }
+        
+        // Fonction pour mettre à jour les statistiques
+        function updateStats() {
+            document.getElementById('samples-count').textContent = filteredSamples.length;
+            document.getElementById('total-samples').textContent = allSamples.length;
+            
+            // Compter par split
+            const splitCounts = {
+                train: allSamples.filter(s => s.split === 'train').length,
+                validation: allSamples.filter(s => s.split === 'validation').length,
+                test: allSamples.filter(s => s.split === 'test').length
+            };
+            
+            document.getElementById('train-count').textContent = splitCounts.train;
+            document.getElementById('validation-count').textContent = splitCounts.validation;
+            document.getElementById('test-count').textContent = splitCounts.test;
+            
+            // Calculer la durée totale
+            const totalDuration = allSamples.reduce((acc, sample) => acc + (sample.duration || 0), 0);
+            const formattedDuration = formatDuration(totalDuration);
+            document.getElementById('total-duration').textContent = formattedDuration;
+            
+            // Mettre à jour la date de dernière mise à jour
+            document.getElementById('last-updated').textContent = new Date().toLocaleString();
+        }
+        
+        // Fonction pour formater la durée
+        function formatDuration(seconds) {
+            if (seconds < 60) {
+                return `${seconds.toFixed(1)}s`;
+            } else if (seconds < 3600) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${minutes}m ${remainingSeconds.toFixed(0)}s`;
+            } else {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                return `${hours}h ${minutes}m`;
+            }
+        }
+        
+        // Fonction pour mettre à jour la pagination
+        function updatePagination(totalItems) {
+            const container = document.getElementById('pagination-container');
+            container.innerHTML = '';
+            
+            if (totalItems <= itemsPerPage) {
+                return; // Pas besoin de pagination
+            }
+            
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            // Bouton précédent
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displaySamples();
+                }
+            });
+            container.appendChild(prevBtn);
+            
+            // Pages
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'pagination-btn';
+                firstBtn.textContent = '1';
+                firstBtn.addEventListener('click', () => {
+                    currentPage = 1;
+                    displaySamples();
+                });
+                container.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'pagination-ellipsis';
+                    ellipsis.innerHTML = '&hellip;';
+                    container.appendChild(ellipsis);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    displaySamples();
+                });
+                container.appendChild(pageBtn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'pagination-ellipsis';
+                    ellipsis.innerHTML = '&hellip;';
+                    container.appendChild(ellipsis);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'pagination-btn';
+                lastBtn.textContent = totalPages;
+                lastBtn.addEventListener('click', () => {
+                    currentPage = totalPages;
+                    displaySamples();
+                });
+                container.appendChild(lastBtn);
+            }
+            
+            // Bouton suivant
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displaySamples();
+                }
+            });
+            container.appendChild(nextBtn);
+        }
+        
+        // Fonction pour attacher les écouteurs d'événements
+        function attachEventListeners() {
+            // Événements pour les textareas (détecter les modifications)
+            document.querySelectorAll('.transcription-textarea').forEach(textarea => {
+                // Ajouter la classe "modified" si le contenu a changé
+                textarea.addEventListener('input', function() {
+                    const original = this.getAttribute('data-original');
+                    const current = this.value.trim();
+                    
+                    if (original !== current) {
+                        this.classList.add('modified');
+                        modifiedSamples.add(this.getAttribute('data-sample-id'));
+                    } else {
+                        this.classList.remove('modified');
+                        modifiedSamples.delete(this.getAttribute('data-sample-id'));
+                    }
+                });
+                
+                // Sauvegarder avec Ctrl+Enter
+                textarea.addEventListener('keydown', function(e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                        e.preventDefault();
+                        const sampleId = this.getAttribute('data-sample-id');
+                        const saveBtn = document.querySelector(`.save-btn[data-sample-id="${sampleId}"]`);
+                        saveBtn.click();
+                    }
+                });
+            });
+            
+            // Événements pour les boutons de sauvegarde
+            document.querySelectorAll('.save-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const textarea = document.querySelector(`.transcription-textarea[data-sample-id="${sampleId}"]`);
+                    const textPath = textarea.getAttribute('data-text-path');
+                    const jsonPath = textarea.getAttribute('data-json-path');
+                    const transcription = textarea.value.trim();
+                    
+                    updateTranscription(sampleId, textPath, jsonPath, transcription);
+                });
+            });
+            
+            // Événements pour les boutons de suppression
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const sample = allSamples.find(s => s.id === sampleId);
+                    
+                    if (sample) {
+                        // Supprimer directement sans confirmation
+                        deleteSample(sample);
+                    }
+                });
+            });
+            
+            // Événements pour les boutons de changement de split
+            document.querySelectorAll('.change-split-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const sample = allSamples.find(s => s.id === sampleId);
+                    
+                    if (sample) {
+                        currentSampleToChangeSplit = sample;
+                        
+                        // Définir le split actuel dans le select
+                        const splitSelect = document.getElementById('split-select');
+                        splitSelect.value = sample.split;
+                        
+                        // Afficher la modal
+                        $('#splitModal').modal('show');
+                    }
+                });
+            });
+            
+            // Initialiser les lecteurs audio
+            document.querySelectorAll('.audio-player').forEach(audio => {
+                // Gérer les erreurs de chargement
+                audio.addEventListener('error', function(e) {
+                    console.error('Erreur de chargement audio:', e);
+                    const audioContainer = this.parentElement;
+                    audioContainer.innerHTML += `<div class="alert alert-danger mt-2 p-1">Erreur de chargement audio.</div>`;
+                });
+                
+                // Forcer le chargement si nécessaire
+                if (audio.readyState === 0) {
+                    audio.load();
+                }
+            });
+            
+            // Événements pour les cartes (lire l'audio au double-clic)
+            document.querySelectorAll('.sample-card').forEach(card => {
+                card.addEventListener('dblclick', function() {
+                    const audio = this.querySelector('audio');
+                    if (audio) {
+                        if (audio.paused) {
+                            audio.load(); // Forcer le rechargement avant la lecture
+                            audio.play();
+                        } else {
+                            audio.pause();
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Fonction pour mettre à jour une transcription
+        function updateTranscription(sampleId, textPath, jsonPath, transcription) {
+            fetch('/api/finetune/update_transcription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text_path: textPath,
+                    json_path: jsonPath,
+                    transcription: transcription
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess("Transcription mise à jour avec succès");
+                    
+                    // Mettre à jour l'échantillon dans le tableau
+                    const sample = allSamples.find(s => s.id === sampleId);
+                    if (sample) {
+                        sample.transcription = transcription;
+                        
+                        // Rafraîchir l'interface
+                        const textarea = document.querySelector(`.transcription-textarea[data-sample-id="${sampleId}"]`);
+                        if (textarea) {
+                            textarea.classList.remove('modified');
+                            textarea.setAttribute('data-original', transcription);
+                        }
+                        modifiedSamples.delete(sampleId);
+                        
+                        // Mettre à jour l'affichage si le filtre "modifications uniquement" est actif
+                        if (document.getElementById('show-modifications-only').checked) {
+                            applyFilters();
+                        }
+                    }
+                } else {
+                    showError("Erreur lors de la mise à jour: " + data.error);
+                }
+            })
+            .catch(error => {
+                showError("Erreur de connexion: " + error);
+            });
+        }
+        
+        // Fonction pour supprimer un échantillon
+        function deleteSample(sample) {
+            fetch('/api/finetune/delete_sample', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text_path: sample.text_path,
+                    json_path: sample.json_path,
+                    audio_path: sample.audio_path
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess("Échantillon supprimé avec succès");
+                    
+                    // Retirer l'échantillon des tableaux
+                    allSamples = allSamples.filter(s => s.id !== sample.id);
+                    filteredSamples = filteredSamples.filter(s => s.id !== sample.id);
+                    
+                    // Supprimer directement l'élément du DOM pour une réaction immédiate
+                    const sampleElement = document.getElementById(`sample-${sample.id}`);
+                    if (sampleElement) {
+                        sampleElement.remove();
+                    }
+                    
+                    // Supprimer des échantillons modifiés si présent
+                    modifiedSamples.delete(sample.id);
+                    
+                    // Mettre à jour les compteurs et statistiques
+                    updateStats();
+                    
+                    // Vérifier si la page actuelle est maintenant vide
+                    const samplesContainer = document.getElementById('samples-container');
+                    if (samplesContainer.children.length === 0) {
+                        // Recalculer la pagination et afficher à nouveau
+                        displaySamples();
+                    }
+                    
+                    // Fermer la modal si elle était ouverte
+                    $('#deleteModal').modal('hide');
+                } else {
+                    showError("Erreur lors de la suppression: " + data.error);
+                }
+            })
+            .catch(error => {
+                showError("Erreur de connexion: " + error);
+            });
+        }
+        
+        // Fonction pour changer le split d'un échantillon
+        function changeSplit(sample, newSplit) {
+            fetch('/api/finetune/change_split', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text_path: sample.text_path,
+                    json_path: sample.json_path,
+                    audio_path: sample.audio_path,
+                    split: newSplit
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess(`Échantillon déplacé vers le split ${newSplit}`);
+                    
+                    // Mettre à jour l'échantillon dans les tableaux
+                    const sampleInAll = allSamples.find(s => s.id === sample.id);
+                    if (sampleInAll) {
+                        sampleInAll.split = newSplit;
+                        sampleInAll.audio_path = data.new_paths.audio_path;
+                        sampleInAll.text_path = data.new_paths.text_path;
+                        sampleInAll.json_path = data.new_paths.json_path;
+                        
+                        // Mettre à jour visuellement la carte sans recharger toute la page
+                        const sampleElement = document.getElementById(`sample-${sample.id}`);
+                        if (sampleElement) {
+                            // Mettre à jour le badge du split
+                            const splitBadge = sampleElement.querySelector('.split-badge');
+                            if (splitBadge) {
+                                // Supprimer les anciennes classes
+                                splitBadge.classList.remove('split-train', 'split-validation', 'split-test', 'split-unknown');
+                                // Ajouter la nouvelle classe
+                                splitBadge.classList.add(`split-${newSplit}`);
+                                // Mettre à jour le texte
+                                splitBadge.textContent = newSplit;
+                            }
+                            
+                            // Si un filtre de split est actif et ne correspond pas au nouveau split, masquer l'élément
+                            const splitFilter = document.getElementById('split-filter').value;
+                            if (splitFilter && splitFilter !== newSplit) {
+                                sampleElement.style.display = 'none';
+                            }
+                        }
+                    }
+                    
+                    // Mettre à jour les statistiques
+                    updateStats();
+                    
+                    // Appliquer les filtres si nécessaire
+                    const splitFilter = document.getElementById('split-filter').value;
+                    if (splitFilter) {
+                        applyFilters();
+                    }
+                    
+                    // Fermer la modal
+                    $('#splitModal').modal('hide');
+                } else {
+                    showError("Erreur lors du changement de split: " + data.error);
+                }
+            })
+            .catch(error => {
+                showError("Erreur de connexion: " + error);
+            });
+        }
+        
+        // Fonction pour régénérer le dataset
+        function regenerateDataset() {
+            fetch('/api/finetune/regenerate_dataset', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess("Dataset régénéré avec succès");
+                } else {
+                    showError("Erreur lors de la régénération: " + data.error);
+                }
+            })
+            .catch(error => {
+                showError("Erreur de connexion: " + error);
+            });
+        }
+        
+        // Fonction pour appliquer les filtres
+        function applyFilters() {
+            const engineFilter = document.getElementById('engine-filter').value;
+            const splitFilter = document.getElementById('split-filter').value;
+            const searchFilter = document.getElementById('search-filter').value.toLowerCase();
+            
+            filteredSamples = allSamples.filter(sample => {
+                // Filtre par moteur
+                if (engineFilter && sample.engine !== engineFilter) {
+                    return false;
+                }
+                
+                // Filtre par split
+                if (splitFilter && sample.split !== splitFilter) {
+                    return false;
+                }
+                
+                // Filtre par recherche dans la transcription
+                if (searchFilter && !sample.transcription.toLowerCase().includes(searchFilter)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            displaySamples();
+        }
+        
+        // Fonction pour afficher un message d'erreur
+        function showError(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                <strong>Erreur!</strong> ${message}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            `;
+            
+            // Ajouter l'alerte au début du conteneur
+            const container = document.querySelector('.app-content');
+            container.insertBefore(alert, container.firstChild);
+            
+            // Masquer automatiquement après 5 secondes
+            setTimeout(() => {
+                $(alert).alert('close');
+            }, 5000);
+        }
+        
+        // Fonction pour afficher un message de succès
+        function showSuccess(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.innerHTML = `
+                <strong>Succès!</strong> ${message}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            `;
+            
+            // Ajouter l'alerte au début du conteneur
+            const container = document.querySelector('.app-content');
+            container.insertBefore(alert, container.firstChild);
+            
+            // Masquer automatiquement après 3 secondes
+            setTimeout(() => {
+                $(alert).alert('close');
+            }, 3000);
+        }
+        
+        // Fonction pour afficher la vue groupée
+        function displayGroupedView() {
+            const container = document.getElementById('samples-container');
+            container.className = 'grouped-container';
+            container.innerHTML = '';
+            
+            // Filtrer les groupes selon les filtres actifs
+            const engineFilter = document.getElementById('engine-filter').value;
+            const splitFilter = document.getElementById('split-filter').value;
+            const searchFilter = document.getElementById('search-filter').value.toLowerCase();
+            const showModifiedOnly = document.getElementById('show-modifications-only').checked;
+            
+            const filteredGroups = Array.from(groupedSamples.entries()).filter(([normalizedText, group]) => {
+                // Appliquer les filtres aux échantillons du groupe
+                const validSamples = group.samples.filter(sample => {
+                    if (engineFilter && sample.engine !== engineFilter) return false;
+                    if (splitFilter && sample.split !== splitFilter) return false;
+                    if (searchFilter && !sample.transcription.toLowerCase().includes(searchFilter)) return false;
+                    if (showModifiedOnly && !modifiedSamples.has(sample.id)) return false;
+                    return true;
+                });
+                
+                return validSamples.length > 0;
+            });
+            
+            // Afficher uniquement les groupes avec plus d'un échantillon par défaut
+            const duplicateGroups = filteredGroups.filter(([, group]) => group.samples.length > 1);
+            
+            if (duplicateGroups.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-5 text-muted">
+                        <i class="fas fa-layer-group fa-3x mb-3"></i>
+                        <h4>Aucun groupe de doublons trouvé</h4>
+                        <p>Tous les échantillons ont des transcriptions uniques selon les filtres appliqués.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            duplicateGroups.forEach(([normalizedText, group], groupIndex) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-container';
+                groupDiv.innerHTML = createGroupHTML(group, groupIndex);
+                container.appendChild(groupDiv);
+            });
+            
+            // Attacher les événements pour la vue groupée
+            attachGroupedEventListeners();
+        }
+        
+        // Fonction pour créer le HTML d'un groupe
+        function createGroupHTML(group, groupIndex) {
+            const duration = formatDuration(group.totalDuration);
+            const hasMultipleSplits = new Set(group.samples.map(s => s.split)).size > 1;
+            
+            return `
+                <div class="group-header" data-group-index="${groupIndex}">
+                    <div class="group-info">
+                        <div class="group-transcription" title="${group.originalText}">
+                            ${group.originalText}
+                        </div>
+                        <div class="group-count">${group.samples.length}</div>
+                        <small class="text-muted">${duration}</small>
+                        ${hasMultipleSplits ? '<i class="fas fa-exclamation-triangle text-warning" title="Splits multiples"></i>' : ''}
+                    </div>
+                    <div class="group-actions">
+                        <button class="btn btn-sm btn-primary edit-group-btn" data-group-index="${groupIndex}" title="Éditer toutes les transcriptions">
+                            <i class="fas fa-edit"></i> Éditer tout
+                        </button>
+                        <button class="btn btn-sm btn-success unify-split-btn" data-group-index="${groupIndex}" title="Unifier le split">
+                            <i class="fas fa-clone"></i> Unifier
+                        </button>
+                        <i class="fas fa-chevron-down group-expand-icon"></i>
+                    </div>
+                </div>
+                <div class="group-samples" data-group-index="${groupIndex}">
+                    ${group.samples.map((sample, index) => createGroupSampleHTML(sample, index)).join('')}
+                </div>
+                <div class="unified-transcription" id="unified-edit-${groupIndex}" style="display: none;">
+                    <label><strong>Éditer la transcription pour tous les ${group.samples.length} échantillons :</strong></label>
+                    <textarea class="unified-textarea" data-group-index="${groupIndex}">${group.originalText}</textarea>
+                    <div class="unified-actions">
+                        <button class="btn btn-sm btn-success apply-unified-btn" data-group-index="${groupIndex}">
+                            <i class="fas fa-check"></i> Appliquer à tous
+                        </button>
+                        <button class="btn btn-sm btn-secondary cancel-unified-btn" data-group-index="${groupIndex}">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Fonction pour créer le HTML d'un échantillon dans un groupe
+        function createGroupSampleHTML(sample, index) {
+            const duration = sample.duration ? `${sample.duration.toFixed(1)}s` : '-';
+            const date = sample.timestamp ? new Date(sample.timestamp * 1000).toLocaleDateString() : '-';
+            
+            return `
+                <div class="group-sample-item" data-sample-id="${sample.id}">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" class="group-sample-checkbox" data-sample-id="${sample.id}">
+                        <span class="checkmark"></span>
+                    </label>
+                    <button class="btn btn-sm btn-outline-primary play-sample-btn" data-audio="${sample.audio_path}">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-grow-1">
+                        <strong>${sample.engine}</strong> - ${duration} - ${date}
+                    </div>
+                    <span class="badge badge-${sample.split === 'train' ? 'success' : sample.split === 'validation' ? 'warning' : 'info'}">
+                        ${sample.split}
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger delete-sample-btn" data-sample-id="${sample.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Fonction pour attacher les événements de la vue groupée
+        function attachGroupedEventListeners() {
+            // Expansion/contraction des groupes
+            document.querySelectorAll('.group-header').forEach(header => {
+                header.addEventListener('click', function(e) {
+                    // Ne pas déclencher si on clique sur un bouton
+                    if (e.target.closest('button')) return;
+                    
+                    const groupIndex = this.getAttribute('data-group-index');
+                    const samplesDiv = document.querySelector(`.group-samples[data-group-index="${groupIndex}"]`);
+                    const isExpanded = this.classList.contains('expanded');
+                    
+                    if (isExpanded) {
+                        this.classList.remove('expanded');
+                        samplesDiv.classList.remove('expanded');
+                    } else {
+                        this.classList.add('expanded');
+                        samplesDiv.classList.add('expanded');
+                    }
+                });
+            });
+            
+            // Boutons d'édition de groupe
+            document.querySelectorAll('.edit-group-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const groupIndex = this.getAttribute('data-group-index');
+                    const unifiedDiv = document.getElementById(`unified-edit-${groupIndex}`);
+                    
+                    if (unifiedDiv.style.display === 'none') {
+                        unifiedDiv.style.display = 'block';
+                        this.innerHTML = '<i class="fas fa-times"></i> Annuler';
+                        this.classList.remove('btn-primary');
+                        this.classList.add('btn-secondary');
+                    } else {
+                        unifiedDiv.style.display = 'none';
+                        this.innerHTML = '<i class="fas fa-edit"></i> Éditer tout';
+                        this.classList.remove('btn-secondary');
+                        this.classList.add('btn-primary');
+                    }
+                });
+            });
+            
+            // Boutons d'unification du split
+            document.querySelectorAll('.unify-split-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const groupIndex = parseInt(this.getAttribute('data-group-index'));
+                    showSplitUnificationModal(groupIndex);
+                });
+            });
+            
+            // Boutons d'application de l'édition unifiée
+            document.querySelectorAll('.apply-unified-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const groupIndex = parseInt(this.getAttribute('data-group-index'));
+                    applyUnifiedTranscription(groupIndex);
+                });
+            });
+            
+            // Boutons d'annulation de l'édition unifiée
+            document.querySelectorAll('.cancel-unified-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const groupIndex = this.getAttribute('data-group-index');
+                    const unifiedDiv = document.getElementById(`unified-edit-${groupIndex}`);
+                    const editBtn = document.querySelector(`.edit-group-btn[data-group-index="${groupIndex}"]`);
+                    
+                    unifiedDiv.style.display = 'none';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i> Éditer tout';
+                    editBtn.classList.remove('btn-secondary');
+                    editBtn.classList.add('btn-primary');
+                });
+            });
+            
+            // Boutons play dans les groupes
+            document.querySelectorAll('.play-sample-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const audioPath = this.getAttribute('data-audio');
+                    playAudioFile(audioPath, this);
+                });
+            });
+            
+            // Boutons de suppression dans les groupes
+            document.querySelectorAll('.delete-sample-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const sample = allSamples.find(s => s.id === sampleId);
+                    if (sample && confirm('Supprimer cet échantillon ?')) {
+                        deleteSample(sample);
+                    }
+                });
+            });
+        }
+        
+        // Fonction pour appliquer une transcription unifiée à un groupe
+        async function applyUnifiedTranscription(groupIndex) {
+            const textarea = document.querySelector(`.unified-textarea[data-group-index="${groupIndex}"]`);
+            const newTranscription = textarea.value.trim();
+            
+            if (!newTranscription) {
+                showError('La transcription ne peut pas être vide');
+                return;
+            }
+            
+            // Obtenir les échantillons du groupe
+            const groupEntries = Array.from(groupedSamples.entries());
+            const [normalizedText, group] = groupEntries[groupIndex];
+            
+            const updates = group.samples.map(sample => ({
+                text_path: sample.text_path,
+                json_path: sample.json_path,
+                transcription: newTranscription
+            }));
+            
+            try {
+                const response = await fetch('/api/finetune/batch_update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ updates })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(`${updates.length} transcriptions mises à jour`);
+                    
+                    // Mettre à jour localement
+                    group.samples.forEach(sample => {
+                        sample.transcription = newTranscription;
+                        const sampleInAll = allSamples.find(s => s.id === sample.id);
+                        if (sampleInAll) {
+                            sampleInAll.transcription = newTranscription;
+                        }
+                    });
+                    
+                    // Regrouper à nouveau et réafficher
+                    groupSamplesByTranscription();
+                    displaySamples();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            }
+        }
+        
+        // Fonction utilitaire pour jouer un fichier audio
+        function playAudioFile(audioPath, button) {
+            const icon = button.querySelector('i');
+            
+            // Arrêter tous les autres audios
+            document.querySelectorAll('.play-sample-btn').forEach(btn => {
+                if (btn !== button && btn.audio) {
+                    btn.audio.pause();
+                    btn.querySelector('i').classList.remove('fa-pause');
+                    btn.querySelector('i').classList.add('fa-play');
+                }
+            });
+            
+            if (button.audio && !button.audio.paused) {
+                button.audio.pause();
+                icon.classList.remove('fa-pause');
+                icon.classList.add('fa-play');
+            } else {
+                if (!button.audio) {
+                    button.audio = new Audio(audioPath);
+                    button.audio.addEventListener('ended', () => {
+                        icon.classList.remove('fa-pause');
+                        icon.classList.add('fa-play');
+                    });
+                }
+                
+                button.audio.play();
+                icon.classList.remove('fa-play');
+                icon.classList.add('fa-pause');
+            }
+        }
+        
+        // Fonction pour afficher la vue tableau
+        function displayTableView(samples) {
+            const container = document.getElementById('samples-container');
+            
+            const table = document.createElement('table');
+            table.className = 'table table-hover';
+            
+            // En-tête du tableau
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th width="40">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="table-select-all">
+                            <span class="checkmark"></span>
+                        </label>
+                    </th>
+                    <th width="100">Audio</th>
+                    <th>Transcription</th>
+                    <th width="100">Split</th>
+                    <th width="100">Moteur</th>
+                    <th width="80">Durée</th>
+                    <th width="120">Actions</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+            
+            // Corps du tableau
+            const tbody = document.createElement('tbody');
+            
+            samples.forEach((sample, index) => {
+                const row = document.createElement('tr');
+                row.id = `sample-row-${sample.id}`;
+                
+                // Calculer la durée
+                const duration = sample.duration ? `${sample.duration.toFixed(1)}s` : '-';
+                
+                row.innerHTML = `
+                    <td>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" class="sample-select" data-sample-id="${sample.id}" data-index="${index}">
+                            <span class="checkmark"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary play-btn" data-audio="${sample.audio_path}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </td>
+                    <td class="transcription-cell">
+                        <input type="text" class="transcription-inline-edit form-control form-control-sm" 
+                               value="${sample.transcription}"
+                               data-sample-id="${sample.id}"
+                               data-text-path="${sample.text_path}"
+                               data-json-path="${sample.json_path}"
+                               data-original="${sample.transcription}">
+                    </td>
+                    <td>
+                        <select class="form-control form-control-sm split-select" data-sample-id="${sample.id}">
+                            <option value="train" ${sample.split === 'train' ? 'selected' : ''}>Train</option>
+                            <option value="validation" ${sample.split === 'validation' ? 'selected' : ''}>Validation</option>
+                            <option value="test" ${sample.split === 'test' ? 'selected' : ''}>Test</option>
+                        </select>
+                    </td>
+                    <td>${sample.engine}</td>
+                    <td>${duration}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success save-inline-btn" data-sample-id="${sample.id}" title="Sauvegarder">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-inline-btn" data-sample-id="${sample.id}" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            container.innerHTML = '';
+            container.appendChild(table);
+            
+            // Attacher les événements pour la vue tableau
+            attachTableEventListeners();
+            
+            // Mettre à jour la pagination
+            updatePagination(filteredSamples.length);
+        }
+        
+        // Fonction pour attacher les événements de la vue tableau
+        function attachTableEventListeners() {
+            // Select all dans le tableau
+            const tableSelectAll = document.getElementById('table-select-all');
+            if (tableSelectAll) {
+                tableSelectAll.addEventListener('change', function(e) {
+                    document.querySelectorAll('.sample-select').forEach(checkbox => {
+                        checkbox.checked = e.target.checked;
+                        const sampleId = checkbox.getAttribute('data-sample-id');
+                        if (e.target.checked) {
+                            window.batchModule?.selectedSamples?.add(sampleId);
+                        } else {
+                            window.batchModule?.selectedSamples?.delete(sampleId);
+                        }
+                    });
+                    window.batchModule?.updateSelectionUI?.();
+                });
+            }
+            
+            // Checkboxes individuelles
+            document.querySelectorAll('.sample-select').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const index = parseInt(this.getAttribute('data-index'));
+                    window.batchModule?.handleSampleSelection?.(sampleId, this.checked, index);
+                });
+            });
+            
+            // Boutons play
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const audioPath = this.getAttribute('data-audio');
+                    const icon = this.querySelector('i');
+                    
+                    // Toggle play/pause
+                    if (this.audio && !this.audio.paused) {
+                        this.audio.pause();
+                        icon.classList.remove('fa-pause');
+                        icon.classList.add('fa-play');
+                    } else {
+                        // Arrêter tous les autres audios
+                        document.querySelectorAll('.play-btn').forEach(otherBtn => {
+                            if (otherBtn.audio) {
+                                otherBtn.audio.pause();
+                                otherBtn.querySelector('i').classList.remove('fa-pause');
+                                otherBtn.querySelector('i').classList.add('fa-play');
+                            }
+                        });
+                        
+                        if (!this.audio) {
+                            this.audio = new Audio(audioPath);
+                            this.audio.addEventListener('ended', () => {
+                                icon.classList.remove('fa-pause');
+                                icon.classList.add('fa-play');
+                            });
+                        }
+                        
+                        this.audio.play();
+                        icon.classList.remove('fa-play');
+                        icon.classList.add('fa-pause');
+                    }
+                });
+            });
+            
+            // Édition inline des transcriptions
+            document.querySelectorAll('.transcription-inline-edit').forEach(input => {
+                input.addEventListener('input', function() {
+                    const original = this.getAttribute('data-original');
+                    const current = this.value.trim();
+                    const sampleId = this.getAttribute('data-sample-id');
+                    
+                    if (original !== current) {
+                        this.classList.add('modified');
+                        modifiedSamples.add(sampleId);
+                    } else {
+                        this.classList.remove('modified');
+                        modifiedSamples.delete(sampleId);
+                    }
+                });
+                
+                // Sauvegarder avec Enter
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const sampleId = this.getAttribute('data-sample-id');
+                        document.querySelector(`.save-inline-btn[data-sample-id="${sampleId}"]`).click();
+                    }
+                });
+            });
+            
+            // Changement de split
+            document.querySelectorAll('.split-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const newSplit = this.value;
+                    const sample = allSamples.find(s => s.id === sampleId);
+                    
+                    if (sample) {
+                        changeSplit(sample, newSplit);
+                    }
+                });
+            });
+            
+            // Boutons de sauvegarde
+            document.querySelectorAll('.save-inline-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const input = document.querySelector(`.transcription-inline-edit[data-sample-id="${sampleId}"]`);
+                    const textPath = input.getAttribute('data-text-path');
+                    const jsonPath = input.getAttribute('data-json-path');
+                    const transcription = input.value.trim();
+                    
+                    updateTranscription(sampleId, textPath, jsonPath, transcription);
+                });
+            });
+            
+            // Boutons de suppression
+            document.querySelectorAll('.delete-inline-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    const sample = allSamples.find(s => s.id === sampleId);
+                    
+                    if (sample && confirm('Supprimer cet échantillon ?')) {
+                        deleteSample(sample);
+                    }
+                });
+            });
+        }
+        
+        // Fonction pour appliquer les filtres
+        function applyFilters() {
+            const engineFilter = document.getElementById('engine-filter').value;
+            const splitFilter = document.getElementById('split-filter').value;
+            const searchFilter = document.getElementById('search-filter').value.toLowerCase();
+            const showModifiedOnly = document.getElementById('show-modifications-only').checked;
+            
+            filteredSamples = allSamples.filter(sample => {
+                // Filtre par moteur
+                if (engineFilter && sample.engine !== engineFilter) {
+                    return false;
+                }
+                
+                // Filtre par split
+                if (splitFilter && sample.split !== splitFilter) {
+                    return false;
+                }
+                
+                // Filtre par recherche dans la transcription
+                if (searchFilter && !sample.transcription.toLowerCase().includes(searchFilter)) {
+                    return false;
+                }
+                
+                // Filtre par modification
+                if (showModifiedOnly && !modifiedSamples.has(sample.id)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Réinitialiser la pagination
+            currentPage = 1;
+            
+            displaySamples();
+        }
+        
+        // Gestion des raccourcis clavier globaux
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // Ignorer si on est dans un champ de texte ou si une modal est ouverte
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                // Afficher l'aide (?)
+                if (e.key === '?') {
+                    e.preventDefault();
+                    document.getElementById('help-overlay').style.display = 'flex';
+                }
+                
+                // Fermer les modals (Escape)
+                if (e.key === 'Escape') {
+                    document.getElementById('help-overlay').style.display = 'none';
+                }
+                
+                // Focus sur la recherche (F)
+                if (e.key === 'f' || e.key === 'F') {
+                    e.preventDefault();
+                    document.getElementById('search-filter').focus();
+                }
+                
+                // Changer la vue (G, L, C)
+                if (e.key === 'g' || e.key === 'G') {
+                    e.preventDefault();
+                    document.getElementById('grid-view-btn').click();
+                }
+                if (e.key === 'l' || e.key === 'L') {
+                    e.preventDefault();
+                    document.getElementById('list-view-btn').click();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    e.preventDefault();
+                    document.getElementById('compact-view-btn').click();
+                }
+                if (e.key === 't' || e.key === 'T') {
+                    e.preventDefault();
+                    document.getElementById('table-view-btn').click();
+                }
+                
+                // Navigation entre pages (flèches)
+                if (e.key === 'ArrowLeft' && e.altKey) {
+                    e.preventDefault();
+                    const prevBtn = document.querySelector('.pagination-btn:first-child');
+                    if (prevBtn && !prevBtn.disabled) prevBtn.click();
+                }
+                if (e.key === 'ArrowRight' && e.altKey) {
+                    e.preventDefault();
+                    const nextBtn = document.querySelector('.pagination-btn:last-child');
+                    if (nextBtn && !nextBtn.disabled) nextBtn.click();
+                }
+            });
+            
+            // Écouter les raccourcis pour les échantillons actifs
+            document.addEventListener('keydown', function(e) {
+                // Ignorer si on est dans un champ de texte
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                // Obtenir l'échantillon actuellement sélectionné/focus
+                const focusedCard = document.activeElement;
+                if (!focusedCard || !focusedCard.classList.contains('sample-card')) {
+                    return;
+                }
+                
+                const sampleId = focusedCard.id.replace('sample-', '');
+                
+                // Sauvegarder (S)
+                if (e.key === 's' || e.key === 'S') {
+                    e.preventDefault();
+                    const saveBtn = focusedCard.querySelector(`.save-btn[data-sample-id="${sampleId}"]`);
+                    if (saveBtn) saveBtn.click();
+                }
+                
+                // Changer le split (1, 2, 3)
+                if (e.key === '1' || e.key === '2' || e.key === '3') {
+                    e.preventDefault();
+                    const sample = allSamples.find(s => s.id === sampleId);
+                    if (sample) {
+                        currentSampleToChangeSplit = sample;
+                        let newSplit;
+                        if (e.key === '1') newSplit = 'train';
+                        if (e.key === '2') newSplit = 'validation';
+                        if (e.key === '3') newSplit = 'test';
+                        changeSplit(currentSampleToChangeSplit, newSplit);
+                    }
+                }
+                
+                // Jouer/Pauser l'audio (Espace)
+                if (e.key === ' ' && !e.target.classList.contains('transcription-textarea')) {
+                    e.preventDefault();
+                    const audio = focusedCard.querySelector('audio');
+                    if (audio) {
+                        if (audio.paused) {
+                            audio.play();
+                        } else {
+                            audio.pause();
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Fonction pour vérifier l'état des lecteurs audio
+        function checkAudioPlayers() {
+            const players = document.querySelectorAll('audio');
+            let totalPlayers = players.length;
+            let readyPlayers = 0;
+            let failedPlayers = 0;
+            
+            players.forEach(player => {
+                if (player.readyState >= 2) { // HAVE_CURRENT_DATA or better
+                    readyPlayers++;
+                } else if (player.error) {
+                    failedPlayers++;
+                }
+            });
+            
+            if (totalPlayers > 0) {
+                console.log(`État des lecteurs audio: ${readyPlayers}/${totalPlayers} chargés, ${failedPlayers} échecs`);
+                
+                // Réparer les lecteurs qui ont échoué
+                players.forEach(player => {
+                    if (player.readyState === 0 && !player.error) {
+                        // Essayer de recharger
+                        const src = player.getAttribute('src');
+                        if (src) {
+                            if (!src.startsWith('/')) {
+                                // Corriger le chemin si nécessaire
+                                player.setAttribute('src', '/' + src);
+                                player.load();
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser les éléments d'interface
+            setupInterface();
+            
+            // Charger les échantillons
+            loadSamples();
+            
+            // Configurer les raccourcis clavier
+            setupKeyboardShortcuts();
+            
+            // Vérifier l'état des lecteurs audio périodiquement
+            setTimeout(checkAudioPlayers, 2000);
+            setInterval(checkAudioPlayers, 10000);
+            
+            // Événements pour les filtres
+            document.getElementById('engine-filter').addEventListener('change', applyFilters);
+            document.getElementById('split-filter').addEventListener('change', applyFilters);
+            document.getElementById('search-filter').addEventListener('input', applyFilters);
+            document.getElementById('show-modifications-only').addEventListener('change', applyFilters);
+            
+            // Événement pour le regroupement
+            document.getElementById('group-similar').addEventListener('change', function(e) {
+                showGroupedView = e.target.checked;
+                displaySamples();
+            });
+            document.getElementById('clear-search').addEventListener('click', function() {
+                document.getElementById('search-filter').value = '';
+                applyFilters();
+            });
+            
+            // Événement pour le toggle des filtres
+            document.getElementById('filters-toggle').addEventListener('click', function() {
+                const content = document.getElementById('filters-content');
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                this.querySelector('i.fa-chevron-down').classList.toggle('fa-chevron-up');
+            });
+            
+            // Événement pour les boutons de vue
+            document.querySelectorAll('.view-toggle-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Retirer la classe active de tous les boutons
+                    document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Ajouter la classe active à ce bouton
+                    this.classList.add('active');
+                    
+                    // Changer la vue
+                    currentView = this.getAttribute('data-view');
+                    displaySamples();
+                });
+            });
+            
+            // Événement pour le bouton d'aide
+            document.getElementById('help-btn').addEventListener('click', function() {
+                document.getElementById('help-overlay').style.display = 'flex';
+            });
+            
+            document.getElementById('close-help').addEventListener('click', function() {
+                document.getElementById('help-overlay').style.display = 'none';
+            });
+            
+            // Événement pour le bouton de confirmation de suppression
+            document.getElementById('confirm-delete').addEventListener('click', function() {
+                if (currentSampleToDelete) {
+                    deleteSample(currentSampleToDelete);
+                }
+            });
+            
+            // Événement pour le bouton de confirmation de changement de split
+            document.getElementById('confirm-split-change').addEventListener('click', function() {
+                if (currentSampleToChangeSplit) {
+                    const newSplit = document.getElementById('split-select').value;
+                    changeSplit(currentSampleToChangeSplit, newSplit);
+                }
+            });
+            
+            // Événement pour le bouton de régénération de dataset
+            document.getElementById('regenerate-dataset').addEventListener('click', regenerateDataset);
+            
+            // Événement pour le bouton d'export
+            document.getElementById('export-dataset').addEventListener('click', function() {
+                showInfo("Préparation de l'export du dataset...");
+                
+                // Simuler un traitement (à remplacer par une vraie implémentation)
+                setTimeout(() => {
+                    showSuccess("Dataset exporté avec succès");
+                    // Ici, on pourrait déclencher un téléchargement
+                }, 1500);
+            });
+        });
+        
+        // Fonction pour configurer l'interface
+        function setupInterface() {
+            // Par défaut, afficher les filtres
+            const filtersContent = document.getElementById('filters-content');
+            filtersContent.style.display = 'block';
+            
+            // Adapter la taille des éléments par page selon la vue
+            document.querySelectorAll('.view-toggle-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    if (view === 'grid') itemsPerPage = 24;
+                    if (view === 'list') itemsPerPage = 12;
+                    if (view === 'table') itemsPerPage = 50; // Plus d'éléments en mode tableau
+                    if (view === 'compact') itemsPerPage = 36;
+                    currentPage = 1;
+                    displaySamples();
+                });
+            });
+            
+            // Ajouter des styles CSS pour l'animation des toasts
+            addToastAnimationStyles();
+        }
+        
+        // Fonction pour ajouter les styles d'animation des toasts
+        function addToastAnimationStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+                
+                .notification-toast {
+                    animation: slideIn 0.3s forwards;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Fonctions pour les notifications
+        function showInfo(message) {
+            showNotification(message, 'info');
+        }
+        
+        function showNotification(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show notification-toast`;
+            alert.style.position = 'fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '9999';
+            alert.style.maxWidth = '350px';
+            alert.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+            
+            alert.innerHTML = `
+                <span class="message">${message}</span>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            // Animation d'entrée
+            setTimeout(() => {
+                alert.style.animation = 'slideIn 0.3s forwards';
+            }, 10);
+            
+            // Masquer automatiquement après 3 secondes
+            const duration = type === 'danger' ? 5000 : 3000;
+            setTimeout(() => {
+                alert.style.animation = 'slideOut 0.3s forwards';
+                setTimeout(() => {
+                    alert.remove();
+                }, 300);
+            }, duration);
+        }
+    </script>
+</body>
+</html>
