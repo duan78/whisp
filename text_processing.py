@@ -172,15 +172,13 @@ def normaliser_commande(texte):
     """
     from command_aliases import get_normalized_command, extract_command_parameters
     
-    # Nettoyer d'abord la commande
-    texte_nettoye = nettoyer_reponse_stt(texte)
-    
-    # Obtenir la commande normalisée
-    commande_normalisee = get_normalized_command(texte_nettoye)
-    
-    # Si une commande est reconnue, extraire ses paramètres
-    if commande_normalisee:
-        parametres = extract_command_parameters(texte_nettoye, commande_normalisee)
-        return commande_normalisee, parametres
-    
+    # Nettoyage et normalisation de la commande
+    cleaned_text = nettoyer_reponse_stt(texte)
+    normalized_command = get_normalized_command(cleaned_text)
+
+    # Extraction des paramètres si commande reconnue
+    if normalized_command:
+        parameters = extract_command_parameters(cleaned_text, normalized_command)
+        return normalized_command, parameters
+
     return None, None

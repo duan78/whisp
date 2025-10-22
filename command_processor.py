@@ -25,6 +25,19 @@ except ImportError as e:
     print(f"Numba math non disponible, utilisation des fonctions standards: {e}")
     NUMBA_MATH_AVAILABLE = False
 from command_aliases import is_command_alias
+
+# Helper functions pour l'interface web
+def _log_command_to_web(command_text):
+    """Enregistre une commande dans l'interface web si disponible"""
+    if web_interface_available:
+        command_to_web(command_text)
+
+def _log_response_to_web(response_text):
+    """Enregistre une réponse dans l'interface web si disponible"""
+    if web_interface_available:
+        response_to_web(response_text)
+
+# Imports des modules de commandes
 from exit_commands import est_commande_sortie, demander_confirmation_sortie, traiter_reponse_confirmation
 from dictation_mode import traiter_dictee, traiter_commande_ecriture
 from keyboard_commands import executer_commande_clavier
@@ -63,13 +76,20 @@ class CommandProcessor:
     
     @catch_errors(category=ErrorCategory.COMMAND_PROCESSING, severity=ErrorSeverity.HIGH)
     def process_command(self, texte):
-        """Traite une commande vocale et retourne le résultat"""
-        # Enregistrer la commande dans l'interface web si disponible
-        if web_interface_available:
-            command_to_web(texte)
-        
+        """
+        Traite une commande vocale et retourne le résultat.
+
+        Args:
+            texte (str): Commande vocale à traiter
+
+        Returns:
+            str or None: Résultat du traitement ou None si aucune réponse
+        """
+        # Enregistrement de la commande dans l'interface web
+        _log_command_to_web(texte)
+
         try:
-            # Vérifier si c'est une réponse à une demande de confirmation de sortie
+            # Vérification des réponses de confirmation en cours
             from exit_commands import confirmation_en_cours
             if confirmation_en_cours:
                 if traiter_reponse_confirmation(texte):
