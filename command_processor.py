@@ -16,6 +16,14 @@ except ImportError:
     print("Interface web non disponible")
 from config import get_dictation_mode, get_dictated_text, get_translation_mode
 from text_processing import ecrire_texte_avec_accents, nettoyer_commande, normaliser_commande
+
+# Import des optimisations Numba
+try:
+    from math_optimization import calculate_text_similarity, fuzzy_search, math_optimizer
+    NUMBA_MATH_AVAILABLE = True
+except ImportError as e:
+    print(f"Numba math non disponible, utilisation des fonctions standards: {e}")
+    NUMBA_MATH_AVAILABLE = False
 from command_aliases import is_command_alias
 from exit_commands import est_commande_sortie, demander_confirmation_sortie, traiter_reponse_confirmation
 from dictation_mode import traiter_dictee, traiter_commande_ecriture
