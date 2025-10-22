@@ -4,7 +4,7 @@
 
 ![Whisp Assistant Logo](https://img.shields.io/badge/Whisp-Assistant-blue?style=for-the-badge&logo=python)
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-green?style=for-the-badge&logo=python)
-![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)
+![License](https://img.shields.io/badge/license-GPL%20v3-blue?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey?style=for-the-badge)
 
 **Un assistant vocal personnel intelligent et multilingue**
@@ -305,7 +305,7 @@ Pour signaler un bug :
 
 ## 📝 Licence
 
-Ce projet est sous licence **MIT** - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Ce projet est sous licence **GPL v3.0** - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 ## 🙏 Remerciements
 
