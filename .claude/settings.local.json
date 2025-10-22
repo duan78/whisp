@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "Bash(sqlite3:*)",
+      "Bash(python:*)",
+      "Bash(copy:*)",
+      "Bash(choco install:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(curl:*)",
+      "Bash(unzip:*)",
+      "Bash(move:*)",
+      "Bash(set PATH=%PATH%)",
+      "Bash(C:Usersduan7Desktopwhisp_assistantwhisp_assistantffmpeg_portableffmpeg-8.0-essentials_buildbin)",
+      "Bash(C:\\Users\\duan7\\Desktop\\whisp_assistant\\whisp_assistant\\ffmpeg_portable\\ffmpeg-8.0-essentials_build\\bin\\ffmpeg.exe:*)",
+      "Bash(powershell:*)",
+      "Bash(pip uninstall:*)",
+      "Bash(test:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,181 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whisp-assistant"
+version = "1.0.0"
+description = "Un assistant vocal personnel intelligent et multilingue"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Whisp Assistant Team", email = "contact@whisp-assistant.com"}
+]
+maintainers = [
+    {name = "Whisp Assistant Team", email = "contact@whisp-assistant.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Shells",
+    "Topic :: Utilities",
+]
+keywords = [
+    "assistant",
+    "voice assistant",
+    "speech recognition",
+    "text-to-speech",
+    "automation",
+    "natural language",
+    "ai",
+    "python",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pyautogui>=0.9.53",
+    "SpeechRecognition>=3.8.1",
+    "pyttsx3>=2.90",
+    "gTTS>=2.2.4",
+    "pygame>=2.1.0",
+    "TTS>=0.17.0",
+    "pywin32>=228; platform_system=='Windows'",
+    "mouse>=0.7.1; platform_system=='Windows'",
+    "pyobjc>=7.3; platform_system=='Darwin'",
+    "python-xlib>=0.31; platform_system=='Linux'",
+    "flask>=2.2.0",
+    "flask-cors>=4.0.0",
+    "werkzeug>=2.2.0",
+    "requests>=2.31.0",
+    "numpy>=1.21.0",
+    "scipy>=1.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "flake8>=6.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.0",
+    "bandit>=1.7.0",
+    "safety>=2.3.0",
+]
+gpu = [
+    "torch>=1.12.0",
+    "torchaudio>=0.12.0",
+    "transformers>=4.21.0",
+    "openai-whisper>=20230314",
+]
+
+[project.urls]
+Homepage = "https://github.com/votre-username/whisp-assistant"
+Documentation = "https://docs.whisp-assistant.com"
+Repository = "https://github.com/votre-username/whisp-assistant.git"
+"Bug Tracker" = "https://github.com/votre-username/whisp-assistant/issues"
+Changelog = "https://github.com/votre-username/whisp-assistant/blob/main/CHANGELOG.md"
+
+[project.scripts]
+whisp-assistant = "main:assistant_vocal"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["whisp_assistant*"]
+
+[tool.setuptools.package-data]
+whisp_assistant = ["templates/*.html", "static/css/*.css", "static/js/*.js"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["whisp_assistant"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--cov=whisp_assistant",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["whisp_assistant"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/.*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

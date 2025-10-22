@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Whisp Assistant Vocal - Contrôlez votre ordinateur par la voix. Solution d'accessibilité pour personnes malvoyantes, non-voyantes et à mobilité réduite.">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Whisp Assistant Vocal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%234361ee' d='M256 32C114.52 32 0 146.496 0 288v48a32 32 0 0 0 17.689 28.622l14.383 7.191C34.083 431.903 83.421 480 144 480h24c13.255 0 24-10.745 24-24V280c0-13.255-10.745-24-24-24h-24c-31.342 0-59.671 12.879-80 33.627V288c0-105.869 86.131-192 192-192s192 86.131 192 192v1.627C427.671 268.879 399.342 256 368 256h-24c-13.255 0-24 10.745-24 24v176c0 13.255 10.745 24 24 24h24c60.579 0 109.917-48.098 111.928-108.187l14.382-7.191A32 32 0 0 0 512 336v-48c0-141.479-114.496-256-256-256z'/%3E%3C/svg%3E">
+    <!-- Script de détection précoce pour éviter les flashs de contenu non stylisé -->
+    <script>
+        // Supprimer la classe no-js dès que possible
+        document.documentElement.classList.remove('no-js');
+        
+        // Détection des préférences de réduction de mouvement
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.classList.add('reduced-motion');
+        }
+        
+        // Vérifier le mode sombre
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+    
+    <style>
+        /* Styles pour l'animation de chargement initial */
+        .loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(67, 97, 238, 0.2);
+            border-radius: 50%;
+            border-top-color: #4361ee;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        .loading-logo {
+            font-size: 2rem;
+            color: #4361ee;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Styles pour les modèles Coqui TTS */
+        #coqui-models-container {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(67, 97, 238, 0.05);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(67, 97, 238, 0.2);
+        }
+        
+        .coqui-models-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #4361ee;
+        }
+        
+        .coqui-models-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .model-button {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            color: #374151;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .model-button:hover {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        
+        .model-button.active {
+            background-color: #4361ee;
+            color: white;
+            border-color: #3651d4;
+        }
+        
+        /* Mode sombre pour les boutons de modèles */
+        .dark-mode #coqui-models-container {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: rgba(67, 97, 238, 0.3);
+        }
+        
+        .dark-mode .model-button {
+            background-color: #374151;
+            color: #e5e7eb;
+            border-color: #4b5563;
+        }
+        
+        .dark-mode .model-button:hover {
+            background-color: #4b5563;
+            border-color: #6b7280;
+        }
+        
+        .dark-mode .model-button.active {
+            background-color: #4361ee;
+            color: white;
+            border-color: #3651d4;
+        }
+        
+        /* Styles pour les modèles Coqui TTS */
+        #coqui-models-container {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(67, 97, 238, 0.05);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(67, 97, 238, 0.2);
+        }
+        
+        .coqui-models-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #4361ee;
+        }
+        
+        .coqui-models-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .model-button {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            color: #374151;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .model-button:hover {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        
+        .model-button.active {
+            background-color: #4361ee;
+            color: white;
+            border-color: #3651d4;
+        }
+        
+        /* Mode sombre pour les boutons de modèles */
+        .dark-mode #coqui-models-container {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: rgba(67, 97, 238, 0.3);
+        }
+        
+        .dark-mode .model-button {
+            background-color: #374151;
+            color: #e5e7eb;
+            border-color: #4b5563;
+        }
+        
+        .dark-mode .model-button:hover {
+            background-color: #4b5563;
+            border-color: #6b7280;
+        }
+        
+        .dark-mode .model-button.active {
+            background-color: #4361ee;
+            color: white;
+            border-color: #3651d4;
+        }
+    </style>
+</head>
+<body role="application">
+    <!-- Indicateur de chargement initial -->
+    <div id="loading-indicator" class="loading-indicator">
+        <div class="loading-logo">
+            <i class="fas fa-microphone-alt"></i>
+        </div>
+        <div class="loading-spinner"></div>
+        <p>Chargement de Whisp Assistant...</p>
+    </div>
+    
+    <!-- Lien d'évitement pour l'accessibilité -->
+    <a href="#main-content" class="sr-only sr-only-focusable">Aller au contenu principal</a>
+    
+    <div class="container">
+        {% set active_page = 'index' %}
+        {% include 'components/navigation.html' %}
+            <div class="status-container">
+                <div class="status-group">
+                    <div id="status-indicator" class="status-indicator" aria-hidden="true"></div>
+                    <span id="status-text" aria-live="polite">En attente...</span>
+                </div>
+                <button id="toggle-button" class="toggle-button" aria-label="Activer/désactiver l'assistant">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <div class="tabs" role="tablist">
+                <button class="tab-button active" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                </button>
+                <button class="tab-button" data-tab="metrics" role="tab" aria-selected="false" aria-controls="metrics">
+                    <i class="fas fa-chart-line"></i> Métriques STT
+                </button>
+                <button class="tab-button" data-tab="help" role="tab" aria-selected="false" aria-controls="help">
+                    <i class="fas fa-book"></i> Guide d'utilisation
+                </button>
+            </div>
+            
+            <div id="dashboard" class="tab-content active" role="tabpanel" aria-labelledby="dashboard-tab">
+                <section class="interaction-section">
+                    <div class="last-interaction">
+                        <div class="command-container">
+                            <h3><i class="fas fa-user-circle"></i> Dernière commande</h3>
+                            <p id="last-command" aria-live="polite">
+                                <span class="placeholder-text">En attente de votre commande...</span>
+                            </p>
+                        </div>
+                        <div class="response-container">
+                            <h3><i class="fas fa-robot"></i> Dernière réponse</h3>
+                            <p id="last-response" aria-live="polite">
+                                <span class="placeholder-text">Whisp est prêt à vous répondre</span>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="logs-section">
+                    <h2><i class="fas fa-history"></i> Journal d'activité</h2>
+                    <div class="logs-header">
+                        <div class="logs-filter" role="group" aria-label="Filtrer les logs">
+                            <button class="filter-button active" data-filter="all" aria-pressed="true">Tous</button>
+                            <button class="filter-button" data-filter="command" aria-pressed="false">Commandes</button>
+                            <button class="filter-button" data-filter="response" aria-pressed="false">Réponses</button>
+                            <button class="filter-button" data-filter="error" aria-pressed="false">Erreurs</button>
+                        </div>
+                        <button class="clear-logs-button" title="Effacer les logs" aria-label="Effacer tous les logs">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    <div id="logs-container" class="logs-container" aria-live="polite" aria-atomic="false">
+                        <!-- Les logs seront ajoutés ici dynamiquement -->
+                        <div class="logs-empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>Le journal d'activité s'affichera ici</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div id="metrics" class="tab-content" role="tabpanel" aria-labelledby="metrics-tab">
+                <section class="metrics-section">
+                    <h2><i class="fas fa-chart-bar"></i> Métriques de reconnaissance vocale</h2>
+                    
+                    <div class="metrics-controls">
+                        <button id="reset-metrics-button" class="action-button" aria-label="Réinitialiser les métriques">
+                            <i class="fas fa-redo-alt"></i> Réinitialiser les métriques
+                        </button>
+                    </div>
+                    
+                    <div class="metrics-container">
+                        <div class="metrics-card">
+                            <h3>SpeechRecognition (par lot)</h3>
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <span class="metric-label">Requêtes totales:</span>
+                                    <span id="sr-requests" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Succès:</span>
+                                    <span id="sr-success" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Erreurs:</span>
+                                    <span id="sr-errors" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Taux de succès:</span>
+                                    <span id="sr-success-rate" class="metric-value">0%</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence moyenne:</span>
+                                    <span id="sr-avg-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence min:</span>
+                                    <span id="sr-min-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence max:</span>
+                                    <span id="sr-max-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière latence:</span>
+                                    <span id="sr-last-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Durée audio moyenne:</span>
+                                    <span id="sr-avg-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière durée audio:</span>
+                                    <span id="sr-last-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Mots par minute:</span>
+                                    <span id="sr-words-per-minute" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière requête:</span>
+                                    <span id="sr-last-request-time" class="metric-value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="metrics-card">
+                            <h3>OpenAI Whisper API (continu)</h3>
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <span class="metric-label">Requêtes totales:</span>
+                                    <span id="whisper-requests" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Succès:</span>
+                                    <span id="whisper-success" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Erreurs:</span>
+                                    <span id="whisper-errors" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Taux de succès:</span>
+                                    <span id="whisper-success-rate" class="metric-value">0%</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence moyenne:</span>
+                                    <span id="whisper-avg-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence min:</span>
+                                    <span id="whisper-min-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence max:</span>
+                                    <span id="whisper-max-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière latence:</span>
+                                    <span id="whisper-last-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Durée audio moyenne:</span>
+                                    <span id="whisper-avg-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière durée audio:</span>
+                                    <span id="whisper-last-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Mots par minute:</span>
+                                    <span id="whisper-words-per-minute" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Coût total:</span>
+                                    <span id="whisper-cost" class="metric-value">$0.00</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière requête:</span>
+                                    <span id="whisper-last-request-time" class="metric-value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="metrics-card">
+                            <h3>Vosk (continu, hors ligne)</h3>
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <span class="metric-label">Requêtes totales:</span>
+                                    <span id="vosk-requests" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Succès:</span>
+                                    <span id="vosk-success" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Erreurs:</span>
+                                    <span id="vosk-errors" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Taux de succès:</span>
+                                    <span id="vosk-success-rate" class="metric-value">0%</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence moyenne:</span>
+                                    <span id="vosk-avg-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence min:</span>
+                                    <span id="vosk-min-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence max:</span>
+                                    <span id="vosk-max-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière latence:</span>
+                                    <span id="vosk-last-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Durée audio moyenne:</span>
+                                    <span id="vosk-avg-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière durée audio:</span>
+                                    <span id="vosk-last-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Mots par minute:</span>
+                                    <span id="vosk-words-per-minute" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière requête:</span>
+                                    <span id="vosk-last-request-time" class="metric-value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="metrics-card">
+                            <h3>Whisper CT2 (continu, hors ligne)</h3>
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <span class="metric-label">Requêtes totales:</span>
+                                    <span id="whisper-ct2-requests" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Succès:</span>
+                                    <span id="whisper-ct2-success" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Erreurs:</span>
+                                    <span id="whisper-ct2-errors" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Taux de succès:</span>
+                                    <span id="whisper-ct2-success-rate" class="metric-value">0%</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence moyenne:</span>
+                                    <span id="whisper-ct2-avg-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence min:</span>
+                                    <span id="whisper-ct2-min-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Latence max:</span>
+                                    <span id="whisper-ct2-max-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière latence:</span>
+                                    <span id="whisper-ct2-last-latency" class="metric-value">0 ms</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Durée audio moyenne:</span>
+                                    <span id="whisper-ct2-avg-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière durée audio:</span>
+                                    <span id="whisper-ct2-last-audio-duration" class="metric-value">0 s</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Mots par minute:</span>
+                                    <span id="whisper-ct2-words-per-minute" class="metric-value">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Dernière requête:</span>
+                                    <span id="whisper-ct2-last-request-time" class="metric-value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics-comparison">
+                        <h3>Comparaison des moteurs STT</h3>
+                        <div class="comparison-grid">
+                            <div class="comparison-metric">
+                                <span class="comparison-label">Latence moyenne:</span>
+                                <div class="comparison-bars">
+                                    <div class="comparison-bar-container">
+                                        <div id="sr-latency-bar" class="comparison-bar sr-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">SpeechRecognition</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="whisper-latency-bar" class="comparison-bar whisper-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Whisper</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="vosk-latency-bar" class="comparison-bar vosk-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Vosk</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="whisper-ct2-latency-bar" class="comparison-bar whisper-ct2-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Whisper CT2</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comparison-metric">
+                                <span class="comparison-label">Taux de succès:</span>
+                                <div class="comparison-bars">
+                                    <div class="comparison-bar-container">
+                                        <div id="sr-success-bar" class="comparison-bar sr-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">SpeechRecognition</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="whisper-success-bar" class="comparison-bar whisper-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Whisper</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="vosk-success-bar" class="comparison-bar vosk-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Vosk</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="whisper-ct2-success-bar" class="comparison-bar whisper-ct2-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Whisper CT2</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comparison-metric">
+                                <span class="comparison-label">Mots par minute:</span>
+                                <div class="comparison-bars">
+                                    <div class="comparison-bar-container">
+                                        <div id="sr-wpm-bar" class="comparison-bar sr-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">SpeechRecognition</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="whisper-wpm-bar" class="comparison-bar whisper-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Whisper</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="vosk-wpm-bar" class="comparison-bar vosk-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Vosk</span>
+                                    </div>
+                                    <div class="comparison-bar-container">
+                                        <div id="whisper-ct2-wpm-bar" class="comparison-bar whisper-ct2-bar" style="width: 0%"></div>
+                                        <span class="comparison-bar-label">Whisper CT2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div id="help" class="tab-content" role="tabpanel" aria-labelledby="help-tab">
+                <section class="help-section">
+                    <h2><i class="fas fa-book-reader"></i> Guide d'utilisation de Whisp Assistant</h2>
+                    
+                    <div class="help-intro">
+                        <p><strong>Whisp</strong> est un assistant vocal intelligent conçu pour vous aider à contrôler votre ordinateur par la voix. 
+                        Découvrez ci-dessous toutes les commandes disponibles, organisées par catégorie pour faciliter votre apprentissage.</p>
+                    </div>
+                    
+                    <div class="help-categories">
+                        <div class="help-category">
+                            <h3><i class="fas fa-microphone"></i> Commandes générales</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="écris,dictée,commence dictée,mode dictée">écris</strong> - Commencer la dictée</li>
+                                <li><strong class="command" data-variations="fin de dictée,termine dictée,arrête dictée,stop dictée">fin de dictée</strong> - Terminer la dictée</li>
+                                <li><strong class="command" data-variations="quitte l'assistant,ferme l'assistant,arrête l'assistant,éteins l'assistant">quitte l'assistant</strong> - Arrêter le programme</li>
+                                <li><strong class="command" data-variations="stop,pause,ok,arrête,silence">stop</strong> - Interrompre la lecture vocale</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-language"></i> Commandes de traduction</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="traduis en,traduit en,traduire en,traduction en">traduis en [langue] [texte]</strong> - Traduire immédiatement un texte</li>
+                                <li><strong class="command" data-variations="écris en,écrit en,écrire en">écris en [langue] [texte]</strong> - Traduire et écrire un texte</li>
+                                <li><strong class="command" data-variations="dis en,dit en,dire en">dis en [langue] [texte]</strong> - Traduire et lire un texte</li>
+                                <li><strong class="command" data-variations="comment dit-on,comment on dit">comment dit-on [texte] en [langue]</strong> - Formulation alternative</li>
+                                <li><strong class="command" data-variations="traduis en,commence traduction en,mode traduction en">traduis en [langue]</strong> - Activer le mode traduction continue</li>
+                                <li><strong class="command" data-variations="fin de traduction,terminer traduction,arrêter traduction,traduire maintenant,c'est tout">fin de traduction</strong> - Terminer et exécuter la traduction</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-universal-access"></i> Commandes d'accessibilité</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="active grille,active la grille,affiche grille,montre grille">active grille</strong> - Activer la navigation par grille vocale</li>
+                                <li><strong class="command" data-variations="désactive grille,désactive la grille,cache grille,ferme grille">désactive grille</strong> - Désactiver la grille vocale</li>
+                                <li><strong class="command" data-variations="zone 1,zone 2,zone 3,zone 4,zone 5,zone 6,zone 7,zone 8,zone 9">zone 1-9</strong> - Sélectionner une zone de l'écran</li>
+                                <li><strong class="command" data-variations="clic,clique,clic gauche,clique gauche">clic</strong> - Effectuer un clic gauche</li>
+                                <li><strong class="command" data-variations="clic droit,clique droit,menu contextuel">clic droit</strong> - Effectuer un clic droit</li>
+                                <li><strong class="command" data-variations="double clic,double clique,clique deux fois">double clic</strong> - Effectuer un double clic</li>
+                                <li><strong class="command" data-variations="défiler haut,défile haut,monte,scroll haut">défiler haut</strong> - Faire défiler vers le haut</li>
+                                <li><strong class="command" data-variations="défiler bas,défile bas,descend,scroll bas">défiler bas</strong> - Faire défiler vers le bas</li>
+                                <li><strong class="command" data-variations="dicter,écris,tape,saisis">dicter [texte]</strong> - Écrire du texte</li>
+                                <li><strong class="command" data-variations="activer lecture,active lecture,mode lecture,narrateur">activer lecture</strong> - Activer le narrateur</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-eye"></i> Commandes de contexte d'écran</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="contexte,analyse écran,décris écran,que vois-tu">contexte</strong> - Analyser et décrire ce qui est affiché à l'écran</li>
+                                <li><strong class="command" data-variations="décris l'écran,décris écran,explique écran,montre ce que tu vois">décris l'écran</strong> - Décrire le contenu de l'écran</li>
+                                <li><strong class="command" data-variations="que vois-tu,qu'est-ce que tu vois,que vois-tu à l'écran,qu'y a-t-il à l'écran">que vois-tu</strong> - Demander une description de l'écran</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-book-reader"></i> Commandes de lecture d'écran</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="lis l'écran,lit l'écran,lis le contenu,lit le contenu">lis l'écran</strong> - Lire le contenu de l'écran</li>
+                                <li><strong class="command" data-variations="lis la fenêtre,lit la fenêtre,lis cette fenêtre,lit cette fenêtre">lis la fenêtre</strong> - Lire le contenu de la fenêtre active</li>
+                                <li><strong class="command" data-variations="lis à partir de,commence à lire depuis,lis depuis">lis à partir de [élément]</strong> - Lire à partir d'un élément spécifique</li>
+                                <li><strong class="command" data-variations="lit à partir de,commence à lire à partir de,lit depuis">lit à partir de [élément]</strong> - Lire à partir d'un élément spécifique</li>
+                                <li><strong class="command" data-variations="commence à lire à partir de,commence la lecture depuis,démarre la lecture depuis">commence à lire à partir de [élément]</strong> - Commencer la lecture depuis un élément</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-search"></i> Commandes d'analyse</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="analyse,analyse pour moi,fais une analyse de,peux-tu analyser">analyse [sujet]</strong> - Analyser un sujet</li>
+                                <li><strong class="command" data-variations="explique-moi,explique,peux-tu m'expliquer,j'aimerais comprendre">explique-moi [sujet]</strong> - Obtenir des explications sur un sujet</li>
+                                <li><strong class="command" data-variations="dis-moi,informe-moi sur,parle-moi de,renseigne-moi sur">dis-moi [information]</strong> - Demander une information</li>
+                                <li><strong class="command" data-variations="qu'est-ce que,c'est quoi,définis,donne-moi la définition de">qu'est-ce que [sujet]</strong> - Demander une définition</li>
+                                <li><strong class="command" data-variations="qui est,qui était,parle-moi de,informe-moi sur">qui est [personne]</strong> - Demander des informations sur une personne</li>
+                                <li><strong class="command" data-variations="comment,comment faire pour,comment puis-je,explique-moi comment">comment [faire quelque chose]</strong> - Demander comment faire quelque chose</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-mouse-pointer"></i> Commandes de souris</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="clique sur,clic sur,clique,clic">clique sur [élément]</strong> - Cliquer sur un élément à l'écran</li>
+                                <li><strong class="command" data-variations="déplace la souris sur,déplace le curseur sur,positionne la souris sur,va sur">déplace la souris sur [élément]</strong> - Déplacer la souris sur un élément</li>
+                                <li><strong class="command" data-variations="souris sur,curseur sur,pointe sur,survole">souris sur [élément]</strong> - Positionner la souris sur un élément</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-keyboard"></i> Commandes de dictée</h3>
+                            <ul>
+                                <li><strong>écris</strong> ou <strong>dictée</strong> - Commencer la dictée</li>
+                                <li><strong>fin de dictée</strong> - Terminer la dictée</li>
+                                <li><strong>nouvelle ligne</strong> - Insérer un saut de ligne</li>
+                                <li><strong>point</strong> - Insérer un point</li>
+                                <li><strong>virgule</strong> - Insérer une virgule</li>
+                                <li><strong>point d'interrogation</strong> - Insérer un point d'interrogation</li>
+                                <li><strong>point d'exclamation</strong> - Insérer un point d'exclamation</li>
+                                <li><strong>deux points</strong> - Insérer deux points</li>
+                                <li><strong>point-virgule</strong> - Insérer un point-virgule</li>
+                                <li><strong>ouvre parenthèse</strong> - Insérer une parenthèse ouvrante</li>
+                                <li><strong>ferme parenthèse</strong> - Insérer une parenthèse fermante</li>
+                                <li><strong>guillemets</strong> - Insérer des guillemets</li>
+                                <li><strong>efface</strong> ou <strong>supprime</strong> - Supprimer le dernier mot</li>
+                                <li><strong>efface tout</strong> - Effacer tout le texte dicté</li>
+                                <li><strong>majuscule</strong> - Mettre le prochain mot en majuscule</li>
+                            </ul>
+                        </div>
+                        <div class="help-category">
+                            <h3><i class="fas fa-globe"></i> Commandes de navigation web</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="ouvre le navigateur,lance le navigateur,démarre le navigateur,ouvre chrome,ouvre firefox,ouvre edge">ouvre le navigateur</strong> - Lancer le navigateur par défaut</li>
+                                <li><strong class="command" data-variations="va sur,ouvre,navigue vers,accède à">va sur [site]</strong> - Accéder à un site web (ex: "va sur youtube")</li>
+                                <li><strong class="command" data-variations="cherche sur,recherche sur,trouve sur,recherche">cherche [terme] sur [site]</strong> - Rechercher sur un site spécifique</li>
+                                <li><strong class="command" data-variations="nouvel onglet,nouveau tab,ouvre un onglet,crée un onglet">nouvel onglet</strong> - Ouvrir un nouvel onglet</li>
+                                <li><strong class="command" data-variations="ferme l'onglet,ferme le tab,ferme cet onglet,ferme cette page">ferme l'onglet</strong> - Fermer l'onglet actif</li>
+                                <li><strong class="command" data-variations="onglet suivant,tab suivant,prochain onglet,onglet d'après,onglet de droite,change d'onglet,passe à l'onglet suivant,va à l'onglet suivant">onglet suivant</strong> - Passer à l'onglet suivant (Ctrl+Tab)</li>
+                                <li><strong class="command" data-variations="onglet précédent,tab précédent,onglet d'avant,onglet de gauche,retourne à l'onglet précédent,va à l'onglet précédent">onglet précédent</strong> - Revenir à l'onglet précédent (Ctrl+Maj+Tab)</li>
+                                <li><strong class="command" data-variations="onglet numéro,tab numéro,va à l'onglet numéro,ouvre l'onglet numéro">onglet numéro [1-9]</strong> - Aller directement à un onglet spécifique (Ctrl+[1-9])</li>
+                                <li><strong class="command" data-variations="page précédente,retour,reviens en arrière,page d'avant">page précédente</strong> - Revenir à la page précédente</li>
+                                <li><strong class="command" data-variations="page suivante,avance,page d'après,suivant">page suivante</strong> - Aller à la page suivante</li>
+                                <li><strong class="command" data-variations="actualise,rafraîchis,recharge la page,mets à jour la page">actualise</strong> - Actualiser la page</li>
+                                <li><strong class="command" data-variations="recherche sur la page,cherche dans la page,trouve dans la page,recherche texte">recherche sur la page</strong> - Activer la recherche sur la page</li>
+                                <li><strong class="command" data-variations="ajoute aux favoris,marque cette page,mets en favori,bookmark">ajoute aux favoris</strong> - Ajouter la page aux favoris</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-window-restore"></i> Commandes de fenêtres</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="change de fenêtre,change fenêtre,bascule de fenêtre,passe à une autre fenêtre">change de fenêtre</strong> - Basculer entre les fenêtres ouvertes</li>
+                                <li><strong class="command" data-variations="minimise,réduis,minimise la fenêtre,réduis la fenêtre,cache la fenêtre,masque la fenêtre">minimise</strong> - Minimiser la fenêtre active</li>
+                                <li><strong class="command" data-variations="maximise,agrandis,maximise la fenêtre,plein écran,mets en plein écran,fenêtre plein écran">maximise</strong> - Maximiser la fenêtre active</li>
+                                <li><strong class="command" data-variations="restaure,restaure la fenêtre,taille normale,fenêtre normale,rétablis,rétablis la fenêtre">restaure</strong> - Restaurer la fenêtre à sa taille normale</li>
+                                <li><strong class="command" data-variations="ferme la fenêtre,ferme cette fenêtre,ferme,quitte,ferme l'application,quitte l'application">ferme la fenêtre</strong> - Fermer la fenêtre active</li>
+                                <li><strong class="command" data-variations="arrange les fenêtres,organise les fenêtres,dispose les fenêtres,côte à côte">arrange les fenêtres</strong> - Organiser les fenêtres côte à côte</li>
+                                <li><strong class="command" data-variations="va sur,ouvre,lance,bascule vers">va sur [application]</strong> - Basculer vers une application spécifique</li>
+                                <li><strong class="command" data-variations="capture d'écran,screenshot,prends une capture,capture l'écran">capture d'écran</strong> - Prendre une capture d'écran</li>
+                                <li><strong class="command" data-variations="ancre à gauche,fenêtre à gauche,place à gauche,positionne à gauche,snap gauche,moitié gauche">ancre à gauche</strong> - Ancrer la fenêtre à gauche de l'écran</li>
+                                <li><strong class="command" data-variations="ancre à droite,fenêtre à droite,place à droite,positionne à droite,snap droite,moitié droite">ancre à droite</strong> - Ancrer la fenêtre à droite de l'écran</li>
+                                <li><strong class="command" data-variations="affiche le bureau,montre le bureau,va au bureau,retourne au bureau,bureau,afficher bureau">affiche le bureau</strong> - Afficher le bureau</li>
+                                <li><strong class="command" data-variations="verrouille l'écran,verrouille l'ordinateur,verrouille le pc,verrouille la session,verrouille windows,lock">verrouille l'écran</strong> - Verrouiller l'écran</li>
+                                <li><strong class="command" data-variations="affiche toutes les fenêtres,montre toutes les fenêtres,vue d'ensemble,vue des tâches,task view,affichage des tâches">affiche toutes les fenêtres</strong> - Afficher la vue des tâches</li>
+                                <li><strong class="command" data-variations="bureau suivant,bureau virtuel suivant,espace suivant,espace de travail suivant,desktop suivant">bureau suivant</strong> - Passer au bureau virtuel suivant</li>
+                                <li><strong class="command" data-variations="bureau précédent,bureau virtuel précédent,espace précédent,espace de travail précédent,desktop précédent">bureau précédent</strong> - Passer au bureau virtuel précédent</li>
+                                <li><strong class="command" data-variations="nouveau bureau,nouveau bureau virtuel,nouvel espace,nouvel espace de travail,crée un bureau,crée un espace">nouveau bureau</strong> - Créer un nouveau bureau virtuel</li>
+                                <li><strong class="command" data-variations="ferme le bureau,ferme bureau virtuel,ferme cet espace,ferme espace de travail,supprime ce bureau,supprime cet espace">ferme le bureau</strong> - Fermer le bureau virtuel actuel</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-desktop"></i> Commandes multiécran</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="déplace vers écran,déplace sur écran,envoie vers écran,envoie sur écran">déplace vers écran [numéro]</strong> - Déplacer la fenêtre active vers l'écran spécifié</li>
+                                <li><strong class="command" data-variations="déplace vers l'écran principal,mets sur l'écran principal,envoie sur l'écran principal">déplace vers l'écran principal</strong> - Déplacer la fenêtre vers l'écran principal</li>
+                                <li><strong class="command" data-variations="déplace vers l'écran secondaire,mets sur l'écran secondaire,envoie sur l'écran secondaire">déplace vers l'écran secondaire</strong> - Déplacer la fenêtre vers l'écran secondaire</li>
+                                <li><strong class="command" data-variations="étends l'affichage,étendre l'affichage,étends sur tous les écrans,mode étendu">étends l'affichage</strong> - Activer le mode d'affichage étendu</li>
+                                <li><strong class="command" data-variations="duplique l'affichage,dupliquer l'affichage,duplique sur tous les écrans,mode dupliquer">duplique l'affichage</strong> - Activer le mode d'affichage dupliqué</li>
+                                <li><strong class="command" data-variations="écran principal uniquement,écran principal seulement,uniquement écran principal">écran principal uniquement</strong> - Afficher uniquement sur l'écran principal</li>
+                                <li><strong class="command" data-variations="écran secondaire uniquement,écran secondaire seulement,uniquement écran secondaire">écran secondaire uniquement</strong> - Afficher uniquement sur l'écran secondaire</li>
+                                <li><strong class="command" data-variations="combien d'écrans,nombre d'écrans,écrans connectés,écrans disponibles">combien d'écrans</strong> - Afficher le nombre d'écrans connectés</li>
+                                <li><strong class="command" data-variations="organise les fenêtres sur tous les écrans,organise en multiécran,répartis les fenêtres sur les écrans">organise les fenêtres sur tous les écrans</strong> - Organiser les fenêtres sur tous les écrans disponibles</li>
+                                <li><strong class="command" data-variations="capture l'écran principal,screenshot écran principal,prends une capture de l'écran principal">capture l'écran principal</strong> - Capturer l'écran principal</li>
+                                <li><strong class="command" data-variations="capture l'écran secondaire,screenshot écran secondaire,prends une capture de l'écran secondaire">capture l'écran secondaire</strong> - Capturer l'écran secondaire</li>
+                                <li><strong class="command" data-variations="mode présentateur,active le mode présentateur,configure pour présentation">mode présentateur</strong> - Configurer les écrans pour une présentation</li>
+                                <li><strong class="command" data-variations="affiche différentes applications sur chaque écran,applications différentes sur chaque écran">affiche différentes applications sur chaque écran</strong> - Répartir les applications sur différents écrans</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-code"></i> Commandes pour développeurs</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="git status,status git,vérifie le statut git,état du dépôt">git status</strong> - Vérifier l'état du dépôt Git</li>
+                                <li><strong class="command" data-variations="git add tout,git add all,ajoute tous les fichiers,git add">git add tout</strong> - Ajouter tous les fichiers modifiés</li>
+                                <li><strong class="command" data-variations="git commit avec message,commit avec message,git commit,crée un commit">git commit avec message [message]</strong> - Créer un commit</li>
+                                <li><strong class="command" data-variations="git push,pousse les modifications,envoie les commits,push">git push</strong> - Pousser les modifications vers le dépôt distant</li>
+                                <li><strong class="command" data-variations="git pull,récupère les modifications,mets à jour le dépôt,pull">git pull</strong> - Récupérer les modifications du dépôt distant</li>
+                                <li><strong class="command" data-variations="git checkout,change de branche,bascule sur la branche,checkout">git checkout [branche]</strong> - Changer de branche</li>
+                                <li><strong class="command" data-variations="git nouvelle branche,crée une branche,nouvelle branche git,git branch">git nouvelle branche [nom]</strong> - Créer une nouvelle branche</li>
+                                <li><strong class="command" data-variations="ouvre vs code,lance vs code,démarre vs code,ouvre visual studio code">ouvre vs code</strong> - Lancer Visual Studio Code</li>
+                                <li><strong class="command" data-variations="ouvre pycharm,lance pycharm,démarre pycharm,ouvre l'IDE">ouvre pycharm</strong> - Lancer PyCharm</li>
+                                <li><strong class="command" data-variations="formate le code,indente le code,nettoie le code,beautify">formate le code</strong> - Formater le code source</li>
+                                <li><strong class="command" data-variations="lance serveur,démarre serveur,serveur de développement,lance le serveur local">lance serveur</strong> - Démarrer un serveur de développement</li>
+                                <li><strong class="command" data-variations="installe package,installe le package,pip install,npm install">installe package [nom]</strong> - Installer un package</li>
+                                <li><strong class="command" data-variations="crée structure de projet,initialise projet,nouveau projet,crée projet">crée structure de projet [type] [nom]</strong> - Créer un nouveau projet</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-category">
+                            <h3><i class="fas fa-tasks"></i> Commandes de gestion de projet</h3>
+                            <ul>
+                                <li><strong class="command" data-variations="ajoute tâche,nouvelle tâche,crée tâche,ajoute une tâche">ajoute tâche [description]</strong> - Ajouter une nouvelle tâche</li>
+                                <li><strong class="command" data-variations="liste les tâches,affiche les tâches,montre les tâches,quelles sont mes tâches">liste les tâches</strong> - Afficher toutes les tâches</li>
+                                <li><strong class="command" data-variations="marque tâche terminée,termine la tâche,complète la tâche,tâche terminée">marque tâche [numéro] terminée</strong> - Marquer une tâche comme terminée</li>
+                                <li><strong class="command" data-variations="supprime tâche,efface tâche,enlève tâche,retire tâche">supprime tâche [numéro]</strong> - Supprimer une tâche</li>
+                                <li><strong class="command" data-variations="rappelle-moi de,crée un rappel pour,définis un rappel,mets un rappel">rappelle-moi de [tâche] dans [temps]</strong> - Créer un rappel</li>
+                                <li><strong class="command" data-variations="liste les rappels,affiche les rappels,montre les rappels,quels sont mes rappels">liste les rappels</strong> - Afficher tous les rappels</li>
+                                <li><strong class="command" data-variations="supprime rappel,efface rappel,enlève rappel,retire rappel">supprime rappel [numéro]</strong> - Supprimer un rappel</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="help-tips">
+                        <h3><i class="fas fa-lightbulb"></i> Conseils d'utilisation</h3>
+                        <ul>
+                            <li>Parlez clairement et à un volume normal.</li>
+                            <li>Attendez le signal sonore ou visuel avant de donner une commande.</li>
+                            <li>Pour interrompre une lecture en cours, dites simplement "stop" ou "ok".</li>
+                            <li>Si l'assistant ne comprend pas votre commande, essayez de la reformuler.</li>
+                            <li>Pour les commandes d'analyse, soyez précis dans votre demande.</li>
+                            <li>Vous pouvez changer le moteur de synthèse vocale (TTS) entre Windows TTS (natif) et Google TTS (en ligne) pour une meilleure qualité vocale.</li>
+                            <li>Le moteur Google TTS nécessite une connexion Internet mais offre une voix plus naturelle.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        {% include 'components/footer.html' %}
+
+        <!-- Modal d'aide rapide -->
+        <div id="help-modal" class="modal" aria-labelledby="help-modal-title" aria-hidden="true" role="dialog">
+            <div class="modal-content" aria-modal="true">
+                <span class="close" aria-label="Fermer">&times;</span>
+                <h2 id="help-modal-title"><i class="fas fa-lightbulb"></i> Aide rapide - Commandes essentielles</h2>
+                
+                <h3>Commandes générales</h3>
+                <ul>
+                    <li><strong class="command" data-variations="écris,dictée,commence dictée,mode dictée">écris</strong> - Commencer la dictée</li>
+                    <li><strong class="command" data-variations="fin de dictée,termine dictée,arrête dictée,stop dictée">fin de dictée</strong> - Terminer la dictée</li>
+                    <li><strong class="command" data-variations="quitte l'assistant,ferme l'assistant,arrête l'assistant,éteins l'assistant">quitte l'assistant</strong> - Arrêter le programme</li>
+                    <li><strong class="command" data-variations="stop,arrête,pause,silence,tais-toi">stop</strong> - Interrompre la lecture vocale</li>
+                </ul>
+                
+                <h3>Commandes de traduction</h3>
+                <ul>
+                    <li><strong class="command" data-variations="traduis en,traduit en,traduire en">traduis en [langue] [texte]</strong> - Traduire un texte</li>
+                    <li><strong class="command" data-variations="traduis en,commence traduction en">traduis en [langue]</strong> - Mode traduction continue</li>
+                    <li><strong class="command" data-variations="fin de traduction,terminer traduction,c'est tout">fin de traduction</strong> - Terminer la traduction</li>
+                </ul>
+                
+                <h3>Commandes d'accessibilité</h3>
+                <ul>
+                    <li><strong class="command" data-variations="active grille,active la grille,affiche grille,montre grille">active grille</strong> - Activer la navigation par grille vocale</li>
+                    <li><strong class="command" data-variations="zone 1,zone 2,zone 3,zone 4,zone 5,zone 6,zone 7,zone 8,zone 9">zone 1-9</strong> - Sélectionner une zone de l'écran</li>
+                    <li><strong class="command" data-variations="clic,clique,clic gauche,clique gauche">clic</strong>, <strong class="command" data-variations="clic droit,clique droit,menu contextuel">clic droit</strong>, <strong class="command" data-variations="double clic,double clique,clique deux fois">double clic</strong> - Interagir</li>
+                    <li><strong class="command" data-variations="défiler haut,défile haut,monte,scroll haut">défiler haut</strong>/<strong class="command" data-variations="défiler bas,défile bas,descend,scroll bas">bas</strong> - Faire défiler les pages</li>
+                    <li><strong class="command" data-variations="dicter,écris,tape,saisis">dicter [texte]</strong> - Écrire du texte</li>
+                    <li><strong class="command" data-variations="activer lecture,active lecture,mode lecture,narrateur">activer lecture</strong> - Activer le narrateur</li>
+                    <li><strong class="command" data-variations="contexte,analyse écran,décris écran,que vois-tu">contexte</strong> - Analyser et décrire ce qui est affiché à l'écran</li>
+                </ul>
+                
+                <h3>Commandes de lecture d'écran</h3>
+                <ul>
+                    <li><strong class="command" data-variations="lis l'écran,lit l'écran,lis le contenu,lit le contenu">lis l'écran</strong> - Lire le contenu de l'écran</li>
+                    <li><strong class="command" data-variations="lis à partir de,commence à lire depuis,lis depuis">lis à partir de [élément]</strong> - Lire à partir d'un élément spécifique</li>
+                </ul>
+                
+                <h3>Commandes d'analyse</h3>
+                <ul>
+                    <li><strong class="command" data-variations="analyse,analyse pour moi,fais une analyse de,peux-tu analyser">analyse [sujet]</strong> - Analyser un sujet</li>
+                    <li><strong class="command" data-variations="explique-moi,explique,peux-tu m'expliquer,j'aimerais comprendre">explique-moi [sujet]</strong> - Obtenir des explications sur un sujet</li>
+                    <li><strong class="command" data-variations="dis-moi,informe-moi sur,parle-moi de,renseigne-moi sur">dis-moi [information]</strong> - Demander une information</li>
+                    <li><strong class="command" data-variations="qu'est-ce que,c'est quoi,définis,donne-moi la définition de">qu'est-ce que [sujet]</strong> - Demander une définition</li>
+                    <li><strong class="command" data-variations="qui est,qui était,parle-moi de,informe-moi sur">qui est [personne]</strong> - Demander des informations sur une personne</li>
+                    <li><strong class="command" data-variations="comment,comment faire pour,comment puis-je,explique-moi comment">comment [faire quelque chose]</strong> - Demander comment faire quelque chose</li>
+                </ul>
+                
+                <h3>Commandes pour développeurs</h3>
+                <ul>
+                    <li><strong class="command" data-variations="git status,status git,vérifie le statut git,état du dépôt">git status</strong> - Vérifier l'état du dépôt Git</li>
+                    <li><strong class="command" data-variations="git add tout,git add all,ajoute tous les fichiers,git add">git add tout</strong> - Ajouter tous les fichiers modifiés</li>
+                    <li><strong class="command" data-variations="git commit avec message,commit avec message,git commit,crée un commit">git commit avec message [message]</strong> - Créer un commit</li>
+                    <li><strong class="command" data-variations="git push,pousse les modifications,envoie les commits,push">git push</strong> - Pousser les modifications vers le dépôt distant</li>
+                    <li><strong class="command" data-variations="git pull,récupère les modifications,mets à jour le dépôt,pull">git pull</strong> - Récupérer les modifications du dépôt distant</li>
+                    <li><strong class="command" data-variations="ouvre vs code,lance vs code,démarre vs code,ouvre visual studio code">ouvre vs code</strong> - Lancer Visual Studio Code</li>
+                    <li><strong class="command" data-variations="formate le code,indente le code,nettoie le code,beautify">formate le code</strong> - Formater le code source</li>
+                    <li><strong class="command" data-variations="onglet numéro,tab numéro">onglet numéro [1-9]</strong> - Aller directement à un onglet spécifique</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mettre à jour l'année automatiquement
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Masquer l'indicateur de chargement
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                setTimeout(() => {
+                    loadingIndicator.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingIndicator.style.display = 'none';
+                    }, 500);
+                }, 800);
+            }
+            
+            // Variables globales
+            let isRunning = false;
+            let lastLogTimestamp = null;
+            let sttMetrics = {
+                speechrecognition: {
+                    requests: 0,
+                    success: 0,
+                    errors: 0,
+                    avg_latency: 0,
+                    min_latency: Infinity,
+                    max_latency: 0,
+                    last_latency: 0,
+                    avg_audio_duration: 0,
+                    last_audio_duration: 0,
+                    words_per_minute: 0,
+                    last_request_time: '-'
+                },
+                whisper: {
+                    requests: 0,
+                    success: 0,
+                    errors: 0,
+                    avg_latency: 0,
+                    min_latency: Infinity,
+                    max_latency: 0,
+                    last_latency: 0,
+                    avg_audio_duration: 0,
+                    last_audio_duration: 0,
+                    words_per_minute: 0,
+                    cost: 0,
+                    last_request_time: '-'
+                },
+                vosk: {
+                    requests: 0,
+                    success: 0,
+                    errors: 0,
+                    avg_latency: 0,
+                    min_latency: Infinity,
+                    max_latency: 0,
+                    last_latency: 0,
+                    avg_audio_duration: 0,
+                    last_audio_duration: 0,
+                    words_per_minute: 0,
+                    last_request_time: '-'
+                },
+                sherpa_ncnn: {
+                    requests: 0,
+                    success: 0,
+                    errors: 0,
+                    avg_latency: 0,
+                    min_latency: Infinity,
+                    max_latency: 0,
+                    last_latency: 0,
+                    avg_audio_duration: 0,
+                    last_audio_duration: 0,
+                    words_per_minute: 0,
+                    last_request_time: '-'
+                },
+                whisper_ct2: {
+                    requests: 0,
+                    success: 0,
+                    errors: 0,
+                    avg_latency: 0,
+                    min_latency: Infinity,
+                    max_latency: 0,
+                    last_latency: 0,
+                    avg_audio_duration: 0,
+                    last_audio_duration: 0,
+                    words_per_minute: 0,
+                    last_request_time: '-'
+                }
+            };
+            let apiKeys = {
+                openai: null,
+                mistral: null
+            };
+            
+            // Éléments DOM
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const toggleButton = document.getElementById('toggle-button');
+            const logsContainer = document.getElementById('logs-container');
+            const lastCommand = document.getElementById('last-command');
+            const lastResponse = document.getElementById('last-response');
+            const sttEngineSelect = document.getElementById('stt-engine');
+            const ttsEngineSelect = document.getElementById('tts-engine');
+            const apiSettingsButton = document.getElementById('api-settings-button');
+            const apiSettingsModal = document.getElementById('api-settings-modal');
+            const closeApiSettings = document.getElementById('close-api-settings');
+            const openaiApiKeyInput = document.getElementById('openai-api-key');
+            const mistralApiKeyInput = document.getElementById('mistral-api-key');
+            const toggleOpenaiVisibility = document.getElementById('toggle-openai-visibility');
+            const toggleMistralVisibility = document.getElementById('toggle-mistral-visibility');
+            const saveApiKeysButton = document.getElementById('save-api-keys');
+            const openaiKeyStatus = document.getElementById('openai-key-status');
+            const mistralKeyStatus = document.getElementById('mistral-key-status');
+            const resetMetricsButton = document.getElementById('reset-metrics-button');
+            const helpButton = document.getElementById('help-button');
+            const helpModal = document.getElementById('help-modal');
+            const closeButtons = document.querySelectorAll('.close');
+            const clearLogsButton = document.querySelector('.clear-logs-button');
+            const darkModeButton = document.getElementById('toggle-dark-mode');
+            const animationsButton = document.getElementById('toggle-animations');
+            
+            // Gestion des onglets
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    
+                    // Désactiver tous les onglets
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.setAttribute('aria-selected', 'false');
+                        btn.tabIndex = -1;
+                    });
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        content.setAttribute('aria-hidden', 'true');
+                    });
+                    
+                    // Activer l'onglet cliqué
+                    button.classList.add('active');
+                    button.setAttribute('aria-selected', 'true');
+                    button.tabIndex = 0;
+                    const activeTab = document.getElementById(tabId);
+                    activeTab.classList.add('active');
+                    activeTab.setAttribute('aria-hidden', 'false');
+                    button.focus();
+                });
+                
+                // Gestion de la navigation au clavier
+                button.addEventListener('keydown', (e) => {
+                    let index = Array.from(tabButtons).indexOf(button);
+                    let nextButton;
+                    
+                    switch (e.key) {
+                        case 'ArrowRight':
+                            nextButton = tabButtons[(index + 1) % tabButtons.length];
+                            nextButton.click();
+                            e.preventDefault();
+                            break;
+                        case 'ArrowLeft':
+                            nextButton = tabButtons[(index - 1 + tabButtons.length) % tabButtons.length];
+                            nextButton.click();
+                            e.preventDefault();
+                            break;
+                        case 'Home':
+                            nextButton = tabButtons[0];
+                            nextButton.click();
+                            e.preventDefault();
+                            break;
+                        case 'End':
+                            nextButton = tabButtons[tabButtons.length - 1];
+                            nextButton.click();
+                            e.preventDefault();
+                            break;
+                    }
+                });
+            });
+            
+            // Initialiser les tabindex pour les onglets
+            tabButtons.forEach((button, index) => {
+                if (button.classList.contains('active')) {
+                    button.tabIndex = 0;
+                } else {
+                    button.tabIndex = -1;
+                }
+            });
+            
+            // Gestion des filtres de logs
+            const filterButtons = document.querySelectorAll('.filter-button');
+            const logEntries = document.querySelectorAll('.log-entry');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Désactiver tous les boutons
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.setAttribute('aria-pressed', 'false');
+                    });
+                    
+                    // Activer le bouton cliqué
+                    button.classList.add('active');
+                    button.setAttribute('aria-pressed', 'true');
+                    
+                    const filter = button.getAttribute('data-filter');
+                    
+                    // Filtrer les entrées de logs
+                    logEntries.forEach(entry => {
+                        if (filter === 'all' || entry.classList.contains(filter)) {
+                            entry.style.display = 'block';
+                            entry.removeAttribute('aria-hidden');
+                        } else {
+                            entry.style.display = 'none';
+                            entry.setAttribute('aria-hidden', 'true');
+                        }
+                    });
+                    
+                    // Annoncer le changement pour les lecteurs d'écran
+                    const logsContainer = document.getElementById('logs-container');
+                    const visibleCount = Array.from(logEntries).filter(entry => 
+                        entry.style.display !== 'none').length;
+                    
+                    // Mettre à jour un attribut aria-live pour annoncer le changement
+                    logsContainer.setAttribute('aria-label', 
+                        `Journal d'activité - ${visibleCount} entrées affichées avec le filtre ${button.textContent}`);
+                });
+            });
+            
+            // Gestion du bouton de basculement
+            if (toggleButton) {
+                toggleButton.addEventListener('click', () => {
+                    // Ajouter une classe pour l'animation
+                    toggleButton.classList.add('animating');
+                    setTimeout(() => {
+                        toggleButton.classList.remove('animating');
+                    }, 300);
+                    
+                    // Envoyer la requête pour basculer l'état
+                    fetch('/toggle', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        updateUI(data);
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: "Erreur de communication avec le serveur",
+                            type: 'error'
+                        });
+                    });
+                });
+            }
+            
+            // Gestion du changement de moteur STT
+            if (sttEngineSelect) {
+                sttEngineSelect.addEventListener('change', function() {
+                    const engine = this.value;
+                    changeSTTEngine(engine);
+                });
+            }
+            
+            // Gestion du changement de moteur TTS
+            if (ttsEngineSelect) {
+                ttsEngineSelect.addEventListener('change', function() {
+                    fetch('/set_tts_engine', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ engine: ttsEngineSelect.value })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLogEntry({
+                                timestamp: new Date().toLocaleTimeString(),
+                                message: `Moteur TTS changé pour ${ttsEngineSelect.options[ttsEngineSelect.selectedIndex].text}`,
+                                type: 'info'
+                            });
+                        } else {
+                            addLogEntry({
+                                timestamp: new Date().toLocaleTimeString(),
+                                message: data.error || "Erreur lors du changement de moteur TTS",
+                                type: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: "Erreur de communication avec le serveur",
+                            type: 'error'
+                        });
+                    });
+                });
+            }
+            
+            // Gestion du modal de configuration des clés API
+            if (apiSettingsButton && apiSettingsModal) {
+                apiSettingsButton.addEventListener('click', () => {
+                    // Récupérer les clés API actuelles
+                    fetch('/get_api_keys')
+                        .then(response => response.json())
+                        .then(data => {
+                            apiKeys = data;
+                            
+                            if (openaiApiKeyInput) {
+                                openaiApiKeyInput.value = apiKeys.openai || '';
+                                updateKeyStatus('openai', apiKeys.openai);
+                            }
+                            
+                            if (mistralApiKeyInput) {
+                                mistralApiKeyInput.value = apiKeys.mistral || '';
+                                updateKeyStatus('mistral', apiKeys.mistral);
+                            }
+                            
+                            apiSettingsModal.style.display = 'block';
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            addLogEntry({
+                                timestamp: new Date().toLocaleTimeString(),
+                                message: "Erreur lors de la récupération des clés API",
+                                type: 'error'
+                            });
+                        });
+                });
+            }
+            
+            // Fermer les modals
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const modal = button.closest('.modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Fermer les modals en cliquant en dehors
+            window.addEventListener('click', (event) => {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
+            
+            // Gestion de la visibilité des clés API
+            if (toggleOpenaiVisibility) {
+                toggleOpenaiVisibility.addEventListener('click', () => {
+                    togglePasswordVisibility('openai-api-key', 'toggle-openai-visibility');
+                });
+            }
+            
+            if (toggleMistralVisibility) {
+                toggleMistralVisibility.addEventListener('click', () => {
+                    togglePasswordVisibility('mistral-api-key', 'toggle-mistral-visibility');
+                });
+            }
+            
+            // Enregistrer les clés API
+            if (saveApiKeysButton) {
+                saveApiKeysButton.addEventListener('click', () => {
+                    const openaiKey = openaiApiKeyInput ? openaiApiKeyInput.value.trim() : '';
+                    const mistralKey = mistralApiKeyInput ? mistralApiKeyInput.value.trim() : '';
+                    
+                    saveApiKey('openai', openaiKey);
+                    saveApiKey('mistral', mistralKey);
+                });
+            }
+            
+            // Réinitialiser les métriques
+            if (resetMetricsButton) {
+                resetMetricsButton.addEventListener('click', () => {
+                    fetch('/reset_stt_metrics', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Réinitialiser les métriques locales
+                            sttMetrics = {
+                                speechrecognition: {
+                                    requests: 0,
+                                    success: 0,
+                                    errors: 0,
+                                    avg_latency: 0,
+                                    min_latency: Infinity,
+                                    max_latency: 0,
+                                    last_latency: 0,
+                                    avg_audio_duration: 0,
+                                    last_audio_duration: 0,
+                                    words_per_minute: 0,
+                                    last_request_time: '-'
+                                },
+                                whisper: {
+                                    requests: 0,
+                                    success: 0,
+                                    errors: 0,
+                                    avg_latency: 0,
+                                    min_latency: Infinity,
+                                    max_latency: 0,
+                                    last_latency: 0,
+                                    avg_audio_duration: 0,
+                                    last_audio_duration: 0,
+                                    words_per_minute: 0,
+                                    cost: 0,
+                                    last_request_time: '-'
+                                },
+                                vosk: {
+                                    requests: 0,
+                                    success: 0,
+                                    errors: 0,
+                                    avg_latency: 0,
+                                    min_latency: Infinity,
+                                    max_latency: 0,
+                                    last_latency: 0,
+                                    avg_audio_duration: 0,
+                                    last_audio_duration: 0,
+                                    words_per_minute: 0,
+                                    last_request_time: '-'
+                                },
+                                sherpa_ncnn: {
+                                    requests: 0,
+                                    success: 0,
+                                    errors: 0,
+                                    avg_latency: 0,
+                                    min_latency: Infinity,
+                                    max_latency: 0,
+                                    last_latency: 0,
+                                    avg_audio_duration: 0,
+                                    last_audio_duration: 0,
+                                    words_per_minute: 0,
+                                    last_request_time: '-'
+                                },
+                                whisper_ct2: {
+                                    requests: 0,
+                                    success: 0,
+                                    errors: 0,
+                                    avg_latency: 0,
+                                    min_latency: Infinity,
+                                    max_latency: 0,
+                                    last_latency: 0,
+                                    avg_audio_duration: 0,
+                                    last_audio_duration: 0,
+                                    words_per_minute: 0,
+                                    last_request_time: '-'
+                                }
+                            };
+                            
+                            // Mettre à jour l'interface
+                            updateSTTMetricsUI();
+                            updateComparisonBars();
+                            
+                            addLogEntry({
+                                timestamp: new Date().toLocaleTimeString(),
+                                message: "Métriques STT réinitialisées",
+                                type: 'info'
+                            });
+                        } else {
+                            addLogEntry({
+                                timestamp: new Date().toLocaleTimeString(),
+                                message: data.error || "Erreur lors de la réinitialisation des métriques",
+                                type: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: "Erreur de communication avec le serveur",
+                            type: 'error'
+                        });
+                    });
+                });
+            }
+            
+            // Gestion du modal d'aide
+            if (helpButton && helpModal) {
+                helpButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    helpModal.style.display = 'block';
+                });
+            }
+            
+            // Gestion du bouton d'effacement des logs
+            if (clearLogsButton) {
+                clearLogsButton.addEventListener('click', () => {
+                    // Vider le conteneur de logs
+                    if (logsContainer) {
+                        logsContainer.innerHTML = `
+                            <div class="logs-empty-state">
+                                <i class="fas fa-clipboard-list"></i>
+                                <p>Le journal d'activité s'affichera ici</p>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            
+            // Gestion du mode sombre
+            if (darkModeButton) {
+                // Vérifier si le mode sombre est activé
+                if (localStorage.getItem('darkMode') === 'true') {
+                    document.body.classList.add('dark-mode');
+                    darkModeButton.querySelector('i').className = 'fas fa-sun';
+                }
+                
+                darkModeButton.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    const isDarkMode = document.body.classList.contains('dark-mode');
+                    localStorage.setItem('darkMode', isDarkMode);
+                    
+                    // Changer l'icône
+                    const icon = darkModeButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+                    }
+                });
+            }
+            
+            // Gestion des animations
+            if (animationsButton) {
+                // Vérifier si les animations sont désactivées
+                if (localStorage.getItem('animationsDisabled') === 'true') {
+                    document.body.classList.add('reduced-motion');
+                    animationsButton.querySelector('i').className = 'fas fa-film-slash';
+                }
+                
+                animationsButton.addEventListener('click', () => {
+                    document.body.classList.toggle('reduced-motion');
+                    const isReduced = document.body.classList.contains('reduced-motion');
+                    localStorage.setItem('animationsDisabled', isReduced);
+                    
+                    // Changer l'icône
+                    const icon = animationsButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isReduced ? 'fas fa-film-slash' : 'fas fa-film';
+                    }
+                });
+            }
+            
+            // Fonction pour mettre à jour l'interface utilisateur
+            function updateUI(data) {
+                isRunning = data.running;
+                
+                // Mettre à jour l'indicateur de statut
+                if (isRunning) {
+                    statusIndicator.className = 'status-indicator active';
+                    statusText.textContent = 'Actif';
+                } else {
+                    statusIndicator.className = 'status-indicator inactive';
+                    statusText.textContent = 'Inactif';
+                }
+                
+                // Mettre à jour le bouton de basculement
+                if (toggleButton) {
+                    const icon = toggleButton.querySelector('i');
+                    if (icon) {
+                        icon.className = isRunning ? 'fas fa-stop' : 'fas fa-play';
+                    }
+                    toggleButton.title = isRunning ? 'Arrêter l\'assistant' : 'Démarrer l\'assistant';
+                    toggleButton.setAttribute('aria-label', isRunning ? 'Arrêter l\'assistant' : 'Démarrer l\'assistant');
+                }
+                
+                // Mettre à jour les sélecteurs de moteurs
+                if (sttEngineSelect) {
+                    sttEngineSelect.value = data.stt_engine || 'speechrecognition';
+                    // Ne pas désactiver les sélecteurs, ils doivent rester utilisables
+                }
+                
+                if (ttsEngineSelect) {
+                    ttsEngineSelect.value = data.tts_engine || 'pyttsx3';
+                    // Ne pas désactiver les sélecteurs, ils doivent rester utilisables
+                }
+                
+                // Ajouter un log
+                addLogEntry({
+                    timestamp: new Date().toLocaleTimeString(),
+                    message: isRunning ? "Assistant vocal démarré" : "Assistant vocal arrêté",
+                    type: 'info'
+                });
+            }
+            
+            // Fonction pour ajouter une entrée de log
+            function addLogEntry(log) {
+                // Vérifier si c'est un doublon (même timestamp et message)
+                if (lastLogTimestamp === log.timestamp && 
+                    logsContainer.lastChild && 
+                    logsContainer.lastChild.querySelector('.log-message').textContent === log.message) {
+                    return;
+                }
+                
+                lastLogTimestamp = log.timestamp;
+                
+                // Supprimer le message d'état vide si présent
+                const emptyState = logsContainer.querySelector('.logs-empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+                
+                // Créer l'élément de log
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${log.type || 'info'} new-log`;
+                
+                // Ajouter l'icône appropriée
+                let iconClass = 'fas fa-info-circle';
+                if (log.type === 'command') iconClass = 'fas fa-terminal';
+                if (log.type === 'response') iconClass = 'fas fa-reply';
+                if (log.type === 'error') iconClass = 'fas fa-exclamation-triangle';
+                
+                logEntry.innerHTML = `
+                    <span class="log-timestamp">${log.timestamp}</span>
+                    <span class="log-message"><i class="log-icon ${iconClass}"></i> ${log.message}</span>
+                `;
+                
+                // Ajouter au conteneur
+                logsContainer.appendChild(logEntry);
+                
+                // Faire défiler vers le bas
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+                
+                // Mettre à jour les dernières commande/réponse si nécessaire
+                if (log.type === 'command' && lastCommand) {
+                    lastCommand.textContent = log.message;
+                    lastCommand.classList.add('highlight');
+                    setTimeout(() => {
+                        lastCommand.classList.remove('highlight');
+                    }, 2000);
+                } else if (log.type === 'response' && lastResponse) {
+                    lastResponse.textContent = log.message;
+                    lastResponse.classList.add('highlight');
+                    setTimeout(() => {
+                        lastResponse.classList.remove('highlight');
+                    }, 2000);
+                }
+                
+                // Supprimer l'animation après un délai
+                setTimeout(() => {
+                    logEntry.classList.remove('new-log');
+                }, 2000);
+                
+                // Limiter le nombre d'entrées de log (garder les 100 dernières)
+                const entries = logsContainer.querySelectorAll('.log-entry');
+                if (entries.length > 100) {
+                    entries[0].remove();
+                }
+            }
+            
+            // Fonction pour basculer la visibilité du mot de passe
+            function togglePasswordVisibility(inputId, buttonId) {
+                const input = document.getElementById(inputId);
+                const button = document.getElementById(buttonId);
+                const icon = button.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
+            }
+            
+            // Fonction pour mettre à jour le statut d'une clé API
+            function updateKeyStatus(type, key) {
+                const statusElement = type === 'openai' ? openaiKeyStatus : mistralKeyStatus;
+                
+                if (!statusElement) return;
+                
+                if (key && key.trim() !== '') {
+                    statusElement.innerHTML = '<span class="status-ok">Clé configurée</span>';
+                    statusElement.classList.add('status-ok');
+                    statusElement.classList.remove('status-error');
+                } else {
+                    statusElement.innerHTML = '<span class="status-error">Clé non configurée</span>';
+                    statusElement.classList.add('status-error');
+                    statusElement.classList.remove('status-ok');
+                }
+            }
+            
+            // Fonction pour enregistrer une clé API
+            function saveApiKey(type, key) {
+                fetch('/set_api_key', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ type: type, key: key })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateKeyStatus(type, key);
+                        
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: `Clé API ${type === 'openai' ? 'OpenAI' : 'Mistral'} ${key ? 'configurée' : 'supprimée'}`,
+                            type: 'info'
+                        });
+                        
+                        // Mettre à jour la variable locale
+                        apiKeys[type] = key;
+                        
+                        // Si c'est la clé OpenAI et que le moteur actuel est Whisper, vérifier si on peut l'utiliser
+                        if (type === 'openai' && sttEngineSelect && sttEngineSelect.value === 'whisper') {
+                            if (!key) {
+                                addLogEntry({
+                                    timestamp: new Date().toLocaleTimeString(),
+                                    message: "Clé API OpenAI requise pour utiliser Whisper. Veuillez configurer une clé ou changer de moteur.",
+                                    type: 'warning'
+                                });
+                            }
+                        }
+                    } else {
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: data.error || `Erreur lors de la configuration de la clé API ${type === 'openai' ? 'OpenAI' : 'Mistral'}`,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    addLogEntry({
+                        timestamp: new Date().toLocaleTimeString(),
+                        message: "Erreur de communication avec le serveur",
+                        type: 'error'
+                    });
+                });
+            }
+            
+            // Fonction pour changer le moteur STT
+            function changeSTTEngine(engine) {
+                // Désactiver temporairement le sélecteur pendant le changement
+                if (sttEngineSelect) {
+                    sttEngineSelect.disabled = true;
+                }
+                
+                // Vérifier si la clé API OpenAI est configurée pour Whisper
+                if (engine === 'whisper' && !apiKeys.openai) {
+                    addLogEntry({
+                        timestamp: new Date().toLocaleTimeString(),
+                        message: "Clé API OpenAI non configurée. Veuillez la configurer dans les paramètres.",
+                        type: 'error'
+                    });
+                    
+                    // Ouvrir automatiquement le modal de configuration
+                    apiSettingsModal.style.display = 'block';
+                    
+                    // Remettre le sélecteur à sa valeur précédente
+                    fetch('/status')
+                        .then(response => response.json())
+                        .then(data => {
+                            sttEngineSelect.value = data.stt_engine || 'speechrecognition';
+                            // Réactiver le sélecteur
+                            sttEngineSelect.disabled = false;
+                        })
+                        .catch(() => {
+                            // Réactiver le sélecteur en cas d'erreur
+                            sttEngineSelect.disabled = false;
+                        });
+                    
+                    return;
+                }
+                
+                fetch('/set_stt_engine', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ engine: engine })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: `Moteur STT changé pour ${sttEngineSelect.options[sttEngineSelect.selectedIndex].text}`,
+                            type: 'info'
+                        });
+                        
+                        // Si l'assistant est en cours d'exécution, le redémarrer
+                        if (isRunning) {
+                            fetch('/restart_recognition', {
+                                method: 'POST'
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    addLogEntry({
+                                        timestamp: new Date().toLocaleTimeString(),
+                                        message: "Reconnaissance vocale redémarrée",
+                                        type: 'info'
+                                    });
+                                } else {
+                                    addLogEntry({
+                                        timestamp: new Date().toLocaleTimeString(),
+                                        message: data.error || "Erreur lors du redémarrage de la reconnaissance vocale",
+                                        type: 'error'
+                                    });
+                                }
+                            });
+                        }
+                    } else {
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: data.error || "Erreur lors du changement de moteur STT",
+                            type: 'error'
+                        });
+                        
+                        // Remettre le sélecteur à sa valeur précédente
+                        fetch('/status')
+                            .then(response => response.json())
+                            .then(data => {
+                                sttEngineSelect.value = data.stt_engine || 'speechrecognition';
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    addLogEntry({
+                        timestamp: new Date().toLocaleTimeString(),
+                        message: "Erreur de communication avec le serveur",
+                        type: 'error'
+                    });
+                    
+                    // Remettre le sélecteur à sa valeur précédente
+                    fetch('/status')
+                        .then(response => response.json())
+                        .then(data => {
+                            sttEngineSelect.value = data.stt_engine || 'speechrecognition';
+                        })
+                        .finally(() => {
+                            // Réactiver le sélecteur
+                            if (sttEngineSelect) {
+                                sttEngineSelect.disabled = false;
+                            }
+                        });
+                })
+                .finally(() => {
+                    // Réactiver le sélecteur
+                    if (sttEngineSelect) {
+                        sttEngineSelect.disabled = false;
+                    }
+                });
+            }
+            
+            // Fonction pour mettre à jour les métriques STT dans l'interface
+            function updateSTTMetricsUI() {
+                // Vérifier que les métriques existent
+                if (!sttMetrics) {
+                    console.warn("Les métriques STT sont undefined");
+                    return;
+                }
+                
+                // Mettre à jour les métriques pour SpeechRecognition
+                if (sttMetrics.speechrecognition) {
+                    const srMetrics = sttMetrics.speechrecognition;
+                    if (document.getElementById('sr-requests')) {
+                        document.getElementById('sr-requests').textContent = srMetrics.requests || 0;
+                        document.getElementById('sr-success').textContent = srMetrics.success || 0;
+                        document.getElementById('sr-errors').textContent = srMetrics.errors || 0;
+                        document.getElementById('sr-success-rate').textContent = 
+                            srMetrics.requests > 0 ? `${Math.round((srMetrics.success / srMetrics.requests) * 100)}%` : '0%';
+                        document.getElementById('sr-avg-latency').textContent = `${Math.round(srMetrics.avg_latency || 0)} ms`;
+                        document.getElementById('sr-min-latency').textContent = 
+                            srMetrics.min_latency !== Infinity ? `${Math.round(srMetrics.min_latency || 0)} ms` : '0 ms';
+                        document.getElementById('sr-max-latency').textContent = `${Math.round(srMetrics.max_latency || 0)} ms`;
+                        document.getElementById('sr-last-latency').textContent = `${Math.round(srMetrics.last_latency || 0)} ms`;
+                        document.getElementById('sr-avg-audio-duration').textContent = `${(srMetrics.avg_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('sr-last-audio-duration').textContent = `${(srMetrics.last_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('sr-words-per-minute').textContent = Math.round(srMetrics.words_per_minute || 0);
+                        document.getElementById('sr-last-request-time').textContent = srMetrics.last_request_time || '-';
+                    }
+                }
+                
+                // Mettre à jour les métriques pour Whisper
+                if (sttMetrics.whisper) {
+                    const whisperMetrics = sttMetrics.whisper;
+                    if (document.getElementById('whisper-requests')) {
+                        document.getElementById('whisper-requests').textContent = whisperMetrics.requests || 0;
+                        document.getElementById('whisper-success').textContent = whisperMetrics.success || 0;
+                        document.getElementById('whisper-errors').textContent = whisperMetrics.errors || 0;
+                        document.getElementById('whisper-success-rate').textContent = 
+                            whisperMetrics.requests > 0 ? `${Math.round((whisperMetrics.success / whisperMetrics.requests) * 100)}%` : '0%';
+                        document.getElementById('whisper-avg-latency').textContent = `${Math.round(whisperMetrics.avg_latency || 0)} ms`;
+                        document.getElementById('whisper-min-latency').textContent = 
+                            whisperMetrics.min_latency !== Infinity ? `${Math.round(whisperMetrics.min_latency || 0)} ms` : '0 ms';
+                        document.getElementById('whisper-max-latency').textContent = `${Math.round(whisperMetrics.max_latency || 0)} ms`;
+                        document.getElementById('whisper-last-latency').textContent = `${Math.round(whisperMetrics.last_latency || 0)} ms`;
+                        document.getElementById('whisper-avg-audio-duration').textContent = `${(whisperMetrics.avg_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('whisper-last-audio-duration').textContent = `${(whisperMetrics.last_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('whisper-words-per-minute').textContent = Math.round(whisperMetrics.words_per_minute || 0);
+                        document.getElementById('whisper-cost').textContent = `$${(whisperMetrics.cost || 0).toFixed(4)}`;
+                        document.getElementById('whisper-last-request-time').textContent = whisperMetrics.last_request_time || '-';
+                    }
+                }
+                
+                // Mettre à jour les métriques pour Vosk
+                if (sttMetrics.vosk) {
+                    const voskMetrics = sttMetrics.vosk;
+                    if (document.getElementById('vosk-requests')) {
+                        document.getElementById('vosk-requests').textContent = voskMetrics.requests || 0;
+                        document.getElementById('vosk-success').textContent = voskMetrics.success || 0;
+                        document.getElementById('vosk-errors').textContent = voskMetrics.errors || 0;
+                        document.getElementById('vosk-success-rate').textContent = 
+                            voskMetrics.requests > 0 ? `${Math.round((voskMetrics.success / voskMetrics.requests) * 100)}%` : '0%';
+                        document.getElementById('vosk-avg-latency').textContent = `${Math.round(voskMetrics.avg_latency || 0)} ms`;
+                        document.getElementById('vosk-min-latency').textContent = 
+                            voskMetrics.min_latency !== Infinity ? `${Math.round(voskMetrics.min_latency || 0)} ms` : '0 ms';
+                        document.getElementById('vosk-max-latency').textContent = `${Math.round(voskMetrics.max_latency || 0)} ms`;
+                        document.getElementById('vosk-last-latency').textContent = `${Math.round(voskMetrics.last_latency || 0)} ms`;
+                        document.getElementById('vosk-avg-audio-duration').textContent = `${(voskMetrics.avg_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('vosk-last-audio-duration').textContent = `${(voskMetrics.last_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('vosk-words-per-minute').textContent = Math.round(voskMetrics.words_per_minute || 0);
+                        document.getElementById('vosk-last-request-time').textContent = voskMetrics.last_request_time || '-';
+                    }
+                }
+                
+                // Mettre à jour les métriques pour Sherpa NCNN si l'élément existe
+                if (document.getElementById('sherpa-ncnn-requests') && sttMetrics.sherpa_ncnn) {
+                    const sherpaMetrics = sttMetrics.sherpa_ncnn;
+                    document.getElementById('sherpa-ncnn-requests').textContent = sherpaMetrics.requests || 0;
+                    document.getElementById('sherpa-ncnn-success').textContent = sherpaMetrics.success || 0;
+                    document.getElementById('sherpa-ncnn-errors').textContent = sherpaMetrics.errors || 0;
+                    document.getElementById('sherpa-ncnn-success-rate').textContent = 
+                        sherpaMetrics.requests > 0 ? `${Math.round((sherpaMetrics.success / sherpaMetrics.requests) * 100)}%` : '0%';
+                    document.getElementById('sherpa-ncnn-avg-latency').textContent = `${Math.round(sherpaMetrics.avg_latency || 0)} ms`;
+                    document.getElementById('sherpa-ncnn-min-latency').textContent = 
+                        sherpaMetrics.min_latency !== Infinity ? `${Math.round(sherpaMetrics.min_latency || 0)} ms` : '0 ms';
+                    document.getElementById('sherpa-ncnn-max-latency').textContent = `${Math.round(sherpaMetrics.max_latency || 0)} ms`;
+                    document.getElementById('sherpa-ncnn-last-latency').textContent = `${Math.round(sherpaMetrics.last_latency || 0)} ms`;
+                    document.getElementById('sherpa-ncnn-avg-audio-duration').textContent = `${(sherpaMetrics.avg_audio_duration || 0).toFixed(1)} s`;
+                    document.getElementById('sherpa-ncnn-last-audio-duration').textContent = `${(sherpaMetrics.last_audio_duration || 0).toFixed(1)} s`;
+                    document.getElementById('sherpa-ncnn-words-per-minute').textContent = Math.round(sherpaMetrics.words_per_minute || 0);
+                    document.getElementById('sherpa-ncnn-last-request-time').textContent = sherpaMetrics.last_request_time || '-';
+                }
+                
+                // Mettre à jour les métriques pour Whisper CT2
+                if (sttMetrics.whisper_ct2) {
+                    const whisperCt2Metrics = sttMetrics.whisper_ct2;
+                    if (document.getElementById('whisper-ct2-requests')) {
+                        document.getElementById('whisper-ct2-requests').textContent = whisperCt2Metrics.requests || 0;
+                        document.getElementById('whisper-ct2-success').textContent = whisperCt2Metrics.success || 0;
+                        document.getElementById('whisper-ct2-errors').textContent = whisperCt2Metrics.errors || 0;
+                        document.getElementById('whisper-ct2-success-rate').textContent = 
+                            whisperCt2Metrics.requests > 0 ? `${Math.round((whisperCt2Metrics.success / whisperCt2Metrics.requests) * 100)}%` : '0%';
+                        document.getElementById('whisper-ct2-avg-latency').textContent = `${Math.round(whisperCt2Metrics.avg_latency || 0)} ms`;
+                        document.getElementById('whisper-ct2-min-latency').textContent = 
+                            whisperCt2Metrics.min_latency !== Infinity ? `${Math.round(whisperCt2Metrics.min_latency || 0)} ms` : '0 ms';
+                        document.getElementById('whisper-ct2-max-latency').textContent = `${Math.round(whisperCt2Metrics.max_latency || 0)} ms`;
+                        document.getElementById('whisper-ct2-last-latency').textContent = `${Math.round(whisperCt2Metrics.last_latency || 0)} ms`;
+                        document.getElementById('whisper-ct2-avg-audio-duration').textContent = `${(whisperCt2Metrics.avg_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('whisper-ct2-last-audio-duration').textContent = `${(whisperCt2Metrics.last_audio_duration || 0).toFixed(1)} s`;
+                        document.getElementById('whisper-ct2-words-per-minute').textContent = Math.round(whisperCt2Metrics.words_per_minute || 0);
+                        document.getElementById('whisper-ct2-last-request-time').textContent = whisperCt2Metrics.last_request_time || '-';
+                    }
+                }
+            }
+            
+            // Fonction pour mettre à jour les barres de comparaison
+            function updateComparisonBars() {
+                // Vérifier que les métriques existent
+                if (!sttMetrics) {
+                    console.warn("Les métriques STT sont undefined");
+                    return;
+                }
+                
+                const srMetrics = sttMetrics.speechrecognition || { avg_latency: 0, requests: 0, success: 0, words_per_minute: 0 };
+                const whisperMetrics = sttMetrics.whisper || { avg_latency: 0, requests: 0, success: 0, words_per_minute: 0 };
+                const voskMetrics = sttMetrics.vosk || { avg_latency: 0, requests: 0, success: 0, words_per_minute: 0 };
+                const sherpaMetrics = sttMetrics.sherpa_ncnn || { avg_latency: 0, requests: 0, success: 0, words_per_minute: 0 };
+                const whisperCt2Metrics = sttMetrics.whisper_ct2 || { avg_latency: 0, requests: 0, success: 0, words_per_minute: 0 };
+                
+                // Latence (plus petite est meilleure)
+                let srLatencyWidth = 0;
+                let whisperLatencyWidth = 0;
+                let voskLatencyWidth = 0;
+                let sherpaLatencyWidth = 0;
+                let whisperCt2LatencyWidth = 0;
+                
+                // Calculer les largeurs relatives pour la latence (inversée car plus petite est meilleure)
+                if (srMetrics.avg_latency > 0 || whisperMetrics.avg_latency > 0 || voskMetrics.avg_latency > 0 || 
+                    sherpaMetrics.avg_latency > 0 || whisperCt2Metrics.avg_latency > 0) {
+                    
+                    const maxLatency = Math.max(
+                        srMetrics.avg_latency > 0 ? srMetrics.avg_latency : 0,
+                        whisperMetrics.avg_latency > 0 ? whisperMetrics.avg_latency : 0,
+                        voskMetrics.avg_latency > 0 ? voskMetrics.avg_latency : 0,
+                        sherpaMetrics.avg_latency > 0 ? sherpaMetrics.avg_latency : 0,
+                        whisperCt2Metrics.avg_latency > 0 ? whisperCt2Metrics.avg_latency : 0
+                    );
+                    
+                    // Inverser pour que plus petite latence = plus grande barre
+                    if (srMetrics.avg_latency > 0) {
+                        srLatencyWidth = Math.round((1 - (srMetrics.avg_latency / maxLatency)) * 100);
+                    }
+                    
+                    if (whisperMetrics.avg_latency > 0) {
+                        whisperLatencyWidth = Math.round((1 - (whisperMetrics.avg_latency / maxLatency)) * 100);
+                    }
+                    
+                    if (voskMetrics.avg_latency > 0) {
+                        voskLatencyWidth = Math.round((1 - (voskMetrics.avg_latency / maxLatency)) * 100);
+                    }
+                    
+                    if (sherpaMetrics.avg_latency > 0) {
+                        sherpaLatencyWidth = Math.round((1 - (sherpaMetrics.avg_latency / maxLatency)) * 100);
+                    }
+                    
+                    if (whisperCt2Metrics.avg_latency > 0) {
+                        whisperCt2LatencyWidth = Math.round((1 - (whisperCt2Metrics.avg_latency / maxLatency)) * 100);
+                    }
+                }
+                
+                // Taux de succès
+                let srSuccessWidth = srMetrics.requests > 0 ? Math.round((srMetrics.success / srMetrics.requests) * 100) : 0;
+                let whisperSuccessWidth = whisperMetrics.requests > 0 ? Math.round((whisperMetrics.success / whisperMetrics.requests) * 100) : 0;
+                let voskSuccessWidth = voskMetrics.requests > 0 ? Math.round((voskMetrics.success / voskMetrics.requests) * 100) : 0;
+                let sherpaSuccessWidth = sherpaMetrics.requests > 0 ? Math.round((sherpaMetrics.success / sherpaMetrics.requests) * 100) : 0;
+                let whisperCt2SuccessWidth = whisperCt2Metrics.requests > 0 ? Math.round((whisperCt2Metrics.success / whisperCt2Metrics.requests) * 100) : 0;
+                
+                // Mots par minute
+                let srWpmWidth = 0;
+                let whisperWpmWidth = 0;
+                let voskWpmWidth = 0;
+                let sherpaWpmWidth = 0;
+                let whisperCt2WpmWidth = 0;
+                
+                // Calculer les largeurs relatives pour les mots par minute
+                if (srMetrics.words_per_minute > 0 || whisperMetrics.words_per_minute > 0 || voskMetrics.words_per_minute > 0 || 
+                    sherpaMetrics.words_per_minute > 0 || whisperCt2Metrics.words_per_minute > 0) {
+                    
+                    const maxWpm = Math.max(
+                        srMetrics.words_per_minute,
+                        whisperMetrics.words_per_minute,
+                        voskMetrics.words_per_minute,
+                        sherpaMetrics.words_per_minute,
+                        whisperCt2Metrics.words_per_minute
+                    );
+                    
+                    if (maxWpm > 0) {
+                        srWpmWidth = Math.round((srMetrics.words_per_minute / maxWpm) * 100);
+                        whisperWpmWidth = Math.round((whisperMetrics.words_per_minute / maxWpm) * 100);
+                        voskWpmWidth = Math.round((voskMetrics.words_per_minute / maxWpm) * 100);
+                        sherpaWpmWidth = Math.round((sherpaMetrics.words_per_minute / maxWpm) * 100);
+                        whisperCt2WpmWidth = Math.round((whisperCt2Metrics.words_per_minute / maxWpm) * 100);
+                    }
+                }
+                
+                // Mettre à jour les barres de latence
+                if (document.getElementById('sr-latency-bar')) {
+                    document.getElementById('sr-latency-bar').style.width = `${srLatencyWidth}%`;
+                    document.getElementById('sr-latency-bar').setAttribute('data-value', `${Math.round(srMetrics.avg_latency || 0)} ms`);
+                }
+                
+                if (document.getElementById('whisper-latency-bar')) {
+                    document.getElementById('whisper-latency-bar').style.width = `${whisperLatencyWidth}%`;
+                    document.getElementById('whisper-latency-bar').setAttribute('data-value', `${Math.round(whisperMetrics.avg_latency || 0)} ms`);
+                }
+                
+                if (document.getElementById('vosk-latency-bar')) {
+                    document.getElementById('vosk-latency-bar').style.width = `${voskLatencyWidth}%`;
+                    document.getElementById('vosk-latency-bar').setAttribute('data-value', `${Math.round(voskMetrics.avg_latency || 0)} ms`);
+                }
+                
+                if (document.getElementById('sherpa-ncnn-latency-bar')) {
+                    document.getElementById('sherpa-ncnn-latency-bar').style.width = `${sherpaLatencyWidth}%`;
+                    document.getElementById('sherpa-ncnn-latency-bar').setAttribute('data-value', `${Math.round(sherpaMetrics.avg_latency || 0)} ms`);
+                }
+                
+                if (document.getElementById('whisper-ct2-latency-bar')) {
+                    document.getElementById('whisper-ct2-latency-bar').style.width = `${whisperCt2LatencyWidth}%`;
+                    document.getElementById('whisper-ct2-latency-bar').setAttribute('data-value', `${Math.round(whisperCt2Metrics.avg_latency || 0)} ms`);
+                }
+                
+                // Mettre à jour les barres de taux de succès
+                if (document.getElementById('sr-success-bar')) {
+                    document.getElementById('sr-success-bar').style.width = `${srSuccessWidth}%`;
+                    document.getElementById('sr-success-bar').setAttribute('data-value', `${srSuccessWidth}%`);
+                }
+                
+                if (document.getElementById('whisper-success-bar')) {
+                    document.getElementById('whisper-success-bar').style.width = `${whisperSuccessWidth}%`;
+                    document.getElementById('whisper-success-bar').setAttribute('data-value', `${whisperSuccessWidth}%`);
+                }
+                
+                if (document.getElementById('vosk-success-bar')) {
+                    document.getElementById('vosk-success-bar').style.width = `${voskSuccessWidth}%`;
+                    document.getElementById('vosk-success-bar').setAttribute('data-value', `${voskSuccessWidth}%`);
+                }
+                
+                if (document.getElementById('sherpa-ncnn-success-bar')) {
+                    document.getElementById('sherpa-ncnn-success-bar').style.width = `${sherpaSuccessWidth}%`;
+                    document.getElementById('sherpa-ncnn-success-bar').setAttribute('data-value', `${sherpaSuccessWidth}%`);
+                }
+                
+                if (document.getElementById('whisper-ct2-success-bar')) {
+                    document.getElementById('whisper-ct2-success-bar').style.width = `${whisperCt2SuccessWidth}%`;
+                    document.getElementById('whisper-ct2-success-bar').setAttribute('data-value', `${whisperCt2SuccessWidth}%`);
+                }
+                
+                // Mettre à jour les barres de mots par minute
+                if (document.getElementById('sr-wpm-bar')) {
+                    document.getElementById('sr-wpm-bar').style.width = `${srWpmWidth}%`;
+                    document.getElementById('sr-wpm-bar').setAttribute('data-value', `${Math.round(srMetrics.words_per_minute || 0)} mots/min`);
+                }
+                
+                if (document.getElementById('whisper-wpm-bar')) {
+                    document.getElementById('whisper-wpm-bar').style.width = `${whisperWpmWidth}%`;
+                    document.getElementById('whisper-wpm-bar').setAttribute('data-value', `${Math.round(whisperMetrics.words_per_minute || 0)} mots/min`);
+                }
+                
+                if (document.getElementById('vosk-wpm-bar')) {
+                    document.getElementById('vosk-wpm-bar').style.width = `${voskWpmWidth}%`;
+                    document.getElementById('vosk-wpm-bar').setAttribute('data-value', `${Math.round(voskMetrics.words_per_minute || 0)} mots/min`);
+                }
+                
+                if (document.getElementById('sherpa-ncnn-wpm-bar')) {
+                    document.getElementById('sherpa-ncnn-wpm-bar').style.width = `${sherpaWpmWidth}%`;
+                    document.getElementById('sherpa-ncnn-wpm-bar').setAttribute('data-value', `${Math.round(sherpaMetrics.words_per_minute || 0)} mots/min`);
+                }
+                
+                if (document.getElementById('whisper-ct2-wpm-bar')) {
+                    document.getElementById('whisper-ct2-wpm-bar').style.width = `${whisperCt2WpmWidth}%`;
+                    document.getElementById('whisper-ct2-wpm-bar').setAttribute('data-value', `${Math.round(whisperCt2Metrics.words_per_minute || 0)} mots/min`);
+                }
+            }
+            
+            // Initialisation : récupérer l'état actuel
+            fetchStatus();
+            
+            // Initialisation : récupérer les métriques STT
+            fetchSTTMetrics();
+            
+            // Initialisation : récupérer les clés API
+            fetchApiKeys();
+            
+            // Initialisation : récupérer les logs
+            fetchLogs();
+            
+            // Fonction pour récupérer l'état actuel
+            function fetchStatus() {
+                return new Promise((resolve, reject) => {
+                    fetch('/status')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur réseau lors de la récupération du statut');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            updateUI(data);
+                            // Mettre à jour l'interface des modèles Coqui si nécessaire
+                            if (typeof updateCoquiModelFromStatus === 'function') {
+                                updateCoquiModelFromStatus(data);
+                            }
+                            resolve(data);
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            addLogEntry({
+                                timestamp: new Date().toLocaleTimeString(),
+                                message: "Erreur de communication avec le serveur",
+                                type: 'error'
+                            });
+                            reject(error);
+                        });
+                });
+            }
+            
+            // Fonction pour récupérer les métriques STT
+            function fetchSTTMetrics() {
+                fetch('/get_stt_metrics')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau lors de la récupération des métriques');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        sttMetrics = data;
+                        updateSTTMetricsUI();
+                        updateComparisonBars();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+            
+            // Fonction pour récupérer les clés API
+            function fetchApiKeys() {
+                fetch('/get_api_keys')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau lors de la récupération des clés API');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        apiKeys = data;
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+            
+            // Fonction pour récupérer les logs
+            function fetchLogs() {
+                fetch('/get_logs')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau lors de la récupération des logs');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        updateLogs(data);
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+            
+            // Fonction pour mettre à jour les logs
+            function updateLogs(logs) {
+                // Vérifier que logs est un tableau
+                if (logs && Array.isArray(logs)) {
+                    // Ajouter chaque log au conteneur
+                    logs.forEach(log => {
+                        addLogEntry(log);
+                    });
+                    
+                    // Faire défiler vers le bas
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                } else {
+                    console.warn("Les logs reçus ne sont pas un tableau:", logs);
+                }
+            }
+            
+            // Configurer la source d'événements SSE
+            const evtSource = new EventSource('/events');
+            
+            evtSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'log') {
+                        addLogEntry(data.data);
+                    } else if (data.type === 'command') {
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: data.data,
+                            type: 'command'
+                        });
+                    } else if (data.type === 'response') {
+                        addLogEntry({
+                            timestamp: new Date().toLocaleTimeString(),
+                            message: data.data,
+                            type: 'response'
+                        });
+                    } else if (data.type === 'status') {
+                        updateUI(data.data);
+                        // Mettre à jour l'interface des modèles Coqui si nécessaire
+                        if (typeof updateCoquiModelFromStatus === 'function') {
+                            updateCoquiModelFromStatus(data.data);
+                        }
+                        // Mettre à jour l'interface des modèles Coqui si nécessaire
+                        if (typeof updateCoquiModelFromStatus === 'function') {
+                            updateCoquiModelFromStatus(data.data);
+                        }
+                    } else if (data.type === 'metrics') {
+                        try {
+                            if (data.data) {
+                                sttMetrics = data.data;
+                                updateSTTMetricsUI();
+                                updateComparisonBars();
+                            } else {
+                                console.warn("Données de métriques invalides reçues");
+                            }
+                        } catch (metricsError) {
+                            console.error("Erreur lors de la mise à jour des métriques:", metricsError);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Erreur lors du traitement du message SSE:", error);
+                }
+            };
+            
+            evtSource.onerror = function(err) {
+                console.error('Erreur SSE:', err);
+                addLogEntry({
+                    timestamp: new Date().toLocaleTimeString(),
+                    message: "Connexion au serveur perdue. Tentative de reconnexion...",
+                    type: 'error'
+                });
+            };
+            
+            // Masquer l'indicateur de chargement une fois que tout est prêt
+            hideLoadingIndicator();
+        });
+        
+        function showLoadingIndicator() {
+            // Créer un élément de chargement s'il n'existe pas déjà
+            if (!document.getElementById('loading-indicator')) {
+                const loadingIndicator = document.createElement('div');
+                loadingIndicator.id = 'loading-indicator';
+                loadingIndicator.className = 'loading-indicator';
+                loadingIndicator.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <p>Chargement de Whisp Assistant...</p>
+                `;
+                document.body.appendChild(loadingIndicator);
+            }
+        }
+        
+        function hideLoadingIndicator() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.opacity = '0';
+                loadingIndicator.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    loadingIndicator.remove();
+                }, 500);
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Créer un élément de notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            // Ajouter une icône en fonction du type
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            
+            notification.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
+                <button class="close-notification" aria-label="Fermer la notification">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // Ajouter la notification au document
+            document.body.appendChild(notification);
+            
+            // Ajouter l'événement pour fermer la notification
+            notification.querySelector('.close-notification').addEventListener('click', () => {
+                notification.classList.add('closing');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            });
+            
+            // Fermer automatiquement après 5 secondes
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    notification.classList.add('closing');
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/tts-models.js') }}"></script>
+</body>
+</html>

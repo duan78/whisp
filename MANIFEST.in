@@ -1,0 +1,44 @@
+# Inclure les fichiers de configuration exemples
+include config.example.env
+include api_keys.json.example
+
+# Inclure les fichiers de documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include MANIFEST.in
+
+# Inclure les fichiers de configuration Python
+include pyproject.toml
+include setup.py
+include requirements*.txt
+
+# Inclure les templates HTML
+recursive-include templates *.html *.css *.js
+
+# Inclure les fichiers statiques
+recursive-include static *.css *.js *.png *.jpg *.gif *.ico *.svg
+
+# Inclure les scripts
+recursive-include scripts *.sh *.ps1 *.py
+
+# Inclure la documentation
+recursive-include docs *.md *.rst *.txt
+
+# Inclure les templates GitHub
+recursive-include .github *.yml *.yaml *.md
+
+# Exclure les fichiers temporaires et de cache
+global-exclude *.pyc *.pyo *.pyd
+global-exclude __pycache__ .pytest_cache
+global-exclude .DS_Store Thumbs.db
+global-exclude *.log *.tmp
+global-exclude .env config.env api_keys.json
+global-exclude *.db *.sqlite *.sqlite3
+global-exclude venv .venv env
+global-exclude .git .tox .coverage
+global-exclude build dist *.egg-info
+
+# Exclure les fichiers de données utilisateur
+global-exclude logs/ records/ backups/ cache/

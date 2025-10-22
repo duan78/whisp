@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisp - Gestion optimisée des données pour Fine-tuning</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6baf;
+            --secondary-color: #5bc0de;
+            --success-color: #28a745;
+            --warning-color: #fd7e14;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-radius: 6px;
+            --transition-speed: 0.15s;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        
+        /* Layout principal */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+        
+        /* Header fixe avec outils groupés */
+        .app-header {
+            background: white;
+            border-bottom: 1px solid #e3e6ea;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .header-main {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-title {
+            font-size: 1.3rem;
+            margin: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        /* Barre d'outils groupés */
+        .toolbar {
+            background: #f8f9fa;
+            border-top: 1px solid #e3e6ea;
+            padding: 10px 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .toolbar-section {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding-right: 15px;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .toolbar-section:last-child {
+            border-right: none;
+            margin-left: auto;
+        }
+        
+        /* Sélection multiple */
+        .selection-info {
+            background: var(--info-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .selection-info.active {
+            display: flex;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Actions groupées */
+        .bulk-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .bulk-actions button {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            border-radius: var(--border-radius);
+            border: none;
+            background: white;
+            color: #495057;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .bulk-actions button:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Conteneur principal */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        /* Stats bar améliorée */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform var(--transition-speed);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .stat-icon.primary { background: rgba(74, 107, 175, 0.1); color: var(--primary-color); }
+        .stat-icon.success { background: rgba(40, 167, 69, 0.1); color: var(--success-color); }
+        .stat-icon.warning { background: rgba(253, 126, 20, 0.1); color: var(--warning-color); }
+        .stat-icon.info { background: rgba(23, 162, 184, 0.1); color: var(--info-color); }
+        
+        .stat-content h3 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .stat-content p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        /* Filtres avancés */
+        .filters-bar {
+            background: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-chip {
+            padding: 6px 12px;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        
+        .filter-chip:hover {
+            background: #dee2e6;
+        }
+        
+        .filter-chip.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Vue table optimisée */
+        .samples-table {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .table-header {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .table-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        /* Checkbox personnalisée */
+        .custom-checkbox {
+            position: relative;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            background-color: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            transition: all var(--transition-speed);
+        }
+        
+        .custom-checkbox:hover input ~ .checkmark {
+            border-color: var(--primary-color);
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+        
+        /* Ligne d'échantillon optimisée */
+        .sample-row {
+            display: grid;
+            grid-template-columns: 40px 200px 1fr 150px 180px 120px;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f2f5;
+            align-items: center;
+            transition: all var(--transition-speed);
+            cursor: pointer;
+        }
+        
+        .sample-row:hover {
+            background: #f8f9fa;
+        }
+        
+        .sample-row.selected {
+            background: rgba(74, 107, 175, 0.05);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        /* Player audio compact */
+        .audio-player-compact {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .play-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed);
+        }
+        
+        .play-button:hover {
+            background: #3a5a9f;
+            transform: scale(1.1);
+        }
+        
+        .play-button.playing {
+            background: var(--success-color);
+        }
+        
+        .audio-duration {
+            font-size: 0.875rem;
+            color: #6c757d;
+            min-width: 50px;
+        }
+        
+        /* Transcription inline éditable */
+        .transcription-inline {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            transition: all var(--transition-speed);
+            cursor: text;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .transcription-inline:hover {
+            border-color: #dee2e6;
+        }
+        
+        .transcription-inline:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(74, 107, 175, 0.1);
+        }
+        
+        .transcription-inline.modified {
+            background: #fff3cd;
+            border-color: var(--warning-color);
+        }
+        
+        /* Actions rapides */
+        .quick-actions {
+            display: flex;
+            gap: 5px;
+            opacity: 0.7;
+            transition: opacity var(--transition-speed);
+        }
+        
+        .sample-row:hover .quick-actions {
+            opacity: 1;
+        }
+        
+        .quick-action-btn {
+            padding: 6px 10px;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: all var(--transition-speed);
+            font-size: 0.875rem;
+        }
+        
+        .quick-action-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        /* Indicateurs visuels */
+        .quality-bar {
+            width: 60px;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        
+        .quality-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .quality-high { background: var(--success-color); }
+        .quality-medium { background: var(--warning-color); }
+        .quality-low { background: var(--danger-color); }
+        
+        /* Footer avec raccourcis */
+        .app-footer {
+            background: white;
+            border-top: 1px solid #e3e6ea;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .shortcuts-hint {
+            display: flex;
+            gap: 15px;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .kbd {
+            padding: 2px 6px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        /* Modal améliorée */
+        .modal-content {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e3e6ea;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            min-width: 300px;
+            margin-bottom: 10px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Loading states */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sample-row {
+                grid-template-columns: 40px 150px 1fr 120px 100px;
+            }
+            
+            .stats-dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .toolbar-section {
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .sample-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header avec titre et actions principales -->
+        <header class="app-header">
+            <div class="header-main">
+                <h1 class="app-title">
+                    <i class="fas fa-database"></i> Gestion des données Fine-tuning
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="sync-dataset">
+                        <i class="fas fa-sync-alt"></i> Synchroniser
+                    </button>
+                    <button class="btn btn-success" id="export-dataset">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Barre d'outils avec actions groupées -->
+            <div class="toolbar">
+                <!-- Sélection multiple -->
+                <div class="toolbar-section">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="select-all">
+                        <span class="checkmark"></span>
+                    </label>
+                    <span class="text-muted">Tout sélectionner</span>
+                </div>
+                
+                <!-- Actions groupées (affichées quand des éléments sont sélectionnés) -->
+                <div class="selection-info" id="selection-info">
+                    <span><strong id="selected-count">0</strong> éléments sélectionnés</span>
+                    <div class="bulk-actions">
+                        <button class="btn-bulk-train" title="Définir comme Train">
+                            <i class="fas fa-graduation-cap"></i> Train
+                        </button>
+                        <button class="btn-bulk-validation" title="Définir comme Validation">
+                            <i class="fas fa-check-circle"></i> Validation
+                        </button>
+                        <button class="btn-bulk-test" title="Définir comme Test">
+                            <i class="fas fa-flask"></i> Test
+                        </button>
+                        <button class="btn-bulk-delete" title="Supprimer">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filtres rapides -->
+                <div class="toolbar-section">
+                    <select class="form-control form-control-sm" id="filter-engine" style="width: 150px;">
+                        <option value="">Tous les moteurs</option>
+                    </select>
+                    <select class="form-control form-control-sm" id="filter-split" style="width: 120px;">
+                        <option value="">Tous les splits</option>
+                        <option value="train">Train</option>
+                        <option value="validation">Validation</option>
+                        <option value="test">Test</option>
+                    </select>
+                    <select class="form-control form-control-sm" id="filter-quality" style="width: 120px;">
+                        <option value="">Toute qualité</option>
+                        <option value="high">Haute</option>
+                        <option value="medium">Moyenne</option>
+                        <option value="low">Basse</option>
+                    </select>
+                </div>
+                
+                <!-- Recherche -->
+                <div class="toolbar-section" style="flex: 1;">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="search-input" 
+                               placeholder="Rechercher dans les transcriptions...">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" id="clear-search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Options d'affichage -->
+                <div class="toolbar-section">
+                    <button class="btn btn-sm btn-outline-secondary" id="toggle-compact" title="Mode compact">
+                        <i class="fas fa-compress"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" id="batch-mode" title="Mode batch">
+                        <i class="fas fa-layer-group"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary active" id="auto-save" title="Sauvegarde auto">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Contenu principal -->
+        <main class="app-content">
+            <!-- Dashboard de statistiques -->
+            <div class="stats-dashboard" id="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-samples">0</h3>
+                        <p>Échantillons totaux</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="train-count">0</h3>
+                        <p>Données d'entraînement</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="validation-count">0</h3>
+                        <p>Données de validation</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon info">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="test-count">0</h3>
+                        <p>Données de test</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-duration">0h</h3>
+                        <p>Durée totale</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="modified-count">0</h3>
+                        <p>Modifications en attente</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filtres avancés (cachés par défaut) -->
+            <div class="filters-bar" id="advanced-filters" style="display: none;">
+                <h6 class="mb-3">Filtres avancés</h6>
+                <div class="filter-group">
+                    <span class="text-muted mr-2">Durée:</span>
+                    <div class="filter-chip" data-filter="duration" data-value="0-5">0-5s</div>
+                    <div class="filter-chip" data-filter="duration" data-value="5-10">5-10s</div>
+                    <div class="filter-chip" data-filter="duration" data-value="10+">10s+</div>
+                    
+                    <span class="text-muted ml-3 mr-2">État:</span>
+                    <div class="filter-chip" data-filter="status" data-value="modified">Modifiés</div>
+                    <div class="filter-chip" data-filter="status" data-value="original">Originaux</div>
+                    
+                    <span class="text-muted ml-3 mr-2">Date:</span>
+                    <div class="filter-chip" data-filter="date" data-value="today">Aujourd'hui</div>
+                    <div class="filter-chip" data-filter="date" data-value="week">Cette semaine</div>
+                    <div class="filter-chip" data-filter="date" data-value="month">Ce mois</div>
+                </div>
+            </div>
+            
+            <!-- Table des échantillons -->
+            <div class="samples-table">
+                <div class="table-header">
+                    <div class="table-info">
+                        <span id="showing-info">Affichage de 0 éléments</span>
+                    </div>
+                    <div class="table-controls">
+                        <button class="btn btn-sm btn-outline-secondary" id="toggle-filters">
+                            <i class="fas fa-filter"></i> Filtres avancés
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" id="refresh-samples">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Conteneur des échantillons -->
+                <div id="samples-container">
+                    <!-- Les échantillons seront chargés ici -->
+                    <div class="text-center p-5" id="loading-indicator">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Chargement des échantillons...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer avec raccourcis -->
+        <footer class="app-footer">
+            <div class="shortcuts-hint">
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>A</kbd> Tout sélectionner
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>S</kbd> Sauvegarder
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Space</kbd> Lecture/Pause
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Del</kbd> Supprimer
+                </div>
+                <div class="shortcut-item">
+                    <kbd>1-3</kbd> Changer split
+                </div>
+            </div>
+            <div class="footer-info">
+                <span id="last-update">Dernière mise à jour: -</span>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Container pour les toasts -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- Modal de confirmation pour suppression groupée -->
+    <div class="modal fade" id="confirm-bulk-delete" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer <strong id="delete-count">0</strong> échantillons ?</p>
+                    <p class="text-danger">Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/finetune-v2.js') }}"></script>
+</body>
+</html>
