@@ -4,15 +4,15 @@ Configuration globale pour l'assistant vocal Whisp
 import os
 import json
 try:
-    # Essayer d'abord l'import en tant que package
+    # Import prioritaire en tant que package
     from whisp_assistant.database_manager import (
-        load_config, save_config, 
+        load_config, save_config,
         save_user_preference, load_user_preferences
     )
 except ImportError:
-    # Sinon, utiliser l'import relatif
+    # Import relatif de secours
     from database_manager import (
-        load_config, save_config, 
+        load_config, save_config,
         save_user_preference, load_user_preferences
     )
 
@@ -27,18 +27,18 @@ texte_a_traduire = ""
 langue_cible = ""
 
 # Configuration du moteur STT (valeur par défaut)
-_stt_engine = "speechrecognition"  # Options: "speechrecognition", "nemo", "whisper", "vosk", "whisper_ct2"
+stt_engine = "speechrecognition"  # Options: "speechrecognition", "nemo", "whisper", "vosk", "whisper_ct2"
 
 # Clés API (valeurs par défaut)
-_openai_api_key = ""
-_mistral_api_key = ""
+openai_api_key = ""
+mistral_api_key = ""
 
 # Chemin vers le fichier de configuration des clés API (pour compatibilité)
-_api_keys_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_keys.json")
+api_keys_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_keys.json")
 
 # Charger les clés API et configurations au démarrage
 def _load_config_from_db():
-    global _stt_engine, _openai_api_key, _mistral_api_key
+    global stt_engine, openai_api_key, mistral_api_key
     
     # Charger les configurations depuis la base de données
     config_dict = load_config()
@@ -46,14 +46,14 @@ def _load_config_from_db():
     if config_dict:
         # Charger le moteur STT
         if "stt_engine" in config_dict:
-            _stt_engine = config_dict["stt_engine"]
-        
+            stt_engine = config_dict["stt_engine"]
+
         # Charger les clés API
         if "openai_api_key" in config_dict:
-            _openai_api_key = config_dict["openai_api_key"]
-        
+            openai_api_key = config_dict["openai_api_key"]
+
         if "mistral_api_key" in config_dict:
-            _mistral_api_key = config_dict["mistral_api_key"]
+            mistral_api_key = config_dict["mistral_api_key"]
 
 # Charger les clés API depuis les sources traditionnelles (pour compatibilité)
 def _load_api_keys():

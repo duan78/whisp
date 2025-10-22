@@ -9,8 +9,12 @@ import re
 import importlib.util
 from tts_module import ajouter_texte_a_lire
 from text_processing import ecrire_texte_avec_accents
-from config import (set_translation_mode, get_translation_mode, get_translation_text, 
+from config import (set_translation_mode, get_translation_mode, get_translation_text,
                    get_target_language, append_translation_text, get_mistral_api_key)
+
+# Constantes API
+MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
+MISTRAL_MODEL = "mistral-large-latest"
 
 # Vérifier si pyperclip est disponible
 has_pyperclip = importlib.util.find_spec("pyperclip") is not None
@@ -48,7 +52,7 @@ def appeler_api_mistral(prompt):
             print(f"Erreur lors de la définition de la variable d'environnement dans appeler_api_mistral: {e}")
             return f"Erreur: Impossible de définir la variable d'environnement MISTRAL_API_KEY. {str(e)}"
     
-    url = "https://api.mistral.ai/v1/chat/completions"
+    url = MISTRAL_API_URL
     
     headers = {
         "Content-Type": "application/json",
@@ -57,7 +61,7 @@ def appeler_api_mistral(prompt):
     }
     
     data = {
-        "model": "mistral-large-latest",
+        "model": MISTRAL_MODEL,
         "messages": [
             {
                 "role": "system",

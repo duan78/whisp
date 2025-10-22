@@ -13,6 +13,16 @@ from window_manager import basculer_vers_application
 
 # Configuration de la grille vocale pour la navigation précise
 GRID_SIZE = 9  # Grille 9x9 pour la navigation précise
+
+# Constantes pour les types de clic
+CLICK_TYPES = {
+    "gauche": "left",
+    "left": "left",
+    "droit": "right",
+    "right": "right",
+    "double": "double",
+    "double-clic": "double"
+}
 screen_width, screen_height = pyautogui.size()
 grid_width = screen_width // GRID_SIZE
 grid_height = screen_height // GRID_SIZE
@@ -90,27 +100,60 @@ def naviguer_grille(numero):
         return f"Curseur déplacé à la position précise."
 
 def executer_clic(type_clic="gauche"):
-    """Exécute un clic de souris à la position actuelle"""
-    if type_clic.lower() in ["gauche", "left"]:
+    """
+    Exécute un clic de souris à la position actuelle.
+
+    Args:
+        type_clic (str): Type de clic ("gauche", "droit", "double")
+
+    Returns:
+        str: Message de confirmation du clic effectué
+    """
+    clic_type = type_clic.lower()
+    action = CLICK_TYPES.get(clic_type)
+
+    if action == "left":
         pyautogui.click()
         return "Clic gauche effectué."
-    elif type_clic.lower() in ["droit", "right"]:
+    elif action == "right":
         pyautogui.rightClick()
         return "Clic droit effectué."
-    elif type_clic.lower() in ["double", "double-clic"]:
+    elif action == "double":
         pyautogui.doubleClick()
         return "Double-clic effectué."
-    return "Type de clic non reconnu."
+
+    return f"Type de clic '{type_clic}' non reconnu."
+
+# Constantes pour les directions de défilement
+SCROLL_DIRECTIONS = {
+    "haut": 1,
+    "up": 1,
+    "bas": -1,
+    "down": -1
+}
 
 def defiler(direction, quantite=3):
-    """Fait défiler la page dans la direction spécifiée"""
-    if direction.lower() in ["haut", "up"]:
-        pyautogui.scroll(quantite * 100)  # Valeur positive pour défiler vers le haut
-        return "Défilement vers le haut."
-    elif direction.lower() in ["bas", "down"]:
-        pyautogui.scroll(-quantite * 100)  # Valeur négative pour défiler vers le bas
-        return "Défilement vers le bas."
-    return "Direction de défilement non reconnue."
+    """
+    Fait défiler la page dans la direction spécifiée.
+
+    Args:
+        direction (str): Direction du défilement ("haut", "bas", "up", "down")
+        quantite (int): Nombre d'unités de défilement
+
+    Returns:
+        str: Message de confirmation du défilement
+    """
+    direction_key = direction.lower()
+    scroll_multiplier = SCROLL_DIRECTIONS.get(direction_key)
+
+    if scroll_multiplier == 1:
+        pyautogui.scroll(quantite * 100)  # Défilement vers le haut
+        return "Défilement vers le haut effectué."
+    elif scroll_multiplier == -1:
+        pyautogui.scroll(-quantite * 100)  # Défilement vers le bas
+        return "Défilement vers le bas effectué."
+
+    return f"Direction de défilement '{direction}' non reconnue."
 
 def dicter_texte(texte):
     """Dicte du texte à l'emplacement actuel du curseur"""
