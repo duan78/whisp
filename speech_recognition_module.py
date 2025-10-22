@@ -19,6 +19,14 @@ from pathlib import Path
 from config import get_dictation_mode, get_running, get_stt_engine, set_stt_engine, get_openai_api_key, get_translation_mode
 from error_handler import get_error_handler, ErrorCategory, ErrorSeverity, catch_errors
 
+# Import des optimisations Numba
+try:
+    from audio_optimization import optimize_audio_processing, is_speech_active, audio_optimizer
+    NUMBA_AVAILABLE = True
+except ImportError as e:
+    print(f"Numba non disponible, utilisation des fonctions standards: {e}")
+    NUMBA_AVAILABLE = False
+
 # Configurer les chemins CUDA pour les packages installés via pip
 def set_cuda_paths():
     """Configure les chemins CUDA/cuDNN pour les packages installés via pip"""
@@ -2112,23 +2120,40 @@ def process_audio(recognizer, audio, command_processor):
         return "Erreur lors de la reconnaissance vocale"
 
 def callback(recognizer, audio, command_processor):
-    """Fonction appelée lorsque de l'audio est détecté"""
+    """Fonction appelée lorsque de l'audio est détecté - Optimisée avec Numba"""
     # Vérifier l'énergie audio pour filtrer les faux positifs
     try:
         # Convertir les données audio en tableau numpy pour analyse
         audio_data = np.frombuffer(audio.frame_data, dtype=np.int16).astype(np.float32)
-        
-        # Calculer l'énergie du signal
-        energy = np.sqrt(np.mean(audio_data**2)) / 32768.0
-        
-        # Vérifier si l'énergie est suffisante (utiliser le seuil configurable pour SpeechRecognition)
-        # S'assurer que le seuil est bien un nombre
-        threshold = float(stt_settings["speechrecognition_silence_threshold"])
-        if energy < threshold:
-            print(f"Audio ignoré - Énergie trop faible: {energy:.6f} < {threshold}")
-            return
-        
-        print(f"Audio détecté - Énergie: {energy:.6f}")
+
+        # Utiliser Numba pour l'optimisation si disponible
+        if NUMBA_AVAILABLE:
+            # Optimisation audio avec Numba
+            audio_data_optimized = optimize_audio_processing(audio_data)
+
+            # Détection de parole optimisée
+            threshold = float(stt_settings["speechrecognition_silence_threshold"])
+            speech_detected = is_speech_active(audio_data_optimized, threshold)
+
+            if not speech_detected:
+                print(f"Audio ignoré - Pas de parole détectée (seuil: {threshold})")
+                return
+
+            # Calcul de l'énergie avec données optimisées
+            energy = np.sqrt(np.mean(audio_data_optimized**2)) / 32768.0
+            print(f"Audio détecté (optimisé Numba) - Énergie: {energy:.6f}")
+        else:
+            # Calcul standard de l'énergie du signal
+            energy = np.sqrt(np.mean(audio_data**2)) / 32768.0
+
+            # Vérifier si l'énergie est suffisante
+            threshold = float(stt_settings["speechrecognition_silence_threshold"])
+            if energy < threshold:
+                print(f"Audio ignoré - Énergie trop faible: {energy:.6f} < {threshold}")
+                return
+
+            print(f"Audio détecté (standard) - Énergie: {energy:.6f}")
+
     except Exception as e:
         # En cas d'erreur dans l'analyse d'énergie, traiter l'audio quand même
         print(f"Erreur lors de l'analyse d'énergie: {e}")
