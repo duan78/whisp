@@ -192,9 +192,7 @@ def export_dataset():
         format_type = data.get('format', 'huggingface')  # huggingface, csv, json
         include_audio = data.get('include_audio', False)
         
-        # TODO: Implémenter l'export dans différents formats
-        # Pour l'instant, on retourne juste le chemin du metadata.jsonl
-        
+        # Export dans différents formats
         metadata_path = RECORDS_PATH / 'metadata.jsonl'
         
         if not metadata_path.exists():

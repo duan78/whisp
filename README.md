@@ -75,7 +75,11 @@ source venv/bin/activate
 
 ### 3. Installer les dépendances
 ```bash
+# Installation de base
 pip install -r requirements.txt
+
+# Installation optionnelle (fonctionnalités avancées)
+pip install -r requirements_optional.txt
 ```
 
 ### 4. Configuration initiale
