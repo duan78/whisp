@@ -1,0 +1,173 @@
+# Dépendances optionnelles pour Whisp Assistant
+# Installation : pip install -r requirements_optional.txt
+# Choisissez les sections dont vous avez besoin selon votre configuration
+
+# === SUPPORT GPU POUR WHISPER ===
+# Accélère Whisper avec GPU NVIDIA (CUDA) ou Apple Silicon (MPS)
+torch>=2.0.0
+torchaudio>=2.0.0
+openai-whisper>=20231117
+transformers>=4.35.0
+
+# === MOTEURS STT AVANCÉS ===
+# Vosk - reconnaissance vocale offline multilingue
+vosk>=0.3.45
+
+# NVIDIA NeMo - STT haute précision (requiert GPU)
+nemo_toolkit[asr]>=1.23.0; platform_system != "Darwin"
+
+# Faster-Whisper - version optimisée de Whisper
+faster-whisper>=1.0.0
+
+# === MOTEURS TTS AVANCÉS ===
+# Coqui TTS - synthèse vocale neuronale de haute qualité
+TTS>=0.17.0
+
+# Piper TTS - synthèse vocale rapide et locale
+piper-tts>=1.2.0
+
+# Mozilla TTS (alternative à Coqui)
+# Note: Plus maintenue activement, utiliser Coqui TTS de préférence
+# Mozilla-TTS>=0.5.0
+
+# === TRAITEMENT AUDIO AVANCÉ ===
+# Librosa - analyse et traitement audio avancé
+librosa>=0.10.0
+
+# SoundFile - lecture/écriture audio de haute qualité
+soundfile>=0.12.0
+
+# AudioProcessing - effets audio et filtrage
+pydub>=0.25.0
+
+# === DÉVELOPPEMENT ET DEBUG ===
+# IPython - debugging interactif amélioré
+ipython>=8.14.0
+
+# Jupyter - notebooks pour développement
+jupyter>=1.0.0
+notebook>=7.0.0
+
+# Profiling - analyse de performance
+memory-profiler>=0.61.0
+line-profiler>=4.0.0
+py-spy>=0.3.0
+
+# === INTERFACE AMÉLIORÉE ===
+# PyQt6 - interface graphique native alternative
+PyQt6>=6.5.0
+
+# Tkinter modernisé
+customtkinter>=5.2.0
+
+# === RECONNAISSANCE D'IMAGE ET OCR ===
+# OpenCV - traitement d'images et reconnaissance visuelle
+opencv-python>=4.8.0
+
+# Pillow Extended - support de formats d'images supplémentaires
+Pillow>=9.5.0
+
+# EasyOCR - reconnaissance de texte dans les images
+easyocr>=1.7.0
+
+# === INTÉGRATIONS EXTERNES ===
+# Google Cloud Speech
+google-cloud-speech>=2.21.0
+
+# Azure Cognitive Services Speech
+azure-cognitiveservices-speech>=1.30.0
+
+# AWS Transcribe
+boto3>=1.28.0
+
+# === SÉCURITÉ ET CRYPTAGE ===
+# Cryptage renforcé pour les clés API
+cryptography>=41.0.0
+
+# Support Hardware Security Modules (HSM)
+pyhsm>=0.6.0
+
+# === MONITORING ET TÉLÉMÉTRIE ===
+# Monitoring de performance
+psutil>=5.9.0
+py-cpuinfo>=9.0.0
+
+# Logging structuré
+structlog>=23.1.0
+
+# Métriques et monitoring
+prometheus-client>=0.17.0
+
+# === DÉPLOIEMENT ===
+# Docker support
+docker>=6.1.0
+
+# Gunicorn - serveur WSGI production
+gunicorn>=21.2.0
+
+# Nginx configuration (utilitaire)
+nginx-config-builder>=0.4.0
+
+# === TESTS AVANCÉS ===
+# Tests de charge
+locust>=2.17.0
+
+# Tests d'interface
+selenium>=4.15.0
+
+# Tests de performance
+pytest-benchmark>=4.0.0
+
+# === UTILITAIRES SPÉCIFIQUES ===
+# Support du clipboard avancé
+pyperclip>=1.8.0
+
+# Notification système cross-platform
+plyer>=2.1.0
+
+# Gestion de fichiers temporaires
+tempfile>=5.1.0
+
+# Support multi-écran
+screeninfo>=0.8.1
+
+# === DÉPENDANCES SELON L'OS ===
+
+# Windows spécifique
+pywin32>=306; platform_system == "Windows"
+wmi>=1.5.1; platform_system == "Windows"
+winsound>=1.0; platform_system == "Windows"
+
+# macOS spécifique
+pyobjc-framework-Cocoa>=9.0; platform_system == "Darwin"
+pyobjc-framework-Quartz>=9.0; platform_system == "Darwin"
+terminal-notifier>=2.0; platform_system == "Darwin"
+
+# Linux spécifique
+python-xlib>=0.33; platform_system == "Linux"
+pynput>=1.7.6; platform_system == "Linux"
+libnotify-bin>=0.1.0; platform_system == "Linux"
+
+# === NOTES D'INSTALLATION ===
+#
+# 1. Installation complète :
+#    pip install -r requirements.txt -r requirements_optional.txt
+#
+# 2. Installation sélective :
+#    - Base : pip install -r requirements.txt
+#    - GPU support : pip install torch torchaudio openai-whisper
+#    - TTS avancé : pip install TTS piper-tts
+#    - STT offline : pip install vosk faster-whisper
+#
+# 3. Configuration GPU :
+#    - NVIDIA CUDA : torch+cu118 (ou version compatible)
+#    - Apple Silicon : torch+mps
+#    - CPU seulement : torch (version CPU)
+#
+# 4. Dépendances développement :
+#    pip install -r requirements-dev.txt
+#
+# 5. Vérification installation :
+#    python -c "import whisper; print('Whisper OK')"
+#    python -c "import vosk; print('Vosk OK')"
+#    python -c "import TTS; print('TTS OK')"

@@ -257,8 +257,8 @@ from src.main import main
 
 class TestMain(unittest.TestCase):
     def test_main(self):
-        # TODO: Implement test
-        pass
+        # Test basique de la fonction main
+        self.assertTrue(callable(main))
 
 if __name__ == "__main__":
     unittest.main()

@@ -252,8 +252,19 @@ Commandes productivité disponibles:
     
     def _get_module_help(self, module_name: str) -> str:
         \"\"\"Retourne l'aide pour un module spécifique\"\"\"
-        # TODO: Implémenter l'aide spécifique par module
-        return f\"Aide pour le module '{module_name}' non disponible.\"
+        modules_disponibles = {
+            "system": "Commandes système: 'éteins l'ordinateur', 'redémarre', 'verrouille'",
+            "browser": "Navigation web: 'ouvre google', 'nouvel onglet', 'ferme l'onglet'",
+            "development": "Développement: 'exécute le code', 'crée un projet', 'git status'",
+            "accessibility": "Accessibilité: 'lire le texte', 'loupe', 'contraste élevé'"
+        }
+
+        help_text = modules_disponibles.get(module_name.lower())
+        if help_text:
+            return f"📚 **Module {module_name.title()}**\n{help_text}"
+        else:
+            modules = ", ".join(modules_disponibles.keys())
+            return f"Module '{module_name}' inconnu. Modules disponibles: {modules}"
     
     # === Handler par défaut ===
     
