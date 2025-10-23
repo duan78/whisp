@@ -57,29 +57,29 @@ def _load_config_from_db():
 
 # Charger les clés API depuis les sources traditionnelles (pour compatibilité)
 def _load_api_keys():
-    global _openai_api_key, _mistral_api_key
+    global openai_api_key, mistral_api_key
     try:
         # D'abord, essayer de charger depuis les variables d'environnement
         env_openai_key = os.environ.get("OPENAI_API_KEY", "")
         env_mistral_key = os.environ.get("MISTRAL_API_KEY", "")
         
         if env_openai_key:
-            _openai_api_key = env_openai_key
+            openai_api_key = env_openai_key
         
         if env_mistral_key:
-            _mistral_api_key = env_mistral_key
+            mistral_api_key = env_mistral_key
             
         # Ensuite, essayer de charger depuis le fichier (priorité plus basse)
-        if os.path.exists(_api_keys_file):
-            with open(_api_keys_file, 'r') as f:
+        if os.path.exists(api_keys_file):
+            with open(api_keys_file, 'r') as f:
                 keys = json.load(f)
                 
                 # Ne pas écraser les clés des variables d'environnement
-                if not _openai_api_key:
-                    _openai_api_key = keys.get("openai", "")
+                if not openai_api_key:
+                    openai_api_key = keys.get("openai", "")
                 
-                if not _mistral_api_key:
-                    _mistral_api_key = keys.get("mistral", "")
+                if not mistral_api_key:
+                    mistral_api_key = keys.get("mistral", "")
                     
             # Migrer les clés vers la base de données
             _save_config_to_db()
@@ -89,9 +89,9 @@ def _load_api_keys():
 # Sauvegarder les configurations dans la base de données
 def _save_config_to_db():
     config_dict = {
-        "stt_engine": _stt_engine,
-        "openai_api_key": _openai_api_key,
-        "mistral_api_key": _mistral_api_key
+        "stt_engine": stt_engine,
+        "openai_api_key": openai_api_key,
+        "mistral_api_key": mistral_api_key
     }
     save_config(config_dict)
 
@@ -99,15 +99,15 @@ def _save_config_to_db():
 def _save_api_keys():
     try:
         # Créer le répertoire parent si nécessaire
-        os.makedirs(os.path.dirname(_api_keys_file), exist_ok=True)
+        os.makedirs(os.path.dirname(api_keys_file), exist_ok=True)
         
         keys = {
-            "openai": _openai_api_key,
-            "mistral": _mistral_api_key
+            "openai": openai_api_key,
+            "mistral": mistral_api_key
         }
-        with open(_api_keys_file, 'w') as f:
+        with open(api_keys_file, 'w') as f:
             json.dump(keys, f, indent=4)
-        print(f"Clés API sauvegardées dans {_api_keys_file}")
+        print(f"Clés API sauvegardées dans {api_keys_file}")
         
         # Également sauvegarder dans la base de données
         _save_config_to_db()
@@ -116,11 +116,11 @@ def _save_api_keys():
 
 # Définir les variables d'environnement
 def _set_env_variables():
-    if _openai_api_key:
-        os.environ["OPENAI_API_KEY"] = _openai_api_key
+    if openai_api_key:
+        os.environ["OPENAI_API_KEY"] = openai_api_key
     
-    if _mistral_api_key:
-        os.environ["MISTRAL_API_KEY"] = _mistral_api_key
+    if mistral_api_key:
+        os.environ["MISTRAL_API_KEY"] = mistral_api_key
 
 # Charger les configurations depuis la base de données
 _load_config_from_db()
@@ -218,9 +218,9 @@ def append_translation_text(text, add_space=True):
         texte_a_traduire += " "
     texte_a_traduire += text
 
-def set_stt_engine(engine):
+def setstt_engine(engine):
     """Définit le moteur STT à utiliser"""
-    global _stt_engine
+    global stt_engine
     
     # Vérifier que le moteur est valide
     valid_engines = ["speechrecognition", "nemo", "whisper", "vosk", "sherpa_ncnn", "whisper_ct2", "whisper_french"]
@@ -229,11 +229,11 @@ def set_stt_engine(engine):
         return False
     
     # Sauvegarder l'ancien moteur pour pouvoir revenir en arrière en cas d'erreur
-    old_engine = _stt_engine
+    old_engine = stt_engine
     
     try:
-        _stt_engine = engine
-        print(f"Moteur STT configuré: {_stt_engine}")
+        stt_engine = engine
+        print(f"Moteur STT configuré: {stt_engine}")
         
         # Sauvegarder dans la base de données
         save_config({"stt_engine": engine})
@@ -245,19 +245,19 @@ def set_stt_engine(engine):
     except Exception as e:
         print(f"Erreur lors de la configuration du moteur STT: {e}")
         # En cas d'erreur, revenir à l'ancien moteur
-        _stt_engine = old_engine
-        print(f"Retour à l'ancien moteur STT: {_stt_engine}")
+        stt_engine = old_engine
+        print(f"Retour à l'ancien moteur STT: {stt_engine}")
         return False
 
-def get_stt_engine():
+def getstt_engine():
     """Retourne le moteur STT actuel"""
-    global _stt_engine
-    return _stt_engine
+    global stt_engine
+    return stt_engine
 
-def set_openai_api_key(key):
+def setopenai_api_key(key):
     """Définit la clé API OpenAI"""
-    global _openai_api_key
-    _openai_api_key = key
+    global openai_api_key
+    openai_api_key = key
     
     # Définir la variable d'environnement
     if key:
@@ -274,18 +274,18 @@ def set_openai_api_key(key):
     
     return True
 
-def get_openai_api_key():
+def getopenai_api_key():
     """Retourne la clé API OpenAI"""
     # Priorité à la variable d'environnement
     env_key = os.environ.get("OPENAI_API_KEY", "")
     if env_key:
         return env_key
-    return _openai_api_key
+    return openai_api_key
 
-def set_mistral_api_key(key):
+def setmistral_api_key(key):
     """Définit la clé API Mistral"""
-    global _mistral_api_key
-    _mistral_api_key = key
+    global mistral_api_key
+    mistral_api_key = key
     
     # Définir la variable d'environnement
     if key:
@@ -317,7 +317,7 @@ def set_mistral_api_key(key):
     
     return True
 
-def get_mistral_api_key():
+def getmistral_api_key():
     """Retourne la clé API Mistral"""
     # Priorité à la variable d'environnement
     env_key = os.environ.get("MISTRAL_API_KEY", "")
@@ -325,14 +325,14 @@ def get_mistral_api_key():
         return env_key
     
     # Si pas dans l'environnement mais dans la variable globale, essayer de définir l'environnement
-    if _mistral_api_key and not env_key:
+    if mistral_api_key and not env_key:
         try:
-            os.environ["MISTRAL_API_KEY"] = _mistral_api_key
+            os.environ["MISTRAL_API_KEY"] = mistral_api_key
             print(f"Variable d'environnement MISTRAL_API_KEY redéfinie depuis la variable globale")
         except Exception as e:
             print(f"Erreur lors de la redéfinition de la variable d'environnement: {e}")
     
-    return _mistral_api_key
+    return mistral_api_key
 
 # Fonctions pour les préférences utilisateur
 def save_preference(key, value):
@@ -371,8 +371,8 @@ def get_all_preferences():
 # Fonction pour vérifier les clés API
 def verify_api_keys():
     """Vérifie que les clés API sont correctement définies"""
-    openai_key = get_openai_api_key()
-    mistral_key = get_mistral_api_key()
+    openai_key = getopenai_api_key()
+    mistral_key = getmistral_api_key()
     
     if openai_key:
         print(f"Clé API OpenAI détectée: {openai_key[:4]}...{openai_key[-4:] if len(openai_key) > 8 else ''}")
@@ -397,21 +397,46 @@ def verify_api_keys():
 # Fonction pour forcer la définition des variables d'environnement
 def force_set_env_variables():
     """Force la définition des variables d'environnement pour les clés API"""
-    global _openai_api_key, _mistral_api_key
+    global openai_api_key, mistral_api_key
     
-    if _openai_api_key:
+    if openai_api_key:
         try:
-            os.environ["OPENAI_API_KEY"] = _openai_api_key
-            print(f"Variable d'environnement OPENAI_API_KEY forcée: {_openai_api_key[:4]}...{_openai_api_key[-4:] if len(_openai_api_key) > 8 else ''}")
+            os.environ["OPENAI_API_KEY"] = openai_api_key
+            print(f"Variable d'environnement OPENAI_API_KEY forcée: {openai_api_key[:4]}...{openai_api_key[-4:] if len(openai_api_key) > 8 else ''}")
         except Exception as e:
             print(f"Erreur lors de la définition forcée de OPENAI_API_KEY: {e}")
     
-    if _mistral_api_key:
+    if mistral_api_key:
         try:
-            os.environ["MISTRAL_API_KEY"] = _mistral_api_key
-            print(f"Variable d'environnement MISTRAL_API_KEY forcée: {_mistral_api_key[:4]}...{_mistral_api_key[-4:] if len(_mistral_api_key) > 8 else ''}")
+            os.environ["MISTRAL_API_KEY"] = mistral_api_key
+            print(f"Variable d'environnement MISTRAL_API_KEY forcée: {mistral_api_key[:4]}...{mistral_api_key[-4:] if len(mistral_api_key) > 8 else ''}")
         except Exception as e:
             print(f"Erreur lors de la définition forcée de MISTRAL_API_KEY: {e}")
+
+# Alias de compatibilité pour les imports existants
+def get_stt_engine():
+    """Alias de compatibilité pour getstt_engine"""
+    return getstt_engine()
+
+def set_stt_engine(engine):
+    """Alias de compatibilité pour setstt_engine"""
+    return setstt_engine(engine)
+
+def get_openai_api_key():
+    """Alias de compatibilité pour getopenai_api_key"""
+    return getopenai_api_key()
+
+def set_openai_api_key(key):
+    """Alias de compatibilité pour setopenai_api_key"""
+    return setopenai_api_key(key)
+
+def get_mistral_api_key():
+    """Alias de compatibilité pour getmistral_api_key"""
+    return getmistral_api_key()
+
+def set_mistral_api_key(key):
+    """Alias de compatibilité pour setmistral_api_key"""
+    return setmistral_api_key(key)
 
 # Vérifier les clés API après avoir défini toutes les fonctions nécessaires
 verify_api_keys()
