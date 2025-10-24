@@ -19,6 +19,15 @@ from pathlib import Path
 from config import get_dictation_mode, get_running, get_stt_engine, set_stt_engine, get_openai_api_key, get_translation_mode
 from error_handler import get_error_handler, ErrorCategory, ErrorSeverity, catch_errors
 
+# Imports audio pour fallback (sounddevice pour ARM64)
+try:
+    import sounddevice as sd
+    import numpy as np
+    SOUNDDEVICE_AVAILABLE = True
+except ImportError:
+    print("sounddevice non disponible, fallback sur PyAudio")
+    SOUNDDEVICE_AVAILABLE = False
+
 # Import des optimisations Numba
 try:
     from audio_optimization import optimize_audio_processing, is_speech_active, audio_optimizer
@@ -153,6 +162,92 @@ def import_requests():
             print(f"Erreur lors de l'importation de requests: {e}")
             return False
     return True
+
+# Fonction de capture audio alternative avec sounddevice (pour ARM64/PyAudio incompatible)
+class SoundDeviceInputStream:
+    """Flux d'entrée audio utilisant sounddevice comme alternative à PyAudio"""
+
+    def __init__(self, sample_rate=16000, chunk_size=1024, channels=1):
+        self.sample_rate = sample_rate
+        self.chunk_size = chunk_size
+        self.channels = channels
+        self.stream = None
+        self.is_open = False
+
+    def __enter__(self):
+        """Ouvre le flux audio (compatibilité avec context manager)"""
+        try:
+            self.stream = sd.InputStream(
+                samplerate=self.sample_rate,
+                channels=self.channels,
+                dtype='int16',
+                blocksize=self.chunk_size
+            )
+            self.stream.start()
+            self.is_open = True
+            return self
+        except Exception as e:
+            print(f"Erreur lors de l'ouverture du flux sounddevice: {e}")
+            raise
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Ferme le flux audio"""
+        self.close()
+
+    def read(self, chunk_size=None):
+        """Lit un chunk audio du flux"""
+        if not self.is_open or self.stream is None:
+            raise RuntimeError("Le flux n'est pas ouvert")
+
+        try:
+            chunk_size = chunk_size or self.chunk_size
+            data, overflowed = self.stream.read(chunk_size)
+            if overflowed:
+                print("Avertissement: Buffer overflow audio")
+            return data.tobytes()
+        except Exception as e:
+            print(f"Erreur lors de la lecture audio: {e}")
+            # Retourner un buffer vide en cas d'erreur
+            return bytes(chunk_size * 2 if chunk_size else self.chunk_size * 2)
+
+    def close(self):
+        """Ferme le flux audio"""
+        if self.stream is not None:
+            try:
+                self.stream.stop()
+                self.stream.close()
+            except Exception as e:
+                print(f"Erreur lors de la fermeture du flux: {e}")
+            finally:
+                self.stream = None
+                self.is_open = False
+
+def create_microphone_alternative(sample_rate=16000):
+    """Crée un microphone alternative utilisant sounddevice si PyAudio n'est pas disponible"""
+    if SOUNDDEVICE_AVAILABLE:
+        try:
+            # Créer un objet qui imite sr.Microphone mais utilise sounddevice
+            class AlternativeMicrophone:
+                def __init__(self, sample_rate=16000):
+                    self.sample_rate = sample_rate
+                    self.stream = None
+
+                def __enter__(self):
+                    self.stream = SoundDeviceInputStream(sample_rate=self.sample_rate)
+                    return self.stream
+
+                def __exit__(self, exc_type, exc_val, exc_tb):
+                    if self.stream:
+                        self.stream.close()
+
+            print(f"Microphone alternative créé avec sounddevice (taux: {sample_rate} Hz)")
+            return AlternativeMicrophone(sample_rate=sample_rate)
+        except Exception as e:
+            print(f"Erreur lors de la création du microphone alternative: {e}")
+            return None
+    else:
+        print("sounddevice n'est pas disponible pour créer un microphone alternative")
+        return None
 
 # Fonction pour importer Vosk à la demande avec plusieurs tentatives
 def import_vosk():
@@ -4027,16 +4122,31 @@ def start_vosk_listening(recognizer, microphone, command_processor):
     vosk_running = True
     
     # Créer un nouveau microphone pour éviter les problèmes de context manager
-    try:
-        # Fermer le microphone existant s'il est ouvert
-        if hasattr(microphone, 'stream') and microphone.stream is not None:
-            microphone.stream.close()
-        
-        # Créer un nouveau microphone avec le taux d'échantillonnage approprié
-        new_microphone = sr.Microphone(sample_rate=VOSK_SAMPLE_RATE)
-    except Exception as e:
-        print(f"Erreur lors de la création d'un nouveau microphone: {e}")
-        new_microphone = microphone  # Utiliser l'ancien microphone en cas d'erreur
+    # Essayer d'abord l'alternative sounddevice (pour Windows ARM64)
+    new_microphone = create_microphone_alternative(sample_rate=VOSK_SAMPLE_RATE)
+
+    if new_microphone is None:
+        # Fallback sur PyAudio si sounddevice n'est pas disponible
+        try:
+            # Fermer le microphone existant s'il est ouvert
+            if hasattr(microphone, 'stream') and microphone.stream is not None:
+                microphone.stream.close()
+
+            # Créer un nouveau microphone avec le taux d'échantillonnage approprié
+            new_microphone = sr.Microphone(sample_rate=VOSK_SAMPLE_RATE)
+            print("Utilisation de PyAudio pour Vosk")
+        except Exception as e:
+            print(f"Erreur lors de la création d'un nouveau microphone PyAudio: {e}")
+            print("Impossible de créer un microphone - Vosk ne fonctionnera pas")
+            new_microphone = None
+
+    if new_microphone is None:
+        error_msg = "Impossible de créer un microphone audio (ni sounddevice ni PyAudio disponibles)"
+        print(error_msg)
+        if 'web_interface' in sys.modules:
+            from web_interface import log_to_web
+            log_to_web(error_msg, "error")
+        return
     
     # Thread de traitement audio en continu avec Vosk
     def vosk_processing_thread():
@@ -4045,10 +4155,18 @@ def start_vosk_listening(recognizer, microphone, command_processor):
         # Ouvrir le flux audio avec le nouveau microphone
         with new_microphone as source:
             try:
-                # Ajuster pour le bruit ambiant
+                # Ajuster pour le bruit ambiant (seulement si on utilise un vrai sr.Microphone)
                 print("Calibrage du microphone pour Vosk...")
-                recognizer.adjust_for_ambient_noise(source, duration=1)
-                
+                try:
+                    # Cette étape fonctionne seulement avec PyAudio/sr.Microphone
+                    if hasattr(source, 'stream') and hasattr(source.stream, 'read'):
+                        recognizer.adjust_for_ambient_noise(source, duration=1)
+                    else:
+                        print("Microphone alternatif détecté, saut du calibrage du bruit ambiant")
+                except Exception as e:
+                    print(f"Calibrage du bruit ambiant non possible: {e}")
+                    print("Continuation sans calibrage...")
+
                 # Créer un stream audio
                 audio_stream = source.stream
                 
