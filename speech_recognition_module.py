@@ -371,11 +371,14 @@ def create_cross_platform_microphone(sample_rate=16000):
                         chunk_size=self.platform_config.get('chunk_size', 1024),
                         channels=self.platform_config.get('channels', 1)
                     )
+                    # Ouvrir le flux audio !
+                    self.stream.__enter__()
                     return self
 
                 def __exit__(self, exc_type, exc_val, exc_tb):
                     if self.stream:
-                        self.stream.close()
+                        # Fermer proprement le flux audio
+                        self.stream.__exit__(exc_type, exc_val, exc_tb)
 
             print(f"Microphone optimisé {platform_config['system']} créé avec sounddevice")
             return PlatformOptimizedMicrophone(sample_rate=sample_rate, platform_config=platform_config)
