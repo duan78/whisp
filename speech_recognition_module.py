@@ -4229,18 +4229,31 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                             print(f"Vosk: Écoute active (chunk #{start_vosk_listening._debug_counter})")
 
                         # Convertir en numpy array pour analyse d'énergie
-                        audio_data = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32)
+                        # sounddevice retourne directement un numpy array int16
+                        try:
+                            if hasattr(audio_chunk, 'dtype'):
+                                # sounddevice numpy array int16 → normaliser correctement
+                                audio_data = audio_chunk.astype(np.float32) / 32768.0
+                                if start_vosk_listening._debug_counter == 1:
+                                    print(f"Vosk Debug: sounddevice numpy array {audio_chunk.dtype} normalisé")
+                            else:
+                                # Cas bytes (fallback théorique)
+                                audio_data = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32) / 32768.0
+                                if start_vosk_listening._debug_counter == 1:
+                                    print("Vosk Debug: données bytes converties")
+                        except Exception as e:
+                            print(f"Vosk Debug: Erreur conversion audio: {e}")
+                            audio_data = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32) / 32768.0
 
-                        # Normaliser correctement les données audio (int16 → float32 [-1.0, 1.0])
-                        audio_data = audio_data / 32768.0
-
-                        # Calculer l'énergie du signal (maintenant sur données normalisées)
+                        # Calculer l'énergie du signal (données maintenant correctement normalisées)
                         energy = np.sqrt(np.mean(audio_data**2))
 
-                        # Ajuster le seuil pour sounddevice (les niveaux sont plus bas qu'avec PyAudio)
+                        # Debug des valeurs audio
+                        if start_vosk_listening._debug_counter % 100 == 0:
+                            print(f"Vosk Debug Audio: Min={audio_data.min():.6f}, Max={audio_data.max():.6f}, Mean={np.mean(np.abs(audio_data)):.6f}")
+
+                        # Seuil de détection normal
                         threshold = stt_settings["vosk_silence_threshold"]
-                        # Réduire le seuil pour sounddevice car les niveaux sont plus bas
-                        threshold = threshold * 0.1  # Réduire à 10% du seuil original (0.04 → 0.004)
 
                         # Debug: afficher l'énergie périodiquement (tous les 50 chunks)
                         if start_vosk_listening._debug_counter % 50 == 0:
