@@ -245,7 +245,8 @@ def create_microphone_alternative(sample_rate=16000):
 
                 def __enter__(self):
                     self.stream = SoundDeviceInputStream(sample_rate=self.sample_rate)
-                    # Le flux est démarré dans SoundDeviceInputStream.__enter__()
+                    # Forcer l'ouverture immédiate du flux sounddevice
+                    self.stream.open()
                     return self  # Retourner self (comme sr.Microphone)
 
                 def __exit__(self, exc_type, exc_val, exc_tb):
