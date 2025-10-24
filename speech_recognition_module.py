@@ -4232,12 +4232,15 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                         # Convertir en numpy array pour analyse d'énergie
                         audio_data = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32)
 
+                        # Normaliser correctement les données audio (int16 → float32 [-1.0, 1.0])
+                        audio_data = audio_data / 32768.0
+
                         # Debug: vérifier les données audio une fois par seconde
                         if start_vosk_listening._debug_counter % 100 == 0:
-                            print(f"Vosk Debug: Audio shape={audio_data.shape}, Min={audio_data.min():.2f}, Max={audio_data.max():.2f}")
-                        
-                        # Calculer l'énergie du signal
-                        energy = np.sqrt(np.mean(audio_data**2)) / 32768.0
+                            print(f"Vosk Debug: Audio shape={audio_data.shape}, Min={audio_data.min():.4f}, Max={audio_data.max():.4f}")
+
+                        # Calculer l'énergie du signal (maintenant sur données normalisées)
+                        energy = np.sqrt(np.mean(audio_data**2))
                         threshold = stt_settings["vosk_silence_threshold"]
 
                         # Debug: afficher l'énergie périodiquement (tous les 50 chunks)
