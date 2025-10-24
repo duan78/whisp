@@ -2,6 +2,13 @@
 # Installation : pip install -r requirements_optional.txt
 # Choisissez les sections dont vous avez besoin selon votre configuration
 
+# === AUDIO BACKEND ALTERNATIVES (Recommandé pour Windows ARM64) ===
+# sounddevice - Alternative à PyAudio qui fonctionne sur toutes les plateformes
+sounddevice>=0.4.0
+
+# PyAudio alternative (si sounddevice ne fonctionne pas)
+# pip install --only-binary :all: pyaudio
+
 # === SUPPORT GPU POUR WHISPER ===
 # Accélère Whisper avec GPU NVIDIA (CUDA) ou Apple Silicon (MPS)
 torch>=2.0.0

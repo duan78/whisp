@@ -1946,10 +1946,19 @@ def setup_recognition():
         return setup_speechrecognition()
 
 def setup_speechrecognition():
-    """Configure et initialise le système de reconnaissance vocale avec SpeechRecognition"""
+    """Configure et initialise le système de reconnaissance vocale avec SpeechRecognition et fallback intelligent"""
+    # Test de disponibilité des alternatives audio
+    AUDIO_BACKEND_AVAILABLE = False
+    try:
+        import sounddevice
+        AUDIO_BACKEND_AVAILABLE = True
+        print("[OK] sounddevice detecte - sera utilise comme alternative")
+    except ImportError:
+        print("[AVERTISSEMENT] sounddevice non disponible")
+
     # Initialisation du recognizer
     recognizer = sr.Recognizer()
-    
+
     # Paramètres de sensibilité ajustés pour une meilleure continuité en dictée
     recognizer.pause_threshold = stt_settings["pause_threshold"]
     recognizer.energy_threshold = stt_settings["energy_threshold"]
@@ -1957,19 +1966,70 @@ def setup_speechrecognition():
     recognizer.dynamic_energy_adjustment_damping = 0.15
     recognizer.dynamic_energy_ratio = 1.5
     recognizer.non_speaking_duration = stt_settings["non_speaking_duration"]
-    
-    # Initialisation du microphone
-    microphone = sr.Microphone()
-    
+
+    # Tentative de création du microphone avec fallback
+    microphone = None
+
+    # Essayer sounddevice d'abord (meilleure compatibilité ARM64)
+    if AUDIO_BACKEND_AVAILABLE:
+        try:
+            import sounddevice as sd
+            import numpy as np
+
+            class SoundDeviceMicrophone:
+                def __init__(self):
+                    self.sample_rate = 16000
+                    self.channels = 1
+                    self.dtype = np.int16
+
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, exc_type, exc_val, exc_tb):
+                    pass
+
+            microphone = SoundDeviceMicrophone()
+            print("[OK] Utilisation de sounddevice (recommande pour ARM64)")
+        except Exception as e:
+            print(f"[AVERTISSEMENT] Erreur avec sounddevice: {e}")
+            AUDIO_BACKEND_AVAILABLE = False
+
+    # Fallback classique avec PyAudio
+    if microphone is None:
+        try:
+            microphone = sr.Microphone()
+            print("[OK] Utilisation de PyAudio classique")
+        except Exception as e:
+            print(f"[ERREUR CRITIQUE] Impossible d'initialiser le microphone")
+            print(f"Erreur: {e}")
+            print("\nSolutions recommandees:")
+            print("   1. Installer sounddevice (recommande pour Windows ARM64):")
+            print("      pip install sounddevice")
+            print("   2. Essayer l'installation de PyAudio avec wheel:")
+            print("      pip install pip-wheel")
+            print("      pip install --only-binary :all: pyaudio")
+            print("   3. Utiliser un autre moteur STT (Whisper/Vosk) qui n'a pas besoin de PyAudio")
+            return None, None, None
+
     # Ajustement pour le bruit ambiant
-    with microphone as source:
-        print("Calibrage du microphone pour le bruit ambiant...")
-        recognizer.adjust_for_ambient_noise(source, duration=2)
-        print("Calibrage terminé, assistant prêt!")
-    
+    try:
+        with microphone as source:
+            print("Calibrage du microphone pour le bruit ambiant...")
+            recognizer.adjust_for_ambient_noise(source, duration=2)
+            print("Calibrage terminé, assistant prêt!")
+    except Exception as e:
+        print(f"[AVERTISSEMENT] Erreur lors du calibrage: {e}")
+        print("L'assistant fonctionnera mais la reconnaissance vocale pourrait etre moins precise.")
+
+    # Afficher les recommandations si necessaire
+    if not AUDIO_BACKEND_AVAILABLE:
+        print("\nRecommandation pour Windows ARM64:")
+        print("   pip install sounddevice numpy")
+        print("   sounddevice est compatible avec toutes les architectures")
+
     # Placeholder pour la fonction d'arrêt (sera définie plus tard)
     stop_listening = None
-    
+
     return recognizer, microphone, stop_listening
 
 
