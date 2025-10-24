@@ -4217,6 +4217,15 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                     try:
                         # Lire un chunk audio
                         audio_chunk = audio_stream.read(VOSK_CHUNK_SIZE)
+
+                        # Debug: montrer que la boucle continue (une fois par seconde environ)
+                        if hasattr(start_vosk_listening, '_debug_counter'):
+                            start_vosk_listening._debug_counter += 1
+                        else:
+                            start_vosk_listening._debug_counter = 1
+
+                        if start_vosk_listening._debug_counter % 100 == 0:  # Tous les ~100 chunks
+                            print(f"Vosk: Boucle d'écoute active (chunk #{start_vosk_listening._debug_counter})")
                         
                         # Convertir en numpy array pour analyse d'énergie
                         audio_data = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32)
@@ -4250,13 +4259,20 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                                     audio_duration = len(audio_buffer) * VOSK_CHUNK_SIZE / VOSK_SAMPLE_RATE
                                     
                                     # Traiter le texte reconnu
+                                    print(f"Vosk: Traitement du texte reconnu: '{texte}'")
                                     process_vosk_result(texte, audio_duration, command_processor)
-                                    
-                                    # Réinitialiser
+
+                                    # Réinitialiser pour continuer l'écoute
+                                    print("Vosk: Réinitialisation pour continuer l'écoute...")
                                     audio_buffer = []
                                     is_speaking = False
                                     silence_counter = 0
-                                    vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                                    try:
+                                        vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                                        print("Vosk: Nouveau recognizer créé, écoute continue...")
+                                    except Exception as e:
+                                        print(f"Vosk: Erreur lors de la création du nouveau recognizer: {e}")
+                                        break
                         
                         # Si suffisamment de silence après la parole, traiter l'audio accumulé
                         if is_speaking and silence_counter >= stt_settings["vosk_silence_chunks"]:
@@ -4302,13 +4318,20 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                                 save_audio_for_fine_tuning(full_audio, texte, "vosk", sample_rate=VOSK_SAMPLE_RATE)
                                 
                                 # Traiter le texte reconnu avec la latence réelle
+                                print(f"Vosk: Traitement du texte final: '{texte}'")
                                 process_vosk_result(texte, audio_duration, command_processor)
-                            
-                            # Réinitialiser
+
+                            # Réinitialiser pour continuer l'écoute
+                            print("Vosk: Réinitialisation finale pour continuer l'écoute...")
                             audio_buffer = []
                             is_speaking = False
                             silence_counter = 0
-                            vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                            try:
+                                vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                                print("Vosk: Nouveau recognizer final créé, écoute continue...")
+                            except Exception as e:
+                                print(f"Vosk: Erreur lors de la création du recognizer final: {e}")
+                                break
                             
                     except Exception as e:
                         print(f"Erreur dans le thread Vosk: {e}")
