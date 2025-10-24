@@ -4467,7 +4467,13 @@ def redemarrer_reconnaissance_vocale(command_processor=None):
         print("Recréation du recognizer et/ou du microphone manquants")
         try:
             _recognizer = sr.Recognizer() if not _recognizer else _recognizer
-            _microphone = sr.Microphone() if not _microphone else _microphone
+            if not _microphone:
+                # Utiliser le microphone alternative par défaut (compatible ARM64)
+                _microphone = create_microphone_alternative()
+                if _microphone is None:
+                    # Fallback sur PyAudio si sounddevice n'est pas disponible
+                    print("sounddevice non disponible, fallback sur PyAudio")
+                    _microphone = sr.Microphone()
         except Exception as e:
             error_msg = f"Erreur lors de la recréation du recognizer/microphone: {str(e)}"
             print(error_msg)
@@ -4522,7 +4528,7 @@ def redemarrer_reconnaissance_vocale(command_processor=None):
     try:
         stt_engine = get_stt_engine()
         print(f"Redémarrage avec le moteur STT: {stt_engine}")
-        
+
         # NeMo n'est plus supporté, cette condition ne sera jamais vraie
         if stt_engine == "nemo":
             print("NVIDIA NeMo n'est plus supporté, utilisation du microphone par défaut")
@@ -4530,7 +4536,13 @@ def redemarrer_reconnaissance_vocale(command_processor=None):
         elif stt_engine == "whisper":
             new_microphone = sr.Microphone(sample_rate=WHISPER_SAMPLE_RATE)
         elif stt_engine == "vosk" and VOSK_AVAILABLE:
-            new_microphone = sr.Microphone(sample_rate=VOSK_SAMPLE_RATE)
+            # Utiliser le microphone alternative avec sounddevice pour Vosk (compatible ARM64)
+            print("Utilisation du microphone sounddevice pour Vosk")
+            new_microphone = create_microphone_alternative(sample_rate=VOSK_SAMPLE_RATE)
+            if new_microphone is None:
+                # Fallback sur PyAudio si sounddevice n'est pas disponible
+                print("sounddevice non disponible, fallback sur PyAudio pour Vosk")
+                new_microphone = sr.Microphone(sample_rate=VOSK_SAMPLE_RATE)
         else:
             new_microphone = sr.Microphone()
     except Exception as e:
