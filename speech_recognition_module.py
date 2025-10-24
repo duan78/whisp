@@ -176,6 +176,11 @@ class SoundDeviceInputStream:
 
     def __enter__(self):
         """Ouvre le flux audio (compatibilité avec context manager)"""
+        self.open()
+        return self
+
+    def open(self):
+        """Ouvre le flux audio"""
         try:
             self.stream = sd.InputStream(
                 samplerate=self.sample_rate,
@@ -185,10 +190,16 @@ class SoundDeviceInputStream:
             )
             self.stream.start()
             self.is_open = True
-            return self
         except Exception as e:
             print(f"Erreur lors de l'ouverture du flux sounddevice: {e}")
             raise
+
+    def start(self):
+        """Démarre le flux audio (si pas déjà démarré)"""
+        if not self.is_open:
+            self.open()
+        elif self.stream and not self.stream.active:
+            self.stream.start()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Ferme le flux audio"""
@@ -234,7 +245,8 @@ def create_microphone_alternative(sample_rate=16000):
 
                 def __enter__(self):
                     self.stream = SoundDeviceInputStream(sample_rate=self.sample_rate)
-                    return self.stream
+                    # Le flux est démarré dans SoundDeviceInputStream.__enter__()
+                    return self  # Retourner self (comme sr.Microphone)
 
                 def __exit__(self, exc_type, exc_val, exc_tb):
                     if self.stream:
@@ -4168,8 +4180,16 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                     print("Continuation sans calibrage...")
 
                 # Créer un stream audio
-                audio_stream = source.stream
-                
+                # Gérer les deux cas: sr.Microphone (PyAudio) et AlternativeMicrophone (sounddevice)
+                if hasattr(source, '__class__') and 'AlternativeMicrophone' in str(source.__class__):
+                    # Cas sounddevice: le flux est déjà dans source.stream
+                    audio_stream = source.stream
+                    print("Utilisation du flux audio sounddevice")
+                else:
+                    # Cas PyAudio standard
+                    audio_stream = source.stream
+                    print("Utilisation du flux audio PyAudio")
+
                 # Créer un recognizer Vosk
                 try:
                     vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
