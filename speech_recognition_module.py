@@ -4278,17 +4278,32 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                                     print(f"Vosk: Traitement du texte reconnu: '{texte}'")
                                     process_vosk_result(texte, audio_duration, command_processor)
 
-                                    # Réinitialiser pour continuer l'écoute
+                                    # Réinitialiser pour continuer l'écoute (sans recréer le recognizer)
                                     print("Vosk: Réinitialisation pour continuer l'écoute...")
                                     audio_buffer = []
                                     is_speaking = False
                                     silence_counter = 0
+
+                                    # Essayer de réinitialiser le recognizer sans le recréer
                                     try:
-                                        vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
-                                        print("Vosk: Nouveau recognizer créé, écoute continue...")
+                                        # Vider le buffer du recognizer existant
+                                        if hasattr(vosk_rec, 'Reset'):
+                                            vosk_rec.Reset()
+                                            print("Vosk: Reset() effectué, écoute continue...")
+                                        else:
+                                            # Si Reset() n'existe pas, recréer le recognizer (ancienne méthode)
+                                            print("Vosk: Reset() non disponible, recréation du recognizer...")
+                                            vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                                            print("Vosk: Nouveau recognizer créé (fallback), écoute continue...")
                                     except Exception as e:
-                                        print(f"Vosk: Erreur lors de la création du nouveau recognizer: {e}")
-                                        break
+                                        print(f"Vosk: Erreur lors de la réinitialisation: {e}")
+                                        # En dernier recours, recréer le recognizer
+                                        try:
+                                            vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                                            print("Vosk: Reconnaissance recréée en urgence")
+                                        except Exception as e2:
+                                            print(f"Vosk: Erreur critique: {e2}")
+                                            break
                         
                         # Si suffisamment de silence après la parole, traiter l'audio accumulé
                         if is_speaking and silence_counter >= stt_settings["vosk_silence_chunks"]:
@@ -4337,17 +4352,30 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                                 print(f"Vosk: Traitement du texte final: '{texte}'")
                                 process_vosk_result(texte, audio_duration, command_processor)
 
-                            # Réinitialiser pour continuer l'écoute
+                            # Réinitialiser pour continuer l'écoute (sans recréer le recognizer)
                             print("Vosk: Réinitialisation finale pour continuer l'écoute...")
                             audio_buffer = []
                             is_speaking = False
                             silence_counter = 0
+
+                            # Essayer de réinitialiser le recognizer sans le recréer
                             try:
-                                vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
-                                print("Vosk: Nouveau recognizer final créé, écoute continue...")
+                                if hasattr(vosk_rec, 'Reset'):
+                                    vosk_rec.Reset()
+                                    print("Vosk: Reset() final effectué, écoute continue...")
+                                else:
+                                    # Fallback: recréer le recognizer
+                                    vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                                    print("Vosk: Nouveau recognizer final créé (fallback), écoute continue...")
                             except Exception as e:
-                                print(f"Vosk: Erreur lors de la création du recognizer final: {e}")
-                                break
+                                print(f"Vosk: Erreur lors de la réinitialisation finale: {e}")
+                                # En dernier recours
+                                try:
+                                    vosk_rec = KaldiRecognizer(vosk_model, VOSK_SAMPLE_RATE)
+                                    print("Vosk: Reconnaissance finale recréée en urgence")
+                                except Exception as e2:
+                                    print(f"Vosk: Erreur critique finale: {e2}")
+                                    break
                             
                     except Exception as e:
                         print(f"Erreur dans le thread Vosk: {e}")
