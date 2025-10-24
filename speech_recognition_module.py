@@ -182,14 +182,27 @@ class SoundDeviceInputStream:
     def open(self):
         """Ouvre le flux audio"""
         try:
+            # Lister les appareils disponibles pour debug
+            devices = sd.query_devices()
+            print(f"Vosk Debug: {len(devices)} appareils audio trouvés")
+
+            # Trouver le microphone par défaut
+            default_input = sd.default.device[0]
+            print(f"Vosk Debug: Microphone par défaut: {default_input}")
+            if default_input < len(devices):
+                device_info = devices[default_input]
+                print(f"Vosk Debug: Info micro: {device_info['name']}, {device_info['max_input_channels']} canaux")
+
             self.stream = sd.InputStream(
                 samplerate=self.sample_rate,
                 channels=self.channels,
                 dtype='int16',
-                blocksize=self.chunk_size
+                blocksize=self.chunk_size,
+                device=default_input  # Utiliser explicitement le micro par défaut
             )
             self.stream.start()
             self.is_open = True
+            print(f"Vosk Debug: Flux audio démarré (taux: {self.sample_rate}, canaux: {self.channels})")
         except Exception as e:
             print(f"Erreur lors de l'ouverture du flux sounddevice: {e}")
             raise
@@ -4251,6 +4264,13 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                         # Debug des valeurs audio
                         if start_vosk_listening._debug_counter % 100 == 0:
                             print(f"Vosk Debug Audio: Min={audio_data.min():.6f}, Max={audio_data.max():.6f}, Mean={np.mean(np.abs(audio_data)):.6f}")
+
+                            # Alerte si les niveaux sont anormalement bas
+                            if np.max(np.abs(audio_data)) < 0.01:
+                                print("⚠️  Vosk Warning: Niveaux audio très bas !")
+                                print("   - Vérifiez que le microphone est bien branché")
+                                print("   - Vérifiez que le microphone n'est pas en sourdine")
+                                print("   - Vérifiez les permissions d'accès au microphone")
 
                         # Seuil de détection normal
                         threshold = stt_settings["vosk_silence_threshold"]
