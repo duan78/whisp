@@ -4226,20 +4226,33 @@ def start_vosk_listening(recognizer, microphone, command_processor):
 
                         if start_vosk_listening._debug_counter % 100 == 0:  # Tous les ~100 chunks
                             print(f"Vosk: Boucle d'écoute active (chunk #{start_vosk_listening._debug_counter})")
-                        
+                            # Debug audio info
+                            print(f"Vosk Debug: Taille chunk={len(audio_chunk)} bytes, Type={type(audio_chunk)}")
+
                         # Convertir en numpy array pour analyse d'énergie
                         audio_data = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32)
+
+                        # Debug: vérifier les données audio une fois par seconde
+                        if start_vosk_listening._debug_counter % 100 == 0:
+                            print(f"Vosk Debug: Audio shape={audio_data.shape}, Min={audio_data.min():.2f}, Max={audio_data.max():.2f}")
                         
                         # Calculer l'énergie du signal
                         energy = np.sqrt(np.mean(audio_data**2)) / 32768.0
-                        
+                        threshold = stt_settings["vosk_silence_threshold"]
+
+                        # Debug: afficher l'énergie périodiquement (tous les 50 chunks)
+                        if start_vosk_listening._debug_counter % 50 == 0:
+                            print(f"Vosk Debug: Énergie={energy:.6f}, Seuil={threshold:.6f}, Speaking={is_speaking}")
+
                         # Détecter si l'utilisateur parle
-                        if energy > stt_settings["vosk_silence_threshold"]:
+                        if energy > threshold:
                             if not is_speaking:
-                                print(f"Parole détectée (Vosk) - Énergie: {energy:.6f}")
+                                print(f"Parole détectée (Vosk) - Énergie: {energy:.6f} > Seuil: {threshold:.6f}")
                             silence_counter = 0
                             is_speaking = True
                         else:
+                            if is_speaking and start_vosk_listening._debug_counter % 50 == 0:
+                                print(f"Silence détecté - Énergie: {energy:.6f} <= Seuil: {threshold:.6f}")
                             silence_counter += 1
                         
                         # Si l'utilisateur parle ou vient de parler, ajouter à la mémoire tampon
