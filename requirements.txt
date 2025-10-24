@@ -25,6 +25,9 @@ mistralai>=1.9.0
 # OCR et traitement d'images
 pytesseract>=0.3.13
 
+# Reconnaissance vocale offline
+vosk>=0.3.45
+
 # Utilitaires système
 keyboard>=0.13.5
 psutil>=5.8.0
