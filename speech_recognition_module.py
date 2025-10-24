@@ -4224,15 +4224,9 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                         else:
                             start_vosk_listening._debug_counter = 1
 
-                        # Debug: validation du flux audio après reset
-                        if start_vosk_listening._debug_counter % 25 == 0:  # Plus fréquent après reset
-                            print(f"Vosk Debug Post-Reset: Chunk #{start_vosk_listening._debug_counter}")
-                            print(f"Vosk Debug Post-Reset: Taille={len(audio_chunk)}, Stream actif={audio_stream.is_open if hasattr(audio_stream, 'is_open') else 'N/A'}")
-
-                        if start_vosk_listening._debug_counter % 100 == 0:  # Tous les ~100 chunks
-                            print(f"Vosk: Boucle d'écoute active (chunk #{start_vosk_listening._debug_counter})")
-                            # Debug audio info
-                            print(f"Vosk Debug: Taille chunk={len(audio_chunk)} bytes, Type={type(audio_chunk)}")
+                        # Debug simple: état de l'écoute
+                        if start_vosk_listening._debug_counter % 200 == 0:
+                            print(f"Vosk: Écoute active (chunk #{start_vosk_listening._debug_counter})")
 
                         # Convertir en numpy array pour analyse d'énergie
                         audio_data = np.frombuffer(audio_chunk, dtype=np.int16).astype(np.float32)
@@ -4240,17 +4234,13 @@ def start_vosk_listening(recognizer, microphone, command_processor):
                         # Normaliser correctement les données audio (int16 → float32 [-1.0, 1.0])
                         audio_data = audio_data / 32768.0
 
-                        # Debug: vérifier les données audio une fois par seconde
-                        if start_vosk_listening._debug_counter % 100 == 0:
-                            print(f"Vosk Debug: Audio shape={audio_data.shape}, Min={audio_data.min():.4f}, Max={audio_data.max():.4f}")
-
-                        # Debug supplémentaire après un reset
-                        if start_vosk_listening._debug_counter in [26, 27, 28, 29, 30]:  # Juste après reset
-                            print(f"Vosk Debug Après-Reset #{start_vosk_listening._debug_counter}: Énergie brute check")
-
                         # Calculer l'énergie du signal (maintenant sur données normalisées)
                         energy = np.sqrt(np.mean(audio_data**2))
+
+                        # Ajuster le seuil pour sounddevice (les niveaux sont plus bas qu'avec PyAudio)
                         threshold = stt_settings["vosk_silence_threshold"]
+                        # Réduire le seuil pour sounddevice car les niveaux sont plus bas
+                        threshold = threshold * 0.1  # Réduire à 10% du seuil original (0.04 → 0.004)
 
                         # Debug: afficher l'énergie périodiquement (tous les 50 chunks)
                         if start_vosk_listening._debug_counter % 50 == 0:
