@@ -180,32 +180,74 @@ class SoundDeviceInputStream:
         return self
 
     def open(self):
-        """Ouvre le flux audio"""
+        """Ouvre le flux audio avec fallbacks multiplateformes"""
         try:
+            # Obtenir la configuration plateforme
+            platform_config = get_platform_audio_config()
+
             # Lister les appareils disponibles pour debug
             devices = sd.query_devices()
-            print(f"Vosk Debug: {len(devices)} appareils audio trouvés")
+            print(f"Vosk Debug [{platform_config['system']}]: {len(devices)} appareils audio trouvés")
 
-            # Trouver le microphone par défaut
-            default_input = sd.default.device[0]
-            print(f"Vosk Debug: Microphone par défaut: {default_input}")
-            if default_input < len(devices):
-                device_info = devices[default_input]
-                print(f"Vosk Debug: Info micro: {device_info['name']}, {device_info['max_input_channels']} canaux")
+            # Sélection du meilleur appareil selon la plateforme
+            device_id = self._select_best_device(devices, platform_config)
 
-            self.stream = sd.InputStream(
-                samplerate=self.sample_rate,
-                channels=self.channels,
-                dtype='int16',
-                blocksize=self.chunk_size,
-                device=default_input  # Utiliser explicitement le micro par défaut
-            )
+            # Configuration adaptée selon plateforme
+            stream_config = {
+                'samplerate': self.sample_rate,
+                'channels': self.channels,
+                'dtype': 'int16',
+                'blocksize': platform_config.get('chunk_size', self.chunk_size)
+            }
+
+            # Spécifier l'appareil seulement si nécessaire
+            if device_id is not None:
+                stream_config['device'] = device_id
+
+            self.stream = sd.InputStream(**stream_config)
             self.stream.start()
             self.is_open = True
-            print(f"Vosk Debug: Flux audio démarré (taux: {self.sample_rate}, canaux: {self.channels})")
+
+            print(f"Vosk Debug: Flux audio démarré sur {platform_config['system']} "
+                  f"(taux: {self.sample_rate}, canaux: {self.channels}, "
+                  f"chunk: {stream_config['block_size']})")
+
         except Exception as e:
             print(f"Erreur lors de l'ouverture du flux sounddevice: {e}")
-            raise
+            # Tenter un fallback avec configuration minimale
+            try:
+                print("Tentative de fallback avec configuration minimale...")
+                self.stream = sd.InputStream(
+                    samplerate=16000,
+                    channels=1,
+                    dtype='int16',
+                    blocksize=1024
+                )
+                self.stream.start()
+                self.is_open = True
+                print("Vosk Debug: Fallback réussi")
+            except Exception as e2:
+                print(f"Échec du fallback: {e2}")
+                raise
+
+    def _select_best_device(self, devices, platform_config):
+        """Sélectionne le meilleur appareil audio selon la plateforme"""
+        try:
+            default_input = sd.default.device[0]
+            print(f"Vosk Debug: Microphone par défaut: {default_input}")
+
+            if default_input < len(devices):
+                device_info = devices[default_input]
+                print(f"Vosk Debug: Info micro: {device_info['name']}, "
+                      f"{device_info['max_input_channels']} canaux")
+                return default_input
+            else:
+                print("Vosk Debug: Appareil par défaut invalide, recherche automatique...")
+                return None
+
+        except Exception as e:
+            print(f"Vosk Debug: Erreur sélection appareil: {e}")
+            return None
 
     def start(self):
         """Démarre le flux audio (si pas déjà démarré)"""
@@ -247,33 +289,112 @@ class SoundDeviceInputStream:
                 self.is_open = False
 
 def create_microphone_alternative(sample_rate=16000):
-    """Crée un microphone alternative utilisant sounddevice si PyAudio n'est pas disponible"""
-    if SOUNDDEVICE_AVAILABLE:
+    """Crée un microphone compatible multiplateformes avec fallbacks automatiques"""
+
+    # Utiliser la nouvelle fonction cross-platform
+    return create_cross_platform_microphone(sample_rate)
+
+def get_platform_audio_config():
+    """Détermine la meilleure configuration audio pour la plateforme actuelle"""
+    import platform
+
+    system = platform.system()
+    machine = platform.machine()
+
+    config = {
+        'system': system,
+        'architecture': machine,
+        'preferred_backend': 'speechrecognition',  # Par défaut
+        'sample_rate': 16000,
+        'channels': 1,
+        'chunk_size': 1024,
+        'needs_fallback': False
+    }
+
+    # Windows ARM64 : sounddevice obligatoire
+    if system == "Windows" and ("ARM64" in machine or "arm64" in machine.lower()):
+        config.update({
+            'preferred_backend': 'sounddevice',
+            'needs_fallback': True,
+            'chunk_size': 4096  # Plus grand pour ARM64
+        })
+        print("Plateforme Windows ARM64 detectee -> sounddevice prioritaire")
+
+    # macOS : PyAudio généralement fonctionne mais sounddevice en fallback
+    elif system == "Darwin":
+        if "arm" in machine.lower():
+            config.update({
+                'preferred_backend': 'sounddevice',  # Apple Silicon
+                'needs_fallback': True
+            })
+            print("Plateforme macOS Apple Silicon detectee -> sounddevice prioritaire")
+        else:
+            config['needs_fallback'] = True  # Fallback sounddevice si PyAudio échoue
+            print("Plateforme macOS Intel detectee -> PyAudio prioritaire, sounddevice en fallback")
+
+    # Linux : dépend des distributions, sounddevice plus fiable
+    elif system == "Linux":
+        config.update({
+            'preferred_backend': 'sounddevice',
+            'needs_fallback': True,
+            'chunk_size': 2048
+        })
+        print("Plateforme Linux detectee -> sounddevice prioritaire")
+
+    # Windows x64 : PyAudio normalement fonctionne
+    elif system == "Windows":
+        config['needs_fallback'] = True
+        print("Plateforme Windows x64 detectee -> PyAudio prioritaire, sounddevice en fallback")
+
+    return config
+
+def create_cross_platform_microphone(sample_rate=16000):
+    """Crée un microphone avec le meilleur backend disponible pour la plateforme"""
+    global SOUNDDEVICE_AVAILABLE
+
+    # Obtenir la configuration plateforme
+    platform_config = get_platform_audio_config()
+
+    # Tenter d'abord le backend préféré pour cette plateforme
+    if platform_config['preferred_backend'] == 'sounddevice' and SOUNDDEVICE_AVAILABLE:
         try:
-            # Créer un objet qui imite sr.Microphone mais utilise sounddevice
-            class AlternativeMicrophone:
-                def __init__(self, sample_rate=16000):
+            class PlatformOptimizedMicrophone:
+                def __init__(self, sample_rate=16000, platform_config=None):
                     self.sample_rate = sample_rate
+                    self.platform_config = platform_config or get_platform_audio_config()
                     self.stream = None
 
                 def __enter__(self):
-                    self.stream = SoundDeviceInputStream(sample_rate=self.sample_rate)
-                    # Forcer l'ouverture immédiate du flux sounddevice
-                    self.stream.open()
-                    return self  # Retourner self (comme sr.Microphone)
+                    # Adapter les paramètres selon la plateforme
+                    self.stream = SoundDeviceInputStream(
+                        sample_rate=self.sample_rate,
+                        chunk_size=self.platform_config.get('chunk_size', 1024),
+                        channels=self.platform_config.get('channels', 1)
+                    )
+                    return self
 
                 def __exit__(self, exc_type, exc_val, exc_tb):
                     if self.stream:
                         self.stream.close()
 
-            print(f"Microphone alternative créé avec sounddevice (taux: {sample_rate} Hz)")
-            return AlternativeMicrophone(sample_rate=sample_rate)
+            print(f"Microphone optimisé {platform_config['system']} créé avec sounddevice")
+            return PlatformOptimizedMicrophone(sample_rate=sample_rate, platform_config=platform_config)
+
         except Exception as e:
-            print(f"Erreur lors de la création du microphone alternative: {e}")
-            return None
-    else:
-        print("sounddevice n'est pas disponible pour créer un microphone alternative")
-        return None
+            print(f"Échec sounddevice sur {platform_config['system']}: {e}")
+
+    # Fallback sur PyAudio (si disponible)
+    try:
+        import speech_recognition as sr
+        mic = sr.Microphone(sample_rate=sample_rate)
+        print(f"Fallback PyAudio utilisé sur {platform_config['system']}")
+        return mic
+    except Exception as e:
+        print(f"Échec PyAudio sur {platform_config['system']}: {e}")
+
+    # Dernier recours : simulation pour tests
+    print("Aucun backend audio disponible → mode simulation activé")
+    return None
 
 # Fonction pour importer Vosk à la demande avec plusieurs tentatives
 def import_vosk():
