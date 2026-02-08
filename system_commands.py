@@ -187,4 +187,4 @@ def executer_commande_systeme(texte):
             - 'aide développeur' pour les commandes de développement
             - 'aide productivité' pour les commandes de productivité avancées"""
     
-    return None  # Commande non reconnue
+    return "Commande non reconnue. Dites 'aide' pour voir les commandes disponibles."

@@ -91,7 +91,7 @@ class InputValidator:
     def validate_command(command: str) -> str:
         """Valide une commande vocale"""
         command = InputValidator.sanitize_string(command, max_length=1000)
-        
+
         # Supprimer les commandes potentiellement dangereuses
         dangerous_patterns = [
             r';\s*rm\s+-rf',
@@ -101,12 +101,18 @@ class InputValidator:
             r'wget\s+.*\|',
             r'\$\(',
             r'`.*`',
+            r'&&\s*rm\s+',      # Ajout: détecte "&& rm -rf /"
+            r'&&\s*del\s+',     # Ajout: détecte "&& del /s"
+            r'\|\s*rm\s+',      # Ajout: détecte "| rm"
+            r'\|\s*del\s+',     # Ajout: détecte "| del"
+            r'&&\s*[^a-zA-Z]',  # Ajout: détecte "&&" suivi de commandes
+            r'\|\s*[^a-zA-Z]',  # Ajout: détecte "|" suivi de commandes
         ]
-        
+
         for pattern in dangerous_patterns:
             if re.search(pattern, command, re.IGNORECASE):
                 raise ValidationError("Commande potentiellement dangereuse détectée")
-        
+
         return command
     
     def validate_file_path(self, path: str) -> str:
@@ -121,8 +127,8 @@ class InputValidator:
         if path.startswith(('/etc', '/sys', '/proc', '/root', '/boot')):
             raise ValidationError("Chemin de fichier non autorisé")
 
-        # Vérifier les caractères autorisés
-        if not re.match(r'^[a-zA-Z0-9_\-\./\\: ]+$', path):
+        # Vérifier les caractères autorisés (ajout de ~ pour les chemins home)
+        if not re.match(r'^[~a-zA-Z0-9_\-\./\\: ]+$', path):
             raise ValidationError("Caractères non autorisés dans le chemin")
 
         # Normaliser le chemin
@@ -173,7 +179,16 @@ class InputValidator:
     def is_command_safe(self, command: str) -> bool:
         """Vérifie si une commande est sûre à exécuter"""
         try:
+            # D'abord valider la commande pour détecter les patterns dangereux
             validated_cmd = self.validate_command(command)
+
+            # Vérifier s'il y a des opérateurs de chaînage de commandes
+            # Ces opérateurs sont toujours dangereux dans notre contexte
+            dangerous_operators = ['&&', '||', '|', ';', '`', '$(']
+            for operator in dangerous_operators:
+                if operator in command:
+                    return False
+
             app_name = self.extract_app_name(command)
 
             # Si on trouve un nom d'application, vérifier la whitelist
