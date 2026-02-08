@@ -1,0 +1,63 @@
+<section id="chat-interface" class="chat-interface" aria-live="polite" aria-atomic="false">
+    <header class="chat-header">
+        <h2>Conversation</h2>
+        <div class="chat-controls">
+            <button id="search-chat" class="btn btn-outline" aria-label="Rechercher dans la conversation">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <span>Rechercher</span>
+            </button>
+            <button id="export-chat" class="btn btn-outline" aria-label="Exporter la conversation">
+                <i class="fas fa-download" aria-hidden="true"></i>
+                <span>Exporter</span>
+            </button>
+            <button id="clear-chat" class="btn btn-outline" aria-label="Effacer la conversation">
+                <i class="fas fa-trash" aria-hidden="true"></i>
+                <span>Effacer</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Barre de recherche (cachée par défaut) -->
+    <div id="chat-search-bar" class="chat-search-bar hidden">
+        <input
+            type="search"
+            id="chat-search-input"
+            class="search-input"
+            placeholder="Rechercher une commande ou réponse..."
+            aria-label="Rechercher dans la conversation"
+        >
+        <div class="search-filters">
+            <label>
+                <input type="checkbox" id="filter-commands" checked>
+                <span>Commandes</span>
+            </label>
+            <label>
+                <input type="checkbox" id="filter-responses" checked>
+                <span>Réponses</span>
+            </label>
+            <label>
+                <input type="checkbox" id="filter-errors">
+                <span>Erreurs</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Liste des messages -->
+    <div id="chat-messages" class="chat-messages" role="log" aria-live="polite">
+        <!-- Les messages seront injectés ici par JavaScript -->
+    </div>
+
+    <!-- Zone de saisie (pour commandes texte alternatifs) -->
+    <div class="chat-input-area">
+        <input
+            type="text"
+            id="text-command-input"
+            class="text-command-input"
+            placeholder="Tapez une commande ou utilisez le micro..."
+            aria-label="Saisir une commande texte"
+        >
+        <button id="send-text-command" class="btn btn-primary" aria-label="Envoyer la commande">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+        </button>
+    </div>
+</section>

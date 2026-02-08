@@ -236,6 +236,9 @@
                 <button class="tab-button" data-tab="help" role="tab" aria-selected="false" aria-controls="help">
                     <i class="fas fa-book"></i> Guide d'utilisation
                 </button>
+                <button class="tab-button" data-tab="conversation" role="tab" aria-selected="false" aria-controls="conversation">
+                    <i class="fas fa-comments"></i> Conversation
+                </button>
             </div>
             
             <div id="dashboard" class="tab-content active" role="tabpanel" aria-labelledby="dashboard-tab">
@@ -864,6 +867,23 @@
                     <li><strong class="command" data-variations="formate le code,indente le code,nettoie le code,beautify">formate le code</strong> - Formater le code source</li>
                     <li><strong class="command" data-variations="onglet numéro,tab numéro">onglet numéro [1-9]</strong> - Aller directement à un onglet spécifique</li>
                 </ul>
+            </div>
+
+            <!-- Nouvelle onglet Conversation -->
+            <div id="conversation" class="tab-content" role="tabpanel" aria-labelledby="conversation-tab">
+                <section class="conversation-section">
+                    <!-- Audio Visualizer -->
+                    <div class="audio-visualizer-container" role="img" aria-label="Visualisation audio en temps réel">
+                        <canvas id="audio-visualizer" class="audio-visualizer-canvas" aria-hidden="true"></canvas>
+                        <div id="voice-state-indicator" class="voice-state-indicator" data-state="idle">
+                            <span class="voice-state-dot" aria-hidden="true"></span>
+                            <span class="voice-state-label">En attente</span>
+                        </div>
+                    </div>
+
+                    <!-- Chat Interface Component -->
+                    {% include 'components/chat-interface.html' %}
+                </section>
             </div>
         </div>
     </div>
@@ -2243,5 +2263,21 @@
         }
     </script>
     <script src="{{ url_for('static', filename='js/tts-models.js') }}"></script>
+
+    <!-- Modern Design System Scripts -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style-modern.css') }}">
+    <script src="{{ url_for('static', filename='js/chat-interface.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/audio-visualizer.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/accessibility-shortcuts.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/config-manager.js') }}" defer></script>
+
+    <!-- ARIA Live Regions for accessibility -->
+    <div aria-live="assertive" aria-atomic="true" id="announcements" class="sr-only"></div>
+    <div aria-live="polite" aria-atomic="true" id="status-updates" class="sr-only"></div>
+    <div aria-live="polite" aria-atomic="false" id="live-logs" class="sr-only"></div>
+
+    <!-- Skip Links -->
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    <a href="#control-panel" class="skip-link" style="left: 200px;">Aller au panneau de contrôle</a>
 </body>
 </html>
