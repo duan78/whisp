@@ -8,10 +8,19 @@ import platform
 import subprocess
 import pyautogui
 from config import set_running
+from input_validation import InputValidator, ValidationError
+
+# Initialize validator
+validator = InputValidator()
 
 def executer_commande_systeme(texte):
     """Exécute des commandes système en fonction du texte transcrit"""
-    texte = texte.lower()
+    try:
+        # Validate the command before processing
+        texte = validator.validate_command(texte)
+        texte = texte.lower()
+    except ValidationError as e:
+        return f"Commande non autorisée: {str(e)}"
     
     # ===== GESTION DU SYSTÈME =====
     if any(cmd in texte for cmd in ["quelle heure est-il", "quelle heure est il", "quelle est l'heure", 
@@ -35,7 +44,8 @@ def executer_commande_systeme(texte):
         return f"Nous sommes le {jour}"
     
     elif "mets en veille" in texte:
-        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+        subprocess.run(["rundll32.exe", "powrprof.dll,SetSuspendState", "0,1,0"],
+                      shell=False, check=False, capture_output=True)
         return "Mise en veille de l'ordinateur"
     
     elif "infos système" in texte or "informations système" in texte:

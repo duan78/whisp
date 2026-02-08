@@ -7,6 +7,9 @@ import time
 import re
 from screen_context import localiser_element_ecran, localiser_element_par_attributs
 from os_detection import get_os_type, is_windows, is_mac, is_linux
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 # Importation conditionnelle de mouse selon l'OS
 try:
@@ -43,6 +46,11 @@ except ImportError:
 
 def executer_commande_souris(texte):
     """Exécute des commandes souris en fonction du texte transcrit"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     texte = texte.lower()
     os_type = get_os_type()
     
@@ -141,7 +149,8 @@ def executer_commande_souris(texte):
                 return f"Souris déplacée aux coordonnées {coords[0]}, {coords[1]}"
             else:
                 return "Coordonnées non spécifiées pour le déplacement de la souris"
-        except:
+        except (OSError, RuntimeError, AttributeError) as e:
+            error_handler.log_error(ErrorCategory.INPUT, f"Mouse control error: {e}", ErrorSeverity.MEDIUM)
             return "Erreur lors du déplacement de la souris"
     
     elif "souris vers la gauche" in texte:
@@ -211,7 +220,8 @@ def executer_commande_souris(texte):
                 return f"Glisser-déposer de ({current_x},{current_y}) à ({coords[0]},{coords[1]})"
             else:
                 return "Coordonnées non spécifiées pour le glisser-déposer"
-        except:
+        except (OSError, RuntimeError, AttributeError) as e:
+            error_handler.log_error(ErrorCategory.INPUT, f"Mouse control error: {e}", ErrorSeverity.MEDIUM)
             return "Erreur lors du glisser-déposer"
     
     elif any(cmd in texte for cmd in ["défile vers le bas", "défiler vers le bas", "défilé vers le bas", 

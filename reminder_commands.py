@@ -10,6 +10,9 @@ import time
 import threading
 import pyautogui
 from plyer import notification
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 try:
     # Essayer d'abord l'import en tant que package
@@ -116,6 +119,11 @@ def start_reminder_checker():
 
 def executer_commande_rappel(texte):
     """Exécute des commandes de gestion des rappels et de l'agenda"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     texte = texte.lower()
     
     # ===== GESTION DES RAPPELS =====

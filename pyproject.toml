@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "whisp-assistant"
-version = "1.0.0"
+version = "2.0.0"
 description = "Un assistant vocal personnel intelligent et multilingue"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -24,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Multimedia :: Sound/Audio :: Speech",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -40,24 +41,35 @@ keywords = [
     "ai",
     "python",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.8,<3.13"
 dependencies = [
-    "pyautogui>=0.9.53",
-    "SpeechRecognition>=3.8.1",
-    "pyttsx3>=2.90",
-    "gTTS>=2.2.4",
-    "pygame>=2.1.0",
-    "TTS>=0.17.0",
+    "pyautogui>=0.9.54",
+    "SpeechRecognition>=3.10.0",
+    "pyttsx3>=2.91",
+    "gTTS>=2.5.0",
+    "pygame>=2.5.0",
+    "TTS>=0.22.0",
     "pywin32>=228; platform_system=='Windows'",
     "mouse>=0.7.1; platform_system=='Windows'",
     "pyobjc>=7.3; platform_system=='Darwin'",
     "python-xlib>=0.31; platform_system=='Linux'",
-    "flask>=2.2.0",
+    "flask>=3.0.0",
     "flask-cors>=4.0.0",
-    "werkzeug>=2.2.0",
+    "werkzeug>=3.0.0",
     "requests>=2.31.0",
-    "numpy>=1.21.0",
-    "scipy>=1.7.0",
+    "numpy>=1.26.0",
+    "scipy>=1.11.0",
+    "Pillow>=10.0.0",
+    "numba>=0.59.0",
+    "mistralai>=1.9.0",
+    "openai>=1.0.0",
+    "pytesseract>=0.3.13",
+    "vosk>=0.3.45",
+    "faster-whisper>=0.9.0",
+    "keyboard>=0.13.5",
+    "psutil>=5.9.0",
+    "plyer>=2.1.0",
+    "cryptography>=41.0.0",
 ]
 
 [project.optional-dependencies]

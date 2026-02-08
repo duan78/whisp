@@ -7,9 +7,17 @@ import re
 import urllib.parse
 import pyperclip
 import pyautogui
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 def executer_commande_recherche(texte):
     """Exécute des commandes de recherche rapide"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     texte = texte.lower()
     
     # ===== RECHERCHE WEB =====

@@ -6,6 +6,9 @@ import threading
 import time
 from config import set_running
 from tts_module import ajouter_texte_a_lire, interrompre_lecture, est_commande_arret_tts
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 # Variables globales pour gérer l'état de confirmation
 confirmation_en_cours = False
@@ -129,6 +132,12 @@ def _gerer_timeout_confirmation():
     
 def traiter_reponse_confirmation(texte):
     """Traite la réponse à la demande de confirmation"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        print(f"Erreur de validation: {str(e)}")
+        return False
+
     global confirmation_en_cours, confirmation_reponse
     
     # Vérifier si une confirmation est en cours

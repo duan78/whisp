@@ -72,8 +72,8 @@ def ensure_pygame_initialized():
             try:
                 pygame.mixer.quit()
                 pygame.quit()
-            except:
-                pass
+            except (OSError, RuntimeError) as e:
+                error_handler.log_error(ErrorCategory.TTS, f"Error closing pygame: {e}", ErrorSeverity.LOW)
                 
             # Réinitialiser pygame avec gestion d'erreur
             pygame.init()
@@ -264,8 +264,8 @@ def load_coqui_model(model_id=None):
                 print(f"Test du modèle réussi (taille: {os.path.getsize(test_file)} octets)")
                 try:
                     os.remove(test_file)
-                except:
-                    pass
+                except (OSError, PermissionError) as e:
+                    error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove test file: {e}", ErrorSeverity.LOW)
                 # Modèle chargé et testé avec succès
                 return coqui_model, coqui_vocoder
             else:
@@ -320,8 +320,8 @@ def load_coqui_model_fallback():
                 print(f"Test du modèle réussi (taille: {os.path.getsize(test_file)} octets)")
                 try:
                     os.remove(test_file)
-                except:
-                    pass
+                except (OSError, PermissionError) as e:
+                    error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove test file: {e}", ErrorSeverity.LOW)
                 # Modèle chargé et testé avec succès
                 return coqui_model, coqui_vocoder
             else:
@@ -374,7 +374,7 @@ elif is_linux():
     try:
         subprocess.run(["espeak", "--version"], capture_output=True)
         tts_engine_type = 'espeak'
-    except:
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
         if gTTS:
             tts_engine_type = 'gtts'
 elif is_windows():
@@ -458,8 +458,8 @@ def initialiser_moteur_tts():
         try:
             subprocess.run(["espeak", "--version"], capture_output=True)
             return True
-        except:
-            print("Commande 'espeak' non disponible. Installez-la avec 'sudo apt-get install espeak'")
+        except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Commande 'espeak' non disponible: {e}", ErrorSeverity.LOW)
             return False
     
     return False
@@ -498,8 +498,8 @@ def lire_texte_pyttsx3(texte):
             try:
                 tts_engine.stop()
                 del tts_engine
-            except:
-                pass
+            except (AttributeError, RuntimeError) as e:
+                error_handler.log_error(ErrorCategory.TTS, f"Error stopping TTS engine: {e}", ErrorSeverity.LOW)
             tts_engine = None
             
         # Initialiser un nouveau moteur
@@ -558,8 +558,8 @@ def lire_texte_pyttsx3(texte):
                         # Réinitialiser le moteur en cas d'erreur
                         try:
                             del tts_engine
-                        except:
-                            pass
+                        except (AttributeError, RuntimeError) as e:
+                            error_handler.log_error(ErrorCategory.TTS, f"Error deleting TTS engine: {e}", ErrorSeverity.LOW)
                         tts_engine = None
                         
                         # Limiter le nombre de tentatives pour éviter une boucle infinie
@@ -570,8 +570,8 @@ def lire_texte_pyttsx3(texte):
                                     tts_engine.say(sous_phrase)
                                     tts_engine.runAndWait()
                                     erreurs_consecutives = 0
-                                except:
-                                    pass
+                                except (RuntimeError, AttributeError) as e:
+                                    error_handler.log_error(ErrorCategory.TTS, f"TTS retry error: {e}", ErrorSeverity.LOW)
                         else:
                             print("Trop d'erreurs consécutives, abandon de la lecture pyttsx3")
                             # Basculer vers gTTS si disponible après trop d'erreurs
@@ -754,8 +754,8 @@ def lire_texte_gtts(texte):
                         # Supprimer le fichier temporaire original
                         try:
                             os.remove(temp_file)
-                        except:
-                            pass
+                        except (OSError, PermissionError) as e:
+                            error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove temp file: {e}", ErrorSeverity.LOW)
                     else:
                         audio_file = temp_file
                         print("Échec de l'accélération avec ffmpeg, utilisation du fichier original")
@@ -777,8 +777,8 @@ def lire_texte_gtts(texte):
                     try:
                         if os.path.exists(oldest_file):
                             os.remove(oldest_file)
-                    except:
-                        pass
+                    except (OSError, PermissionError) as e:
+                        error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove cached file: {e}", ErrorSeverity.LOW)
                 
                 # Créer un fichier permanent pour le cache
                 cache_dir = os.path.join(tempfile.gettempdir(), 'whisp_tts_cache')
@@ -812,8 +812,8 @@ def lire_texte_gtts(texte):
             # Réinitialiser le mixer avant de charger un nouveau fichier
             try:
                 pygame.mixer.music.unload()
-            except:
-                pass
+            except (RuntimeError, AttributeError) as e:
+                error_handler.log_error(ErrorCategory.TTS, f"Error unloading pygame mixer: {e}", ErrorSeverity.LOW)
             
             pygame.mixer.music.load(audio_file)
             pygame.mixer.music.set_volume(1.0)
@@ -871,8 +871,8 @@ def lire_texte_gtts(texte):
             # Arrêter la lecture en cours
             try:
                 pygame.mixer.music.stop()
-            except:
-                pass
+            except (RuntimeError, AttributeError) as e:
+                error_handler.log_error(ErrorCategory.TTS, f"Error stopping pygame mixer: {e}", ErrorSeverity.LOW)
         
         tts_is_speaking = False
         
@@ -881,14 +881,14 @@ def lire_texte_gtts(texte):
             for file in os.listdir(user_temp):
                 try:
                     os.remove(os.path.join(user_temp, file))
-                except:
-                    pass
+                except (OSError, PermissionError) as e:
+                    error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove temp file: {e}", ErrorSeverity.LOW)
             try:
                 os.rmdir(user_temp)
-            except:
-                pass
-        except:
-            pass
+            except (OSError, PermissionError) as e:
+                error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove temp dir: {e}", ErrorSeverity.LOW)
+        except (OSError, PermissionError) as e:
+            error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to cleanup temp directory: {e}", ErrorSeverity.LOW)
         
     except Exception as e:
         print(f"Erreur lors de la lecture TTS (gTTS): {str(e)}")
@@ -917,20 +917,21 @@ def lire_texte_macos_say(texte):
                     # Essayer sans spécifier la voix mais avec la vitesse
                     try:
                         subprocess.run(["say", "-r", str(tts_rate['macos_say']), phrase], check=False)
-                    except:
+                    except (subprocess.SubprocessError, FileNotFoundError, OSError) as e1:
+                        error_handler.log_error(ErrorCategory.TTS, f"macOS say with rate failed: {e1}", ErrorSeverity.LOW)
                         # Dernier recours: sans options
                         try:
                             subprocess.run(["say", phrase], check=False)
-                        except:
-                            pass
+                        except (subprocess.SubprocessError, FileNotFoundError, OSError) as e2:
+                            error_handler.log_error(ErrorCategory.TTS, f"macOS say fallback failed: {e2}", ErrorSeverity.LOW)
                     
             # Si l'arrêt a été demandé, sortir de la boucle
             if not tts_is_speaking:
                 # Arrêter tous les processus 'say' en cours
                 try:
                     subprocess.run(["killall", "say"], check=False)
-                except:
-                    pass
+                except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+                    error_handler.log_error(ErrorCategory.TTS, f"Failed to kill say process: {e}", ErrorSeverity.LOW)
                 break
         
         tts_is_speaking = False
@@ -962,20 +963,21 @@ def lire_texte_espeak(texte):
                     # Essayer sans spécifier la voix mais avec la vitesse
                     try:
                         subprocess.run(["espeak", "-s", str(tts_rate['espeak']), phrase], check=False)
-                    except:
+                    except (subprocess.SubprocessError, FileNotFoundError, OSError) as e1:
+                        error_handler.log_error(ErrorCategory.TTS, f"espeak with rate failed: {e1}", ErrorSeverity.LOW)
                         # Dernier recours: sans options
                         try:
                             subprocess.run(["espeak", phrase], check=False)
-                        except:
-                            pass
+                        except (subprocess.SubprocessError, FileNotFoundError, OSError) as e2:
+                            error_handler.log_error(ErrorCategory.TTS, f"espeak fallback failed: {e2}", ErrorSeverity.LOW)
                     
             # Si l'arrêt a été demandé, sortir de la boucle
             if not tts_is_speaking:
                 # Arrêter tous les processus espeak en cours
                 try:
                     subprocess.run(["killall", "espeak"], check=False)
-                except:
-                    pass
+                except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+                    error_handler.log_error(ErrorCategory.TTS, f"Failed to kill espeak process: {e}", ErrorSeverity.LOW)
                 break
         
         tts_is_speaking = False
@@ -1249,8 +1251,8 @@ def lire_texte_coqui(texte):
                     try:
                         if os.path.exists(oldest_file):
                             os.remove(oldest_file)
-                    except:
-                        pass
+                    except (OSError, PermissionError) as e:
+                        error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove cached file: {e}", ErrorSeverity.LOW)
                 
                 # Créer un fichier permanent pour le cache
                 cache_dir = os.path.join(tempfile.gettempdir(), 'whisp_tts_cache')
@@ -1356,8 +1358,8 @@ def lire_texte_coqui(texte):
             for file in audio_files:
                 if file != temp_file and os.path.exists(file):
                     os.remove(file)
-        except:
-            pass
+        except (OSError, PermissionError) as e:
+            error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to remove temp files: {e}", ErrorSeverity.LOW)
         
     except Exception as e:
         print(f"Erreur critique lors de la lecture TTS CoquiTTS: {str(e)}")
@@ -1367,8 +1369,8 @@ def lire_texte_coqui(texte):
         try:
             print("Basculement vers gTTS suite à une erreur critique avec CoquiTTS")
             lire_texte_gtts(texte)
-        except:
-            pass
+        except Exception as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Failed to fallback to gTTS: {e}", ErrorSeverity.HIGH)
 
 @catch_errors(category=ErrorCategory.TTS, severity=ErrorSeverity.MEDIUM, notify_user=True)
 def lire_texte(texte):
@@ -1557,7 +1559,8 @@ def lire_texte(texte):
                             elif engine == 'espeak' and is_linux():
                                 lire_texte_espeak(texte_propre)
                                 return
-                        except:
+                        except (RuntimeError, AttributeError, OSError, subprocess.SubprocessError) as e:
+                            error_handler.log_error(ErrorCategory.TTS, f"TTS engine {engine} failed: {e}", ErrorSeverity.MEDIUM)
                             continue
                 
                 # Si tous les moteurs échouent, notifier l'utilisateur
@@ -1664,8 +1667,8 @@ def jouer_feedback_court():
                             # Nettoyer le fichier
                             if os.path.exists(feedback_court_audio_file):
                                 os.remove(feedback_court_audio_file)
-                        except:
-                            pass
+                        except (OSError, PermissionError, RuntimeError) as e:
+                            error_handler.log_error(ErrorCategory.FILE_IO, f"Failed to cleanup feedback audio: {e}", ErrorSeverity.LOW)
                     
                     cleanup_thread = threading.Thread(target=cleanup_after_playback)
                     cleanup_thread.daemon = True
@@ -1707,8 +1710,8 @@ def arreter_tts():
     if tts_engine is not None:
         try:
             tts_engine.stop()
-        except:
-            pass
+        except (AttributeError, RuntimeError) as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Error stopping TTS engine: {e}", ErrorSeverity.LOW)
         tts_engine = None
     
     print("Thread TTS arrêté")
@@ -1726,22 +1729,22 @@ def arreter_tts_immediatement():
         try:
             tts_queue.get_nowait()
             tts_queue.task_done()
-        except:
-            pass
+        except queue.Empty as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Error emptying TTS queue: {e}", ErrorSeverity.LOW)
     
     # Arrêter le moteur TTS de manière forcée
     if tts_engine is not None:
         try:
             tts_engine.stop()
-        except:
-            pass
-        
+        except (AttributeError, RuntimeError) as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Error stopping TTS engine: {e}", ErrorSeverity.LOW)
+
         try:
             # Libérer explicitement les ressources
             del tts_engine
-        except:
-            pass
-        
+        except (AttributeError, RuntimeError) as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Error deleting TTS engine: {e}", ErrorSeverity.LOW)
+
         tts_engine = None
     
     print("TTS arrêté immédiatement")
@@ -1758,8 +1761,8 @@ def interrompre_lecture():
         try:
             tts_queue.get_nowait()
             tts_queue.task_done()
-        except:
-            pass
+        except queue.Empty as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Error emptying TTS queue: {e}", ErrorSeverity.LOW)
     
     # Arrêter le moteur TTS en fonction du type avec gestion d'erreur robuste
     try:
@@ -1782,8 +1785,8 @@ def interrompre_lecture():
             try:
                 import sounddevice as sd
                 sd.stop()
-            except:
-                pass
+            except (ImportError, AttributeError, OSError) as e:
+                error_handler.log_error(ErrorCategory.TTS, f"Error stopping sounddevice: {e}", ErrorSeverity.LOW)
                 
         elif tts_engine_type == 'macos_say':
             # Arrêter tous les processus 'say' en cours
@@ -1810,8 +1813,8 @@ def interrompre_lecture():
                 # Détruire et recréer le moteur pour éviter les problèmes de blocage
                 try:
                     del tts_engine
-                except:
-                    pass
+                except (AttributeError, RuntimeError) as e:
+                    error_handler.log_error(ErrorCategory.TTS, f"Error deleting TTS engine: {e}", ErrorSeverity.LOW)
                 
                 tts_engine = None
                 
@@ -1940,8 +1943,8 @@ def definir_coqui_model(model_id):
             # Libérer explicitement les ressources
             del coqui_model
             coqui_model = None
-        except:
-            pass
+        except (AttributeError, RuntimeError) as e:
+            error_handler.log_error(ErrorCategory.TTS, f"Error deleting Coqui model: {e}", ErrorSeverity.LOW)
     
     # Charger le nouveau modèle
     print(f"Chargement du modèle {model_id}...")
@@ -2015,8 +2018,8 @@ def definir_moteur_tts(type_moteur):
             # Vérifier si la commande 'say' est disponible
             try:
                 subprocess.run(["say", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-            except:
-                print("Commande 'say' non disponible sur ce système macOS")
+            except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+                error_handler.log_error(ErrorCategory.TTS, f"Command 'say' not available: {e}", ErrorSeverity.LOW)
                 return False
         elif type_moteur == 'espeak':
             if not is_linux():
@@ -2025,8 +2028,8 @@ def definir_moteur_tts(type_moteur):
             # Vérifier si espeak est installé
             try:
                 subprocess.run(["espeak", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-            except:
-                print("Commande 'espeak' non disponible. Installez-la avec 'sudo apt-get install espeak'")
+            except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+                error_handler.log_error(ErrorCategory.TTS, f"Command 'espeak' not available: {e}", ErrorSeverity.LOW)
                 return False
         elif type_moteur == 'coqui':
             if not coqui_available:

@@ -9,6 +9,9 @@ import re
 import os
 import platform
 from os_detection import get_os_type, is_windows, is_mac, is_linux
+from error_handler import get_error_handler, ErrorCategory, ErrorSeverity
+
+error_handler = get_error_handler()
 
 # Désactiver le fail-safe de PyAutoGUI qui cause des erreurs
 # lors du déplacement de la souris vers les coins de l'écran
@@ -382,11 +385,11 @@ def executer_commande_fenetre(texte):
                 else:
                     # Alternative: utiliser Command+M pour maximiser
                     pyautogui.hotkey('command', 'm')
-                
+
                 # Restaurer la position de la souris
                 pyautogui.moveTo(current_x, current_y)
-            except:
-                pass
+            except (AttributeError, OSError, pyautogui.FailSafeException) as e:
+                error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Error maximizing window on macOS: {e}", ErrorSeverity.LOW)
             
             return "Fenêtre maximisée"
             
@@ -599,20 +602,22 @@ def get_monitor_count():
             # Méthode Linux
             try:
                 # Utiliser xrandr pour obtenir les écrans
-                result = subprocess.run(["xrandr", "--listmonitors"], 
+                result = subprocess.run(["xrandr", "--listmonitors"],
                                       capture_output=True, text=True)
                 # La première ligne contient le nombre d'écrans (ex: "Monitors: 2")
                 first_line = result.stdout.strip().split('\n')[0]
                 count = int(first_line.split(':')[1].strip())
                 return count
-            except:
+            except (subprocess.SubprocessError, FileNotFoundError, ValueError, IndexError) as e:
+                error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"xrandr method failed: {e}", ErrorSeverity.LOW)
                 # Méthode alternative
                 try:
                     import Xlib.display
                     d = Xlib.display.Display()
                     screen_count = d.screen_count()
                     return screen_count
-                except:
+                except (ImportError, AttributeError, OSError) as e2:
+                    error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Xlib method failed: {e2}", ErrorSeverity.LOW)
                     return 1
         
         else:
@@ -932,10 +937,10 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                     
                     # Définir le timeout à 0 pour permettre le changement immédiat
                     try:
-                        ctypes.windll.user32.SystemParametersInfoW(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, 
+                        ctypes.windll.user32.SystemParametersInfoW(SPI_SETFOREGROUNDLOCKTIMEOUT, 0,
                                                                  ctypes.c_ulong(0), SPIF_SENDCHANGE)
-                    except:
-                        pass
+                    except (OSError, AttributeError) as e:
+                        error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to set foreground timeout: {e}", ErrorSeverity.LOW)
                     
                     # Autoriser le changement de fenêtre active
                     try:
@@ -944,8 +949,8 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                         ctypes.windll.user32.AllowSetForegroundWindow(ASFW_ANY)
                         # Puis autoriser spécifiquement notre PID cible
                         ctypes.windll.user32.AllowSetForegroundWindow(pid)
-                    except:
-                        pass
+                    except (OSError, AttributeError) as e:
+                        error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to allow set foreground window: {e}", ErrorSeverity.LOW)
                     
                     # Mettre la fenêtre au premier plan
                     win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
@@ -959,7 +964,8 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                         try:
                             ctypes.windll.user32.AttachThreadInput(current_thread_id, foreground_thread_id, True)
                             attached = True
-                        except:
+                        except (OSError, AttributeError) as e:
+                            error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to attach thread input: {e}", ErrorSeverity.LOW)
                             attached = False
                     else:
                         attached = False
@@ -971,15 +977,15 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                     if attached:
                         try:
                             ctypes.windll.user32.AttachThreadInput(current_thread_id, foreground_thread_id, False)
-                        except:
-                            pass
+                        except (OSError, AttributeError) as e:
+                            error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to detach thread input: {e}", ErrorSeverity.LOW)
                     
                     # Restaurer le timeout original
                     try:
-                        ctypes.windll.user32.SystemParametersInfoW(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, 
+                        ctypes.windll.user32.SystemParametersInfoW(SPI_SETFOREGROUNDLOCKTIMEOUT, 0,
                                                                  ctypes.c_ulong(original_timeout), SPIF_SENDCHANGE)
-                    except:
-                        pass
+                    except (OSError, AttributeError) as e:
+                        error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to restore foreground timeout: {e}", ErrorSeverity.LOW)
                     
                     time.sleep(0.2)
                     
@@ -1022,14 +1028,14 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                     if target_thread_id != current_thread_id:
                         try:
                             attached = ctypes.windll.user32.AttachThreadInput(current_thread_id, target_thread_id, True)
-                        except:
-                            pass
-                    
+                        except (OSError, AttributeError) as e:
+                            error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to attach thread input: {e}", ErrorSeverity.LOW)
+
                     # Autoriser n'importe quelle fenêtre à devenir active
                     try:
                         ctypes.windll.user32.AllowSetForegroundWindow(ASFW_ANY)
-                    except:
-                        pass
+                    except (OSError, AttributeError) as e:
+                        error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to allow set foreground: {e}", ErrorSeverity.LOW)
                     
                     # Mettre la fenêtre au premier plan avec plusieurs techniques
                     try:
@@ -1054,18 +1060,18 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                         
                         # Restaurer la position de la souris
                         win32api.SetCursorPos(old_pos)
-                        
+
                         # Essayer SetForegroundWindow après le clic
                         win32gui.SetForegroundWindow(hwnd)
-                    except:
-                        pass
+                    except (OSError, AttributeError) as e:
+                        error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Error simulating click: {e}", ErrorSeverity.LOW)
                     
                     # Détacher notre thread si nécessaire
                     if attached:
                         try:
                             ctypes.windll.user32.AttachThreadInput(current_thread_id, target_thread_id, False)
-                        except:
-                            pass
+                        except (OSError, AttributeError) as e:
+                            error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to detach thread input: {e}", ErrorSeverity.LOW)
                     
                     time.sleep(0.2)
                     
@@ -1324,12 +1330,12 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                     
                     # Vérifier si une nouvelle fenêtre correspondante est maintenant active
                     app_name, window_title, exe_path = get_active_application()
-                    if (recherche_lower in app_name.lower() or 
+                    if (recherche_lower in app_name.lower() or
                         recherche_lower in window_title.lower()):
                         print(f"Application {recherche} ouverte via subprocess")
                         return True
-                except:
-                    pass
+                except (subprocess.SubprocessError, FileNotFoundError, OSError, AttributeError) as e:
+                    error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to open app via subprocess: {e}", ErrorSeverity.LOW)
                 
                 return False
             except Exception as e:
@@ -1346,7 +1352,8 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
             try:
                 subprocess.run(["osascript", "-e", script], capture_output=True)
                 return True
-            except:
+            except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+                error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to activate macOS app: {e}", ErrorSeverity.LOW)
                 return False
                 
         elif os_type == 'linux':
@@ -1355,11 +1362,13 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                 # Utiliser wmctrl pour activer la fenêtre
                 result = subprocess.run(["wmctrl", "-a", recherche], capture_output=True)
                 return result.returncode == 0
-            except:
+            except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+                error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to activate Linux window: {e}", ErrorSeverity.LOW)
                 return False
         
         return False
-    except:
+    except Exception as e:
+        error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Error in basculer_vers_fenetre: {e}", ErrorSeverity.MEDIUM)
         return False
 
 def basculer_vers_application(nom_app):
@@ -1414,7 +1423,8 @@ def obtenir_fenetres_ouvertes():
                                     left, top, right, bottom = win32gui.GetWindowRect(hwnd)
                                     width = right - left
                                     height = bottom - top
-                                except:
+                                except (OSError, AttributeError, win32gui.error) as e:
+                                    error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Failed to get window rect: {e}", ErrorSeverity.LOW)
                                     left, top, width, height = 0, 0, 0, 0
                                 
                                 # Ajouter les informations de la fenêtre
@@ -1436,8 +1446,8 @@ def obtenir_fenetres_ouvertes():
                                     'exe_path': "",
                                     'position': (0, 0, 0, 0)
                                 })
-                        except:
-                            pass
+                        except (psutil.NoSuchProcess, psutil.AccessDenied, OSError, AttributeError) as e:
+                            error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Error enumerating windows: {e}", ErrorSeverity.LOW)
             
             windows_list = []
             win32gui.EnumWindows(enum_windows_callback, windows_list)
@@ -1521,7 +1531,8 @@ def obtenir_applications_ouvertes():
                         # Le nom de l'application est généralement après le 3ème champ
                         app_name = ' '.join(parts[3:])
                         applications.append(app_name)
-            except:
+            except (subprocess.SubprocessError, FileNotFoundError, OSError, ValueError, IndexError) as e:
+                error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"wmctrl method failed: {e}", ErrorSeverity.LOW)
                 # Méthode alternative
                 result = subprocess.run(["ps", "-e", "-o", "comm="], capture_output=True, text=True)
                 applications = [line.strip() for line in result.stdout.splitlines()]
@@ -1626,9 +1637,10 @@ def get_active_application():
                             process_name = subprocess.run(["ps", "-p", pid, "-o", "comm="], 
                                                         capture_output=True, text=True).stdout.strip()
                             return (process_name.lower(), window_title, "")
-                
+
                 return ("unknown", window_title, "")
-            except:
+            except (subprocess.SubprocessError, FileNotFoundError, OSError, ValueError, IndexError) as e:
+                error_handler.log_error(ErrorCategory.WINDOW_MANAGEMENT, f"Error getting active app on Linux: {e}", ErrorSeverity.LOW)
                 return ("unknown", "", "")
         
         else:

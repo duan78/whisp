@@ -13,6 +13,12 @@ import webbrowser
 from datetime import datetime
 import ctypes
 from ctypes import wintypes
+from input_validation import InputValidator, ValidationError
+from error_handler import get_error_handler, ErrorCategory, ErrorSeverity
+
+error_handler = get_error_handler()
+
+validator = InputValidator()
 
 # Fonctions pour la gestion multiécran
 def get_window_title():
@@ -24,7 +30,8 @@ def get_window_title():
         buff = ctypes.create_unicode_buffer(length + 1)
         user32.GetWindowTextW(hwnd, buff, length + 1)
         return buff.value
-    except:
+    except (OSError, RuntimeError, AttributeError) as e:
+        error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Error: {e}", ErrorSeverity.MEDIUM)
         return "Fenêtre inconnue"
 
 def organiser_fenetres_multiscreen():
@@ -62,6 +69,11 @@ def organiser_fenetres_multiscreen():
 
 def executer_commande_productivite(texte):
     """Exécute des commandes de productivité en fonction du texte transcrit"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     texte = texte.lower()
     
     # ===== GESTION DES APPLICATIONS DE PRODUCTIVITÉ =====
@@ -69,28 +81,32 @@ def executer_commande_productivite(texte):
         try:
             subprocess.Popen(["start", "winword"], shell=True)
             return "Microsoft Word ouvert"
-        except:
+        except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+            error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
             return "Impossible d'ouvrir Microsoft Word"
             
     elif "ouvre excel" in texte or "lance excel" in texte:
         try:
             subprocess.Popen(["start", "excel"], shell=True)
             return "Microsoft Excel ouvert"
-        except:
+        except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+            error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
             return "Impossible d'ouvrir Microsoft Excel"
             
     elif "ouvre powerpoint" in texte or "lance powerpoint" in texte:
         try:
             subprocess.Popen(["start", "powerpnt"], shell=True)
             return "Microsoft PowerPoint ouvert"
-        except:
+        except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+            error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
             return "Impossible d'ouvrir Microsoft PowerPoint"
             
     elif "ouvre outlook" in texte or "lance outlook" in texte:
         try:
             subprocess.Popen(["start", "outlook"], shell=True)
             return "Microsoft Outlook ouvert"
-        except:
+        except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+            error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
             return "Impossible d'ouvrir Microsoft Outlook"
     
     # ===== COMMANDES DE FORMATAGE DE TEXTE =====
@@ -326,7 +342,8 @@ def executer_commande_productivite(texte):
                 with open(nom_fichier, "w", encoding="utf-8") as f:
                     f.write(contenu)
                 return f"Note enregistrée dans {nom_fichier}"
-            except:
+            except (OSError, IOError, PermissionError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"File/OS error: {e}", ErrorSeverity.MEDIUM)
                 return "Erreur lors de l'enregistrement de la note"
         else:
             return "Contenu de la note non spécifié"
@@ -355,7 +372,8 @@ def executer_commande_productivite(texte):
                 with open(nom_fichier, "a", encoding="utf-8") as f:
                     f.write(f"\n[{datetime.now().strftime('%H:%M:%S')}] {contenu}\n")
                 return f"Note ajoutée à {nom_fichier}"
-            except:
+            except (OSError, IOError, PermissionError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"File/OS error: {e}", ErrorSeverity.MEDIUM)
                 return "Erreur lors de l'ajout à la note"
         else:
             return "Contenu de la note non spécifié"
@@ -374,7 +392,8 @@ def executer_commande_productivite(texte):
                     # Ouvrir le fichier de notes
                     os.startfile(nom_fichier)
                     return f"Notes du jour ouvertes : {nom_fichier}"
-                except:
+                except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+                    error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
                     return f"Erreur lors de l'ouverture des notes du jour"
             else:
                 return "Aucune note pour aujourd'hui"
@@ -384,7 +403,8 @@ def executer_commande_productivite(texte):
                 # Ouvrir le dossier de notes
                 os.startfile("notes")
                 return "Dossier de notes ouvert"
-            except:
+            except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+                error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
                 return "Erreur lors de l'ouverture du dossier de notes"
     
     # ===== COMMANDES DE GESTION DU TEMPS AMÉLIORÉES =====
@@ -603,7 +623,8 @@ def executer_commande_productivite(texte):
                 try:
                     with open(shortcuts_file, 'r', encoding='utf-8') as f:
                         shortcuts = json.load(f)
-                except:
+                except (OSError, IOError, PermissionError, ValueError) as e:
+                    error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"File/OS error: {e}", ErrorSeverity.MEDIUM)
                     pass
             
             # Ajouter le nouveau raccourci
@@ -613,7 +634,8 @@ def executer_commande_productivite(texte):
                 with open(shortcuts_file, 'w', encoding='utf-8') as f:
                     json.dump(shortcuts, f, ensure_ascii=False, indent=2)
                 return f"Raccourci '{shortcut_name}' créé pour la commande : {shortcut_cmd}"
-            except:
+            except (OSError, IOError, PermissionError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"File/OS error: {e}", ErrorSeverity.MEDIUM)
                 return "Erreur lors de la création du raccourci"
         else:
             return "Nom ou commande du raccourci non spécifié"
@@ -647,7 +669,8 @@ def executer_commande_productivite(texte):
                             return f"Raccourci '{shortcut_name}' exécuté"
                     else:
                         return f"Raccourci '{shortcut_name}' non trouvé"
-                except:
+                except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+                    error_handler.log_error(ErrorCategory.PRODUCTIVITY, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
                     return "Erreur lors de l'exécution du raccourci"
             else:
                 return "Aucun raccourci défini"
@@ -660,18 +683,18 @@ def executer_commande_productivite(texte):
             # Fermer les applications de distraction
             try:
                 # Fermer le navigateur
-                os.system("taskkill /f /im chrome.exe")
-                os.system("taskkill /f /im firefox.exe")
-                os.system("taskkill /f /im msedge.exe")
-                
+                subprocess.run(["taskkill", "/f", "/im", "chrome.exe"], shell=False, check=False, capture_output=True)
+                subprocess.run(["taskkill", "/f", "/im", "firefox.exe"], shell=False, check=False, capture_output=True)
+                subprocess.run(["taskkill", "/f", "/im", "msedge.exe"], shell=False, check=False, capture_output=True)
+
                 # Fermer les applications de messagerie
-                os.system("taskkill /f /im slack.exe")
-                os.system("taskkill /f /im teams.exe")
-                os.system("taskkill /f /im outlook.exe")
-                
+                subprocess.run(["taskkill", "/f", "/im", "slack.exe"], shell=False, check=False, capture_output=True)
+                subprocess.run(["taskkill", "/f", "/im", "teams.exe"], shell=False, check=False, capture_output=True)
+                subprocess.run(["taskkill", "/f", "/im", "outlook.exe"], shell=False, check=False, capture_output=True)
+
                 return "Mode concentration activé. Applications de distraction fermées."
-            except:
-                return "Erreur lors de l'activation du mode concentration"
+            except Exception as e:
+                return f"Erreur lors de l'activation du mode concentration: {str(e)}"
         elif "désactive" in texte or "arrête" in texte:
             return "Mode concentration désactivé"
     

@@ -11,6 +11,9 @@ from tts_module import ajouter_texte_a_lire
 from text_processing import ecrire_texte_avec_accents
 from config import (set_translation_mode, get_translation_mode, get_translation_text,
                    get_target_language, append_translation_text, get_mistral_api_key)
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 # Constantes API
 MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
@@ -164,6 +167,12 @@ def executer_commande_analyse(texte):
     """
     Exécute une commande d'analyse en utilisant l'API Mistral
     """
+    try:
+        # Validate the command before processing
+        texte = validator.validate_command(texte)
+    except ValidationError as e:
+        return f"Commande non autorisée: {str(e)}"
+
     if est_commande_analyse(texte):
         print(f"Analyse en cours: {texte}")
         reponse = appeler_api_mistral(texte)
@@ -408,6 +417,12 @@ def executer_commande_traduction(texte):
     """
     Exécute une commande de traduction en utilisant l'API Mistral
     """
+    try:
+        # Validate the command before processing
+        texte = validator.validate_command(texte)
+    except ValidationError as e:
+        return f"Commande non autorisée: {str(e)}"
+
     # Nettoyer le texte pour éviter les problèmes de reconnaissance
     texte = texte.strip()
     

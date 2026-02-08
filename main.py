@@ -177,7 +177,8 @@ def assistant_vocal():
             try:
                 from tts_module import definir_moteur_tts
                 definir_moteur_tts('gtts')
-            except:
+            except (OSError, RuntimeError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
                 pass
             return False
     

@@ -106,7 +106,8 @@ def test_platform_info():
                 print(f"   ✅ Plateforme Windows ARM64 détectée")
             else:
                 print(f"   ℹ️  Plateforme Windows {platform.machine()}")
-        except:
+        except (OSError, RuntimeError, AttributeError) as e:
+            error_handler.log_error(ErrorCategory.AUDIO, f"Audio error: {e}", ErrorSeverity.MEDIUM)
             pass
 
 def test_installation_recommendations(results: Dict[str, bool]):

@@ -9,9 +9,17 @@ from shortcuts_database import obtenir_raccourci
 from os_detection import get_os_type, adapt_shortcut
 from window_manager import detect_application_context
 from text_processing import nettoyer_commande
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 def executer_commande_clavier(texte):
     """Exécute des commandes clavier en fonction du texte transcrit"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     # Nettoyer le texte en enlevant le point final s'il existe
     texte_original = texte
     texte = nettoyer_commande(texte)

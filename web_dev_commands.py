@@ -10,9 +10,17 @@ import webbrowser
 import json
 import datetime
 from text_processing import ecrire_texte_avec_accents
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 def executer_commande_web_dev(texte):
     """Exécute des commandes liées au développement web"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     texte = texte.lower()
     
     # ===== COMMANDES SERVEUR DE DÉVELOPPEMENT =====
@@ -28,7 +36,8 @@ def executer_commande_web_dev(texte):
             # Utiliser le module http.server de Python
             subprocess.Popen(["python", "-m", "http.server", port])
             return f"Serveur HTTP démarré sur le port {port}"
-        except:
+        except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+            error_handler.log_error(ErrorCategory.COMMAND, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
             return f"Erreur lors du démarrage du serveur HTTP"
     
     elif "lance serveur flask" in texte or "démarre serveur flask" in texte:
@@ -42,7 +51,8 @@ def executer_commande_web_dev(texte):
                 return "Serveur Flask démarré avec run.py"
             else:
                 return "Fichier app.py ou run.py non trouvé"
-        except:
+        except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+            error_handler.log_error(ErrorCategory.COMMAND, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
             return "Erreur lors du démarrage du serveur Flask"
     
     elif "lance serveur django" in texte or "démarre serveur django" in texte:
@@ -56,7 +66,8 @@ def executer_commande_web_dev(texte):
         try:
             subprocess.Popen(["python", "manage.py", "runserver", f"0.0.0.0:{port}"])
             return f"Serveur Django démarré sur le port {port}"
-        except:
+        except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+            error_handler.log_error(ErrorCategory.COMMAND, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
             return "Erreur lors du démarrage du serveur Django"
     
     # ===== COMMANDES FRONTEND =====
@@ -98,7 +109,8 @@ export default {component_name};
 """)
                 
                 return f"Composant React '{component_name}' créé"
-            except:
+            except (OSError, RuntimeError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
                 return f"Erreur lors de la création du composant React"
         else:
             return "Nom de composant non spécifié"
@@ -149,7 +161,8 @@ export default {component_name};
 """)
                 
                 return f"Page HTML '{page_name}' créée : {file_name}"
-            except:
+            except (OSError, RuntimeError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
                 return f"Erreur lors de la création de la page HTML"
         else:
             return "Nom de page non spécifié"
@@ -248,7 +261,8 @@ footer {
 """)
                 
                 return f"Fichier CSS '{style_name}' créé : css/{file_name}"
-            except:
+            except (OSError, RuntimeError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
                 return f"Erreur lors de la création du fichier CSS"
         else:
             return "Nom de fichier CSS non spécifié"
@@ -327,7 +341,8 @@ document.addEventListener('DOMContentLoaded', function() {
 """)
                 
                 return f"Fichier JavaScript '{script_name}' créé : js/{file_name}"
-            except:
+            except (OSError, RuntimeError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
                 return f"Erreur lors de la création du fichier JavaScript"
         else:
             return "Nom de fichier JavaScript non spécifié"
@@ -543,7 +558,8 @@ exports.deleteItem = (req, res) => {
 """)
                 
                 return f"API REST '{api_name}' créée dans le dossier {folder_name}"
-            except:
+            except (OSError, RuntimeError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
                 return f"Erreur lors de la création de l'API REST"
         else:
             return "Nom d'API non spécifié"

@@ -8,6 +8,9 @@ import json
 import re
 import subprocess
 from text_processing import ecrire_texte_avec_accents
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 try:
     # Essayer d'abord l'import en tant que package
@@ -85,6 +88,11 @@ def save_tasks(conn, tasks_data):
 
 def executer_commande_projet(texte):
     """Exécute des commandes de gestion de projet en fonction du texte transcrit"""
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     texte = texte.lower()
     
     # ===== GESTION DES TÂCHES =====
@@ -349,7 +357,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 try:
                     subprocess.run(["django-admin", "startproject", project_name])
                     return f"Projet Django créé : {project_name}"
-                except:
+                except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+                    error_handler.log_error(ErrorCategory.COMMAND, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
                     return "Erreur lors de la création du projet Django. Django est-il installé ?"
                 
             elif project_type == "flask":
@@ -419,7 +428,8 @@ if __name__ == '__main__':
                                "--author=Auteur", os.path.join(project_path, "docs")])
                 
                 return f"Documentation Sphinx initialisée dans {project_path}/docs"
-            except:
+            except (subprocess.SubprocessError, FileNotFoundError, PermissionError, OSError) as e:
+                error_handler.log_error(ErrorCategory.COMMAND, f"Subprocess error: {e}", ErrorSeverity.MEDIUM)
                 return "Erreur lors de l'initialisation de Sphinx. Sphinx est-il installé ?"
         else:
             # Par défaut, créer un fichier README.md
@@ -440,7 +450,8 @@ Instructions d'utilisation
 Licence du projet
 """)
                 return "Fichier README.md créé"
-            except:
+            except (OSError, RuntimeError, ValueError) as e:
+                error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
                 return "Erreur lors de la création du fichier README.md"
     
     # ===== COMMANDES DE PLANIFICATION =====
@@ -470,7 +481,8 @@ Licence du projet
 À compléter à la fin du sprint
 """)
             return f"Planification de sprint créée : {sprint_name}.md"
-        except:
+        except (OSError, RuntimeError, ValueError) as e:
+            error_handler.log_error(ErrorCategory.GENERAL, f"Error: {e}", ErrorSeverity.MEDIUM)
             return f"Erreur lors de la création de la planification de sprint"
     
     return None  # Commande non reconnue

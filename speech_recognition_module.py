@@ -3737,7 +3737,8 @@ def arreter_threads_reconnaissance():
         while not audio_queue.empty():
             audio_queue.get_nowait()
             audio_queue.task_done()
-    except:
+    except (OSError, ValueError, ImportError) as e:
+        error_handler.log_error(ErrorCategory.SPEECH_RECOGNITION, f"Speech recognition error: {e}", ErrorSeverity.MEDIUM)
         pass
     
     # Fermer le microphone s'il est ouvert
@@ -3932,7 +3933,8 @@ def start_whisper_listening(recognizer, microphone, command_processor):
                                 # Supprimer le fichier temporaire
                                 try:
                                     os.unlink(temp_filename)
-                                except:
+                                except (OSError, ValueError, ImportError) as e:
+                                    error_handler.log_error(ErrorCategory.SPEECH_RECOGNITION, f"Speech recognition error: {e}", ErrorSeverity.MEDIUM)
                                     pass
                             
                             # Réinitialiser
@@ -4936,7 +4938,8 @@ def redemarrer_reconnaissance_vocale(command_processor=None):
                 log_to_web("Récupération d'urgence effectuée avec SpeechRecognition", "warning")
             
             return True
-        except:
+        except (OSError, ValueError, ImportError) as e:
+            error_handler.log_error(ErrorCategory.SPEECH_RECOGNITION, f"Speech recognition error: {e}", ErrorSeverity.MEDIUM)
             if 'web_interface' in sys.modules:
                 from web_interface import log_to_web
                 log_to_web("Échec de la récupération d'urgence. Redémarrez l'application.", "error")

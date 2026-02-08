@@ -2,6 +2,7 @@
 Module de validation des entrées utilisateur
 """
 
+import os
 import re
 from typing import Any, Dict, List, Optional, Union
 from functools import wraps
@@ -11,9 +12,47 @@ class ValidationError(Exception):
     """Exception pour les erreurs de validation"""
     pass
 
+# Whitelist of allowed commands for security
+ALLOWED_COMMANDS = {
+    # Windows system commands
+    'notepad', 'calc', 'calculator', 'explorer', 'cmd', 'powershell', 'taskmgr',
+    # Development tools
+    'code', 'vscode', 'pycharm', 'intellij', 'studio', 'eclipse', 'vim', 'nano',
+    # Microsoft Office
+    'winword', 'excel', 'powerpnt', 'outlook', 'mspub', 'access', 'teams',
+    # Web browsers
+    'chrome', 'firefox', 'msedge', 'safari', 'opera', 'brave',
+    # Media
+    'spotify', 'vlc', 'itunes', 'wmplayer',
+    # Communication
+    'discord', 'slack', 'zoom', 'teams', 'skype',
+    # Utilities
+    'taskmgr', 'services.msc', 'gpedit.msc', 'regedit', 'mspaint',
+    # Linux/macOS equivalents
+    'gedit', 'kate', 'nautilus', 'dolphin', 'finder', 'terminal', 'TextEdit',
+    'Preview', 'System Preferences', 'Activity Monitor',
+}
+
+# Allowed directories for file operations
+ALLOWED_DIRECTORIES = [
+    '~/Documents',
+    '~/Desktop',
+    '~/Downloads',
+    '~/Pictures',
+    '~/Music',
+    '~/Videos',
+    '~/OneDrive',
+    '~',
+]
+
 class InputValidator:
     """Classe pour valider les entrées utilisateur"""
-    
+
+    def __init__(self):
+        """Initialize validator with default settings"""
+        self.allowed_commands = ALLOWED_COMMANDS
+        self.allowed_directories = [os.path.expanduser(d) for d in ALLOWED_DIRECTORIES]
+
     @staticmethod
     def sanitize_string(value: str, max_length: int = 500) -> str:
         """Nettoie et valide une chaîne de caractères"""
@@ -70,20 +109,82 @@ class InputValidator:
         
         return command
     
-    @staticmethod
-    def validate_file_path(path: str) -> str:
+    def validate_file_path(self, path: str) -> str:
         """Valide un chemin de fichier"""
-        path = InputValidator.sanitize_string(path, max_length=500)
-        
+        path = self.sanitize_string(path, max_length=500)
+
         # Empêcher les traversées de répertoire
-        if '..' in path or path.startswith('/etc') or path.startswith('/sys'):
+        if '..' in path:
+            raise ValidationError("Traversée de répertoire détectée")
+
+        # Sur Linux/macOS, empêcher l'accès aux systèmes sensibles
+        if path.startswith(('/etc', '/sys', '/proc', '/root', '/boot')):
             raise ValidationError("Chemin de fichier non autorisé")
-        
+
         # Vérifier les caractères autorisés
         if not re.match(r'^[a-zA-Z0-9_\-\./\\: ]+$', path):
             raise ValidationError("Caractères non autorisés dans le chemin")
-        
-        return path
+
+        # Normaliser le chemin
+        expanded_path = os.path.expanduser(path)
+        normalized_path = os.path.normpath(expanded_path)
+        abs_path = os.path.abspath(normalized_path)
+
+        # Vérifier que le chemin est dans les répertoires autorisés
+        if not self.is_path_allowed(abs_path):
+            raise ValidationError("Chemin en dehors des répertoires autorisés")
+
+        return abs_path
+
+    def is_path_allowed(self, path: str) -> bool:
+        """Vérifie si un chemin est dans les répertoires autorisés"""
+        abs_path = os.path.abspath(path)
+
+        for allowed_dir in self.allowed_directories:
+            if abs_path.startswith(os.path.abspath(allowed_dir)):
+                return True
+
+        # Autoriser aussi les fichiers temporaires
+        if abs_path.startswith(os.path.expanduser('~/AppData/Local/Temp')) or \
+           abs_path.startswith('/tmp') or \
+           abs_path.startswith('/var/tmp'):
+            return True
+
+        return False
+
+    def extract_app_name(self, command: str) -> str:
+        """Extrait le nom d'une application d'une commande"""
+        # Patterns courants: "ouvre notepad", "lance chrome", etc.
+        patterns = [
+            r'(?:ouvre|lance|ouvir|démarrer|start|open)\s+([a-zA-Z0-9_\-\.]+)',
+            r'(?:ouvre|lance)\s+(?:l\'application|l\'app)?\s*([a-zA-Z0-9_\-\.]+)',
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, command, re.IGNORECASE)
+            if match:
+                app_name = match.group(1).lower()
+                # Vérifier si c'est dans la whitelist
+                if app_name in self.allowed_commands:
+                    return app_name
+
+        return ""
+
+    def is_command_safe(self, command: str) -> bool:
+        """Vérifie si une commande est sûre à exécuter"""
+        try:
+            validated_cmd = self.validate_command(command)
+            app_name = self.extract_app_name(command)
+
+            # Si on trouve un nom d'application, vérifier la whitelist
+            if app_name:
+                return app_name in self.allowed_commands
+
+            # Sinon, vérifier qu'il n'y a pas de commandes dangereuses
+            return validated_cmd == command
+
+        except ValidationError:
+            return False
     
     @staticmethod
     def validate_stt_engine(engine: str) -> str:

@@ -6,34 +6,98 @@ import pyautogui
 import pytesseract
 from PIL import Image, ImageEnhance
 import re
-import win32gui
-import win32process
 import psutil
 import time
 from tts_module import ajouter_texte_a_lire
 from screen_context import localiser_element_ecran
 
+# Try to import platform_utils for cross-platform window management
+try:
+    from platform_utils import WindowManager, get_window_manager
+    PLATFORM_UTILS_AVAILABLE = True
+except ImportError:
+    PLATFORM_UTILS_AVAILABLE = False
+
+# Only import win32 if platform_utils is not available
+if not PLATFORM_UTILS_AVAILABLE:
+    try:
+        import win32gui
+        import win32process
+        WIN32_AVAILABLE = True
+    except ImportError:
+        WIN32_AVAILABLE = False
+else:
+    WIN32_AVAILABLE = False
+
+def get_active_window_title():
+    """
+    Get the active window title in a cross-platform way
+
+    Returns:
+        str: The title of the active window, or a fallback message
+    """
+    if PLATFORM_UTILS_AVAILABLE:
+        wm = get_window_manager()
+        return wm.get_active_window() or "Unknown Window"
+    elif WIN32_AVAILABLE:
+        try:
+            hwnd = win32gui.GetForegroundWindow()
+            return win32gui.GetWindowText(hwnd) or "Unknown Window"
+        except (OSError, win32gui.error) as e:
+            print(f"Error getting window title with win32: {e}")
+            return "Unknown Window"
+    else:
+        return "Unknown Window"
+
+
 def get_active_window_process():
     """
     Obtient le nom du processus de la fenêtre active
     """
-    try:
-        # Obtenir le handle de la fenêtre active
-        hwnd = win32gui.GetForegroundWindow()
-        
-        # Obtenir l'ID du processus
-        _, pid = win32process.GetWindowThreadProcessId(hwnd)
-        
-        # Obtenir le nom du processus
-        process = psutil.Process(pid)
-        process_name = process.name().lower()
-        
-        # Obtenir le titre de la fenêtre
-        window_title = win32gui.GetWindowText(hwnd)
-        
-        return process_name, window_title
-    except Exception as e:
-        print(f"Erreur lors de l'obtention du processus de la fenêtre active: {e}")
+    if PLATFORM_UTILS_AVAILABLE:
+        try:
+            # Get window title using platform_utils
+            window_title = get_active_window_title()
+
+            # Try to get process name using psutil
+            # Note: This is a simplified cross-platform approach
+            # For full process info, platform-specific code would be needed
+            for proc in psutil.process_iter(['name']):
+                try:
+                    # This is a basic heuristic - in a real implementation,
+                    # you'd want to match the window to its process more accurately
+                    proc_name = proc.info['name'].lower() if proc.info.get('name') else ""
+                    if proc_name not in ['system idle process', 'system']:
+                        return proc_name, window_title
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    continue
+
+            return None, window_title
+        except (OSError, ImportError, AttributeError) as e:
+            print(f"Error getting active window with platform_utils: {e}")
+            return None, None
+
+    elif WIN32_AVAILABLE:
+        try:
+            # Obtenir le handle de la fenêtre active
+            hwnd = win32gui.GetForegroundWindow()
+
+            # Obtenir l'ID du processus
+            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+
+            # Obtenir le nom du processus
+            process = psutil.Process(pid)
+            process_name = process.name().lower()
+
+            # Obtenir le titre de la fenêtre
+            window_title = win32gui.GetWindowText(hwnd)
+
+            return process_name, window_title
+        except (OSError, win32gui.error, psutil.NoSuchProcess,
+                psutil.AccessDenied, psutil.ZombieProcess) as e:
+            print(f"Erreur lors de l'obtention du processus de la fenêtre active: {e}")
+            return None, None
+    else:
         return None, None
 
 def lire_ecran_intelligemment(point_depart=None):
@@ -349,24 +413,24 @@ def commencer_lecture_a_partir_de(texte_complet, point_depart, image):
         coordonnees = localiser_element_ecran(point_depart)
         if coordonnees:
             x, y = coordonnees
-            
+
             # Définir une zone autour du point trouvé
             largeur, hauteur = image.size
             zone_x1 = max(0, x - 300)
             zone_y1 = max(0, y - 100)
             zone_x2 = min(largeur, x + 800)
             zone_y2 = min(hauteur, y + 500)
-            
+
             # Découper l'image pour ne garder que la zone autour du point
             zone_texte = image.crop((zone_x1, zone_y1, zone_x2, zone_y2))
-            
+
             # Extraire le texte de cette zone
             texte_zone = pytesseract.image_to_string(zone_texte, lang='fra')
             texte_zone = nettoyer_texte(texte_zone)
-            
+
             if texte_zone:
                 return texte_zone
-    except Exception as e:
+    except (OSError, pytesseract.TesseractError, ValueError, TypeError) as e:
         print(f"Erreur lors de l'analyse OCR ciblée: {e}")
     
     # Si toutes les tentatives échouent, retourner le texte complet

@@ -6,6 +6,9 @@ import webbrowser
 import pyautogui
 import re
 from window_manager import detect_application_context, is_browser_active, get_active_browser, get_active_browser_tab_info
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 # Dictionnaire des sites web populaires avec leurs URLs
 SITES_POPULAIRES = {
@@ -218,8 +221,13 @@ SITES_POPULAIRES = {
 
 def executer_commande_navigateur(texte):
     """Exécute des commandes de navigateur en fonction du texte transcrit"""
-    texte_original = texte
-    texte = texte.lower().strip()
+    try:
+        # Validate the command before processing
+        texte = validator.validate_command(texte)
+        texte_original = texte
+        texte = texte.lower().strip()
+    except ValidationError as e:
+        return f"Commande non autorisée: {str(e)}"
     
     # Vérification des commandes simples et directes
     if texte == "ferme l'onglet" or texte == "ferme onglet" or texte == "fermez l'onglet" or texte == "fermez l'onglet.":

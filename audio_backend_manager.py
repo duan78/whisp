@@ -223,7 +223,8 @@ class AudioBackendManager:
                     try:
                         self.temp_file.close()
                         os.unlink(self.temp_file.name)
-                    except:
+                    except (OSError, RuntimeError, AttributeError) as e:
+                        error_handler.log_error(ErrorCategory.AUDIO, f"Audio error: {e}", ErrorSeverity.MEDIUM)
                         pass
 
             def record_audio(self, duration=5):

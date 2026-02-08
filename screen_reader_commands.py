@@ -4,6 +4,9 @@ Module de gestion des commandes de lecture d'écran pour l'assistant Whisp
 
 import re
 from screen_reader import lire_ecran_intelligemment, lire_ecran_a_partir_de
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 def est_commande_lecture_ecran(texte):
     """
@@ -132,16 +135,21 @@ COMMANDES_LECTURE_COMPLETE = [
 def executer_commande_lecture_ecran(texte):
     """
     Exécute une commande de lecture d'écran
-    
+
     Args:
         texte: Texte de la commande
-        
+
     Returns:
         str: Résultat de la commande ou None si ce n'est pas une commande de lecture d'écran
     """
+    try:
+        validator.validate_command_input(texte)
+    except ValidationError as e:
+        return f"Erreur de validation: {str(e)}"
+
     from command_aliases import is_command_alias, extract_command_parameters
     from text_processing import nettoyer_commande
-    
+
     texte_nettoye = nettoyer_commande(texte)
     
     # Vérifier d'abord si c'est une commande de lecture d'écran

@@ -10,6 +10,9 @@ import keyboard
 import subprocess
 from text_processing import ecrire_texte_avec_accents
 from window_manager import basculer_vers_application
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
 
 # Configuration de la grille vocale pour la navigation précise
 GRID_SIZE = 9  # Grille 9x9 pour la navigation précise
@@ -171,7 +174,12 @@ def activer_mode_lecture_ecran():
 
 def executer_commande_accessibilite(texte):
     """Traite les commandes d'accessibilité"""
-    texte_lower = texte.lower().strip()
+    try:
+        # Validate the command before processing
+        texte = validator.validate_command(texte)
+        texte_lower = texte.lower().strip()
+    except ValidationError as e:
+        return f"Commande non autorisée: {str(e)}"
     
     # Commandes de grille vocale avec de nombreux synonymes
     if any(cmd in texte_lower for cmd in [
