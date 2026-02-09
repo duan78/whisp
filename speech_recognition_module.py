@@ -2092,7 +2092,159 @@ def update_stt_metrics(engine, success=True, latency=0, audio_duration=0, text="
     except Exception as e:
         print(f"Erreur lors de la notification des métriques à l'interface web: {e}")
 
-def setup_recognition():
+def setup_recognition_universal():
+    """
+    Configure et initialise le système de reconnaissance vocale avec backend universel.
+
+    Cette fonction utilise le système de backend universel qui détecte automatiquement
+    le meilleur backend disponible (Vosk + sounddevice, sounddevice + Google, PyAudio, etc.)
+
+    Returns:
+        Tuple: (recognizer, microphone, stop_function)
+        - recognizer: Instance de SpeechRecognition Recognizer (peut être None pour Vosk)
+        - microphone: Instance de microphone ou wrapper (peut être None)
+        - stop_function: Fonction pour arrêter l'écoute (peut être None)
+    """
+    print("\n=== Initialisation du Backend Audio Universel ===\n")
+
+    # Importer les modules universels
+    try:
+        from universal_audio_backend import get_universal_backend
+        from platform_audio_config import check_microphone_available, get_audio_error_message
+    except ImportError as e:
+        print(f"Erreur lors de l'import du backend universel: {e}")
+        print("Utilisation du système classique...")
+        return setup_recognition()
+
+    # Vérifier la disponibilité du microphone
+    if not check_microphone_available():
+        print(get_audio_error_message('no_microphone'))
+        if 'web_interface' in sys.modules:
+            from web_interface import log_to_web
+            log_to_web("Aucun microphone détecté - Mode web uniquement", "warning")
+        return None, None, None
+
+    # Obtenir le backend universel
+    backend = get_universal_backend()
+    info = backend.get_backend_info()
+
+    print(f"Plateforme: {info['platform']}")
+    print(f"Python: {info['python_version']}")
+
+    # Afficher les backends disponibles
+    print("\nBackends audio détectés:")
+    for b in info['available_backends']:
+        if b['status'] == 'available':
+            icon = "✅"
+        else:
+            icon = "❌"
+        offline = " (offline)" if b.get('offline') else " (online)"
+        print(f"  {icon} {b['name']}{offline}")
+        if b.get('error'):
+            print(f"      Erreur: {b['error']}")
+
+    # Sélectionner et initialiser le meilleur backend
+    best_backend = backend.get_best_backend()
+
+    if best_backend is None or best_backend.name == 'web_only':
+        print("\n⚠️ Aucun backend audio fonctionnel")
+        if info['recommended_install']:
+            rec = info['recommended_install']
+            print(f"\n📦 Installation recommandée:")
+            print(f"   {rec['command']}")
+            print(f"   {rec['reason']}")
+
+        if 'web_interface' in sys.modules:
+            from web_interface import log_to_web
+            log_to_web("Aucun backend audio disponible - Mode web uniquement", "warning")
+
+        return None, None, None
+
+    print(f"\n✅ Backend sélectionné: {best_backend.name}")
+
+    # Créer le wrapper approprié selon le backend
+    if best_backend.name == 'vosk_sounddevice':
+        return _setup_vosk_universal(backend.current_engine)
+    elif best_backend.name == 'sounddevice_google':
+        return _setup_sounddevice_google_universal(backend.current_engine)
+    elif best_backend.name == 'pyaudio_google':
+        return _setup_pyaudio_google_universal(backend.current_engine)
+    else:
+        return None, None, None
+
+
+def _setup_vosk_universal(vosk_engine):
+    """
+    Configure l'écoute avec Vosk + sounddevice
+
+    Args:
+        vosk_engine: Instance de VoskSTTEngine
+
+    Returns:
+        Tuple: (None, vosk_engine, stop_function)
+    """
+    print("✅ Configuration Vosk + sounddevice")
+
+    # Créer une fonction d'arrêt
+    def stop_vosk_listening():
+        try:
+            vosk_engine.stop_listening()
+            print("Écoute Vosk arrêtée")
+        except Exception as e:
+            print(f"Erreur lors de l'arrêt de Vosk: {e}")
+
+    # Vosk utilise son propre système, pas de recognizer SpeechRecognition
+    return None, vosk_engine, stop_vosk_listening
+
+
+def _setup_sounddevice_google_universal(google_engine):
+    """
+    Configure l'écoute avec sounddevice + Google Speech
+
+    Args:
+        google_engine: Instance de SoundDeviceGoogleSTT
+
+    Returns:
+        Tuple: (recognizer, google_engine, stop_function)
+    """
+    print("✅ Configuration sounddevice + Google Speech")
+
+    # Créer un recognizer SpeechRecognition pour compatibilité
+    recognizer = sr.Recognizer()
+    recognizer.pause_threshold = stt_settings["pause_threshold"]
+    recognizer.energy_threshold = stt_settings["energy_threshold"]
+    recognizer.dynamic_energy_threshold = True
+
+    # Pas de stop fonction pour Google Speech API (écoute une fois à la fois)
+    return recognizer, google_engine, None
+
+
+def _setup_pyaudio_google_universal(google_engine):
+    """
+    Configure l'écoute avec PyAudio + Google Speech
+
+    Args:
+        google_engine: Instance de PyAudioGoogleSTT
+
+    Returns:
+        Tuple: (recognizer, google_engine, stop_function)
+    """
+    print("✅ Configuration PyAudio + Google Speech")
+
+    # Créer un recognizer SpeechRecognition pour compatibilité
+    recognizer = sr.Recognizer()
+    recognizer.pause_threshold = stt_settings["pause_threshold"]
+    recognizer.energy_threshold = stt_settings["energy_threshold"]
+    recognizer.dynamic_energy_threshold = True
+
+    # Pas de stop fonction pour Google Speech API
+    return recognizer, google_engine, None
+
+
+# Alias pour la compatibilité - utiliser le backend universel par défaut
+setup_recognition = setup_recognition_universal
+
+def setup_recognition_legacy():
     """Configure et initialise le système de reconnaissance vocale"""
     # Vérifier que speech_recognition est correctement importé
     if not import_speech_recognition():
@@ -2194,8 +2346,32 @@ def setup_speechrecognition():
     """Configure et initialise le système de reconnaissance vocale avec SpeechRecognition et fallback intelligent"""
     # Test de disponibilité des alternatives audio
     AUDIO_BACKEND_AVAILABLE = False
+    SOUNDDEVICE_MICROPHONE = None
     try:
-        import sounddevice
+        import sounddevice as sd
+        import numpy as np
+
+        # Créer une classe Microphone compatible avec SpeechRecognition
+        class SoundDeviceMicrophone:
+            """
+            Microphone utilisant sounddevice comme backend
+            Compatible avec l'API SpeechRecognition
+            """
+            def __init__(self, sample_rate=16000, chunk_size=1024):
+                self.sample_rate = sample_rate
+                self.chunk_size = chunk_size
+                self.channels = 1
+                self.stream = None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                if self.stream:
+                    self.stream.stop()
+                    self.stream.close()
+
+        SOUNDDEVICE_MICROPHONE = SoundDeviceMicrophone
         AUDIO_BACKEND_AVAILABLE = True
         print("[OK] sounddevice detecte - sera utilise comme alternative")
     except ImportError:
@@ -2221,19 +2397,8 @@ def setup_speechrecognition():
             import sounddevice as sd
             import numpy as np
 
-            class SoundDeviceMicrophone:
-                def __init__(self):
-                    self.sample_rate = 16000
-                    self.channels = 1
-                    self.dtype = np.int16
-
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, exc_type, exc_val, exc_tb):
-                    pass
-
-            microphone = SoundDeviceMicrophone()
+            # Créer une instance du microphone sounddevice
+            microphone = SOUNDDEVICE_MICROPHONE()
             print("[OK] Utilisation de sounddevice (recommande pour ARM64)")
         except Exception as e:
             print(f"[AVERTISSEMENT] Erreur avec sounddevice: {e}")
@@ -2247,14 +2412,13 @@ def setup_speechrecognition():
         except Exception as e:
             print(f"[ERREUR CRITIQUE] Impossible d'initialiser le microphone")
             print(f"Erreur: {e}")
-            print("\nSolutions recommandees:")
-            print("   1. Installer sounddevice (recommande pour Windows ARM64):")
-            print("      pip install sounddevice")
-            print("   2. Essayer l'installation de PyAudio avec wheel:")
-            print("      pip install pip-wheel")
-            print("      pip install --only-binary :all: pyaudio")
-            print("   3. Utiliser un autre moteur STT (Whisper/Vosk) qui n'a pas besoin de PyAudio")
-            return None, None, None
+            print("\nMode dégradé: L'assistant démarrera en mode web uniquement")
+            print("La reconnaissance vocale ne sera pas disponible")
+            print("Vous pouvez toujours utiliser l'interface web sur http://localhost:5000")
+            print("\nPour activer la reconnaissance vocale, installez PyAudio:")
+            print("   pip install pipwin && pipwin install pyaudio")
+            # Retourner un mode dégradé avec recognizer fonctionnel mais pas de microphone
+            return recognizer, None, None
 
     # Ajustement pour le bruit ambiant
     try:
@@ -3188,16 +3352,26 @@ def start_continuous_listening(recognizer, microphone, command_processor):
 
 def start_speechrecognition_listening(recognizer, microphone, command_processor):
     """Démarre l'écoute continue avec SpeechRecognition"""
-    
+
+    # Vérifier si le microphone est disponible
+    if microphone is None:
+        print("Microphone non disponible - écoute vocale désactivée")
+        return None
+
+    # Vérifier si recognizer est valide
+    if recognizer is None:
+        print("Recognizer non disponible - écoute vocale désactivée")
+        return None
+
     # Créer un nouveau microphone pour éviter les problèmes de context manager
     try:
         # Fermer le microphone existant s'il est ouvert
         if hasattr(microphone, 'stream') and microphone.stream is not None:
             microphone.stream.close()
-        
+
         # Créer un nouveau microphone
         new_microphone = sr.Microphone()
-        
+
         # S'assurer que numpy est importé pour l'analyse d'énergie
         if not import_numpy():
             print("Avertissement: numpy n'est pas disponible, l'analyse d'énergie sera désactivée")

@@ -62,6 +62,10 @@ class WhispConfig:
     stt_engine: str = "speechrecognition"  # Options: "speechrecognition", "nemo", "whisper", "vosk", "whisper_ct2"
     tts_engine: str = "gtts"
 
+    # Configuration Audio Backend
+    audio_backend: str = "auto"  # Options: "auto", "vosk_sounddevice", "sounddevice_google", "pyaudio_google", "web_only"
+    audio_backend_auto_detected: bool = False
+
     # Texte
     texte_dicte: str = ""
     texte_a_traduire: str = ""
@@ -163,6 +167,44 @@ class WhispConfig:
                 self.stt_engine = old_engine
                 print(f"Retour à l'ancien moteur STT: {self.stt_engine}")
                 return False
+
+    def get_audio_backend(self) -> str:
+        """Récupère le backend audio configuré"""
+        with self._lock:
+            return self.audio_backend
+
+    def set_audio_backend(self, backend: str) -> bool:
+        """Définit le backend audio à utiliser"""
+        valid_backends = ["auto", "vosk_sounddevice", "sounddevice_google", "pyaudio_google", "web_only"]
+        if backend not in valid_backends:
+            print(f"Backend audio non valide: {backend}")
+            return False
+
+        with self._lock:
+            old_backend = self.audio_backend
+            try:
+                self.audio_backend = backend
+                print(f"Backend audio configuré: {self.audio_backend}")
+                # Sauvegarder dans la base de données
+                _, save_config, save_user_preference, _ = _get_db_functions()
+                save_config({"audio_backend": backend})
+                save_user_preference("audio_backend", backend)
+                return True
+            except Exception as e:
+                print(f"Erreur lors de la configuration du backend audio: {e}")
+                self.audio_backend = old_backend
+                print(f"Retour à l'ancien backend audio: {self.audio_backend}")
+                return False
+
+    def is_audio_backend_auto_detected(self) -> bool:
+        """Vérifie si le backend audio a été auto-détecté"""
+        with self._lock:
+            return self.audio_backend_auto_detected
+
+    def set_audio_backend_auto_detected(self, auto_detected: bool):
+        """Définit si le backend audio a été auto-détecté"""
+        with self._lock:
+            self.audio_backend_auto_detected = auto_detected
 
     # ===== Gestion sécurisée des clés API =====
 
@@ -429,6 +471,22 @@ def get_mistral_api_key():
 def set_mistral_api_key(key):
     """Alias de compatibilité pour setmistral_api_key"""
     return setmistral_api_key(key)
+
+def get_audio_backend() -> str:
+    """Récupère le backend audio configuré"""
+    return get_config().get_audio_backend()
+
+def set_audio_backend(backend: str) -> bool:
+    """Définit le backend audio à utiliser"""
+    return get_config().set_audio_backend(backend)
+
+def is_audio_backend_auto_detected() -> bool:
+    """Vérifie si le backend audio a été auto-détecté"""
+    return get_config().is_audio_backend_auto_detected()
+
+def set_audio_backend_auto_detected(auto_detected: bool):
+    """Définit si le backend audio a été auto-détecté"""
+    return get_config().set_audio_backend_auto_detected(auto_detected)
 
 # ==============================================================================
 # INITIALIZATION

@@ -21,11 +21,15 @@ from lazy_loader import lazy_import, background_load
 
 # Imports essentiels pour le démarrage
 from os_detection import get_os_type
-from config import running, set_running, get_running
+from config import set_running, get_running
 from web_interface import start_web_server, log_to_web, command_to_web, response_to_web
+from error_handler import get_error_handler, ErrorCategory, ErrorSeverity
 
 # Importer le processeur de commandes
 from command_processor import CommandProcessor
+
+# Initialiser le gestionnaire d'erreurs
+error_handler = get_error_handler()
 
 # Importer speech_recognition de manière paresseuse
 sr = lazy_import('speech_recognition')
@@ -123,10 +127,55 @@ def assistant_vocal():
         print("Erreur critique: Impossible de charger le module de reconnaissance vocale")
         return
     
-    # Initialisation du recognizer et du microphone
-    print("Initialisation du recognizer et du microphone...")
-    recognizer, microphone, _ = setup_recognition()
-    
+    # Initialisation du recognizer et du microphone avec backend universel
+    print("Initialisation du système de reconnaissance vocale...")
+    recognizer, microphone, stop_listening_fn = setup_recognition()
+
+    # Vérifier si le microphone est disponible
+    microphone_available = microphone is not None
+
+    if not microphone_available:
+        log_to_web("Microphone non disponible - Mode web uniquement", "warning")
+        print("\n=== MODE DÉGRADÉ ===")
+        print("Le microphone n'est pas disponible.")
+        print("L'assistant fonctionne en mode web uniquement.")
+        print("Utilisez l'interface sur http://localhost:5000")
+        print("===================\n")
+
+        # Afficher les instructions d'installation si disponibles
+        try:
+            from platform_audio_config import get_installation_instructions
+            print(get_installation_instructions())
+        except ImportError:
+            print("\nPour activer la reconnaissance vocale, installez sounddevice:")
+            print("   pip install sounddevice vosk")
+            print("\nOu téléchargez un modèle Vosk:")
+            print("   https://alphacephei.com/vosk/models")
+    else:
+        # Afficher des informations sur le backend utilisé
+        try:
+            from universal_audio_backend import get_universal_backend
+            backend = get_universal_backend()
+            info = backend.get_backend_info()
+
+            if info['current_backend']:
+                backend_name = info['current_backend']
+                print(f"\n✅ Backend audio actif: {backend_name}")
+
+                # Informer sur offline/online
+                current_backend_info = next(
+                    (b for b in info['available_backends'] if b['name'] == backend_name),
+                    None
+                )
+                if current_backend_info and current_backend_info.get('offline'):
+                    print("   Reconnaissance offline activée (pas besoin de connexion internet)")
+                else:
+                    print("   Reconnaissance online active (connexion internet requise)")
+
+                log_to_web(f"Backend audio: {backend_name}", "info")
+        except ImportError:
+            pass  # Silencieux si le module n'est pas disponible
+
     # S'assurer que tous les threads précédents sont arrêtés
     arreter_threads_reconnaissance()
     
@@ -187,19 +236,58 @@ def assistant_vocal():
     tts_thread.start()
     
     # Afficher les instructions pendant que le TTS s'initialise
-    print("Assistant vocal prêt. Parlez maintenant...")
-    print("Interface web disponible à l'adresse http://localhost:5000")
-    print("Dites 'écris' ou 'dictée' pour commencer la dictée, puis 'fin de dictée' pour terminer.")
-    print("Dites 'aide' pour connaître les commandes générales disponibles.")
-    print("Dites 'aide développeur' pour les commandes spécifiques au développement.")
-    print("Dites 'quitte l'assistant' pour arrêter le programme.")
-    
+    if microphone_available:
+        print("Assistant vocal prêt. Parlez maintenant...")
+        print("Interface web disponible à l'adresse http://localhost:5000")
+        print("Dites 'écris' ou 'dictée' pour commencer la dictée, puis 'fin de dictée' pour terminer.")
+        print("Dites 'aide' pour connaître les commandes générales disponibles.")
+        print("Dites 'aide développeur' pour les commandes spécifiques au développement.")
+        print("Dites 'quitte l'assistant' pour arrêter le programme.")
+    else:
+        print("Assistant web prêt (mode sans microphone).")
+        print("Interface web disponible à l'adresse http://localhost:5000")
+        print("Utilisez l'interface web pour interagir avec l'assistant.")
+
     # Attendre que le TTS soit initialisé avant de démarrer l'écoute
     tts_thread.join(timeout=5.0)  # Attendre max 5 secondes
-    
+
     # Démarrage de l'écoute continue en arrière-plan avec traitement asynchrone
-    print("Démarrage de l'écoute continue...")
-    stop_listening = start_continuous_listening(recognizer, microphone, command_processor)
+    stop_listening = None
+    if microphone_available:
+        print("Démarrage de l'écoute continue...")
+
+        # Vérifier si c'est un moteur Vosk
+        from vosk_sounddevice_stt import VoskSTTEngine
+        is_vosk_engine = isinstance(microphone, VoskSTTEngine)
+
+        if is_vosk_engine:
+            # Utiliser directement le moteur Vosk
+            try:
+                # Créer un callback pour traiter les résultats
+                def vosk_callback(text):
+                    try:
+                        command_processor.process_command(text)
+                    except Exception as e:
+                        print(f"Erreur lors du traitement de la commande Vosk: {e}")
+                        log_to_web(f"Erreur: {e}", "error")
+
+                microphone.start_listening(callback=vosk_callback)
+                stop_listening = microphone.stop_listening
+                print("✅ Écoute Vosk démarrée")
+            except Exception as e:
+                print(f"Erreur lors du démarrage de l'écoute Vosk: {e}")
+                log_to_web(f"Erreur lors du démarrage de l'écoute: {e}", "error")
+                stop_listening = None
+        else:
+            # Utiliser le système d'écoute continue classique
+            try:
+                stop_listening = start_continuous_listening(recognizer, microphone, command_processor)
+            except Exception as e:
+                print(f"Erreur lors du démarrage de l'écoute: {e}")
+                log_to_web(f"Erreur lors du démarrage de l'écoute: {e}", "error")
+                stop_listening = None
+    else:
+        print("Écoute vocale désactivée (microphone non disponible)")
     
     # Calculer et afficher le temps de démarrage
     startup_time = time.time() - start_time
@@ -240,12 +328,18 @@ def assistant_vocal():
     
     # Maintenir le programme en cours d'exécution
     try:
-        print("Assistant vocal en écoute continue. Utilisez Ctrl+C pour quitter.")
+        if microphone_available:
+            print("Assistant vocal en écoute continue. Utilisez Ctrl+C pour quitter.")
+        else:
+            print("Assistant web en cours d'exécution. Utilisez Ctrl+C pour quitter.")
         while get_running():
             time.sleep(0.1)
             # Vérifier périodiquement si l'état a changé
             if not get_running():
-                print("Arrêt demandé par commande vocale")
+                if microphone_available:
+                    print("Arrêt demandé par commande vocale")
+                else:
+                    print("Arrêt demandé")
                 break
     finally:
         # Arrêt de l'écoute en arrière-plan
