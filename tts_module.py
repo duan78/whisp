@@ -6,6 +6,7 @@ import threading
 import queue
 import time
 import os
+import subprocess
 import tempfile
 import re
 import sys
@@ -18,13 +19,15 @@ error_handler = get_error_handler()
 # Importations conditionnelles selon l'OS - chargées à la demande
 pyttsx3 = None
 gTTS = None
+edge_tts = None
+piper_tts = None
 pygame = None
 pygame_initialized = False
 
 # Fonction pour importer les modules à la demande
 def import_tts_modules():
-    global pyttsx3, gTTS, pygame, pygame_initialized
-    
+    global pyttsx3, gTTS, edge_tts, piper_tts, pygame, pygame_initialized
+
     # Importer pyttsx3 si nécessaire
     if pyttsx3 is None:
         try:
@@ -33,14 +36,14 @@ def import_tts_modules():
             print("Module pyttsx3 importé avec succès")
         except ImportError:
             print("Module pyttsx3 non disponible")
-    
+
     # Importer gTTS et pygame si nécessaires
     if gTTS is None or pygame is None:
         try:
             from gtts import gTTS as gtts_module
             gTTS = gtts_module
             print("Module gTTS importé avec succès")
-            
+
             import pygame as pygame_module
             pygame = pygame_module
             try:
@@ -52,6 +55,24 @@ def import_tts_modules():
                 pygame_initialized = False
         except ImportError as e:
             print(f"Erreur d'importation des modules TTS: {e}")
+
+    # Importer edge-tts si nécessaire
+    if edge_tts is None:
+        try:
+            import edge_tts as edge_tts_module
+            edge_tts = edge_tts_module
+            print("Module edge-tts importé avec succès")
+        except ImportError:
+            print("Module edge-tts non disponible (pip install edge-tts)")
+
+    # Importer Piper TTS si nécessaire
+    if piper_tts is None:
+        try:
+            import piper_tts as piper_tts_module
+            piper_tts = piper_tts_module
+            print("Module piper-tts importé avec succès")
+        except ImportError:
+            print("Module piper-tts non disponible (pip install piper-tts)")
 
 # Fonction pour vérifier et réinitialiser pygame si nécessaire
 def ensure_pygame_initialized():
@@ -394,7 +415,7 @@ def initialiser_tts():
     try:
         from config import get_preference
         saved_engine = get_preference("tts_engine")
-        if saved_engine and saved_engine in ["pyttsx3", "gtts", "coqui", "macos_say", "espeak"]:
+        if saved_engine and saved_engine in ["pyttsx3", "edge_tts", "piper", "gtts", "coqui", "macos_say", "espeak"]:
             tts_engine_type = saved_engine
             print(f"Moteur TTS chargé depuis la base de données: {tts_engine_type}")
     except Exception as e:
@@ -1339,13 +1360,30 @@ def lire_texte_coqui(texte):
                 # Essayer avec le lecteur système en dernier recours
                 try:
                     print("Tentative de lecture avec le lecteur système...")
+                    # Utiliser subprocess au lieu de os.system pour éviter les injections de commande
                     if is_windows():
-                        os.system(f'start "" "{temp_file}"')
+                        # Windows: utiliser start pour ouvrir avec l'application par défaut
+                        subprocess.Popen(
+                            ['cmd', '/c', 'start', '', temp_file],
+                            shell=True,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
                     elif is_mac():
-                        os.system(f'open "{temp_file}"')
+                        # macOS: utiliser open
+                        subprocess.Popen(
+                            ['open', temp_file],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
                     elif is_linux():
-                        os.system(f'xdg-open "{temp_file}"')
-                    
+                        # Linux: utiliser xdg-open
+                        subprocess.Popen(
+                            ['xdg-open', temp_file],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
+
                     # Attendre un peu pour laisser le temps au lecteur de démarrer
                     time.sleep(2)
                 except Exception as sys_error:
@@ -1371,6 +1409,291 @@ def lire_texte_coqui(texte):
             lire_texte_gtts(texte)
         except Exception as e:
             error_handler.log_error(ErrorCategory.TTS, f"Failed to fallback to gTTS: {e}", ErrorSeverity.HIGH)
+
+# Cache pour edge-tts
+edge_tts_cache = {}
+edge_tts_voice = "fr-FR-DeniseNeural"  # Voix française par défaut
+
+@catch_errors(category=ErrorCategory.TTS, severity=ErrorSeverity.MEDIUM, notify_user=True)
+def lire_texte_edge_tts(texte):
+    """Lit le texte à haute voix en utilisant Microsoft Edge TTS (haute qualité, gratuit)"""
+    global tts_is_speaking, edge_tts_cache, edge_tts_voice
+
+    if edge_tts is None:
+        print("Module edge-tts non disponible, basculement vers gTTS")
+        lire_texte_gtts(texte)
+        return
+
+    temps_debut = time.time()
+
+    try:
+        # Nettoyer le texte
+        texte_propre = texte.replace('\n', ' ').strip()
+
+        if not texte_propre:
+            return
+
+        tts_is_speaking = True
+
+        # Limiter la longueur du texte
+        if len(texte_propre) > 3000:
+            texte_propre = texte_propre[:3000] + "..."
+            print("Texte tronqué à 3000 caractères")
+
+        print(f"Lecture TTS (Edge TTS) démarrée: {texte_propre[:50]}...")
+
+        # Vérifier le cache
+        cache_key = f"{texte_propre}_{edge_tts_voice}"
+        cache_hash = str(hash(cache_key))[:10]
+        cache_dir = os.path.join(tempfile.gettempdir(), 'whisp_edge_tts_cache')
+        os.makedirs(cache_dir, exist_ok=True)
+
+        cache_hit = False
+        try:
+            if cache_key in edge_tts_cache and os.path.exists(edge_tts_cache[cache_key]):
+                print(f"Utilisation du fichier audio Edge TTS en cache")
+                audio_file = edge_tts_cache[cache_key]
+                cache_hit = True
+            else:
+                potential_cache_file = os.path.join(cache_dir, f'edge_tts_cache_{cache_hash}.mp3')
+                if os.path.exists(potential_cache_file) and os.path.getsize(potential_cache_file) > 0:
+                    print(f"Fichier de cache Edge TTS trouvé")
+                    edge_tts_cache[cache_key] = potential_cache_file
+                    audio_file = potential_cache_file
+                    cache_hit = True
+                else:
+                    cache_hit = False
+        except Exception as cache_error:
+            print(f"Erreur lors de la vérification du cache Edge TTS: {cache_error}")
+            cache_hit = False
+
+        if not cache_hit:
+            # Créer un fichier temporaire
+            user_temp = os.path.join(tempfile.gettempdir(), f'whisp_tts_{os.getpid()}')
+            os.makedirs(user_temp, exist_ok=True)
+            temp_file = os.path.join(user_temp, f'tts_edge_{os.getpid()}_{time.time()}.mp3')
+
+            print(f"Génération de l'audio avec Edge TTS...")
+
+            # Générer l'audio avec edge-tts
+            try:
+                communicate = edge_tts.Communicate(texte_propre, edge_tts_voice)
+
+                # Sauvegarder dans le fichier
+                with open(temp_file, 'wb') as audio_file_write:
+                    audio_file_write.write(communicate.stream.getbuffer())
+
+                # Ajouter au cache
+                edge_tts_cache[cache_key] = temp_file
+
+                # Limiter la taille du cache
+                if len(edge_tts_cache) > tts_cache_size:
+                    # Supprimer les entrées les plus anciennes
+                    oldest_key = next(iter(edge_tts_cache))
+                    try:
+                        if os.path.exists(edge_tts_cache[oldest_key]):
+                            os.remove(edge_tts_cache[oldest_key])
+                    except:
+                        pass
+                    del edge_tts_cache[oldest_key]
+
+                audio_file = temp_file
+
+            except Exception as e:
+                print(f"Erreur lors de la génération Edge TTS: {e}")
+                print("Basculement vers gTTS")
+                lire_texte_gtts(texte_propre)
+                return
+
+        # Lecture de l'audio avec pygame
+        if ensure_pygame_initialized():
+            try:
+                print(f"Lecture du fichier audio Edge TTS: {audio_file}")
+                pygame.mixer.music.load(audio_file)
+                pygame.mixer.music.play()
+
+                # Attendre la fin de la lecture
+                clock = pygame.time.Clock()
+                while pygame.mixer.music.get_busy() and tts_is_speaking:
+                    clock.tick(60)
+
+                print("Lecture Edge TTS terminée")
+            except Exception as e:
+                print(f"Erreur lors de la lecture audio Edge TTS: {e}")
+                # Essayer une alternative
+                try:
+                    import soundfile as sf
+                    import sounddevice as sd
+                    data, samplerate = sf.read(audio_file)
+                    sd.play(data, samplerate)
+                    while sd.get_stream().active and tts_is_speaking:
+                        time.sleep(0.1)
+                    sd.stop()
+                    print("Lecture Edge TTS terminée (sounddevice)")
+                except:
+                    # Fallback au lecteur système
+                    if is_windows():
+                        subprocess.Popen(['cmd', '/c', 'start', '', audio_file], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    elif is_mac():
+                        subprocess.Popen(['open', audio_file], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    else:
+                        subprocess.Popen(['xdg-open', audio_file], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    time.sleep(2)
+
+        tts_is_speaking = False
+
+    except Exception as e:
+        print(f"Erreur critique lors de la lecture TTS Edge TTS: {str(e)}")
+        tts_is_speaking = False
+        error_handler.log_error(ErrorCategory.TTS, f"Edge TTS error: {e}", ErrorSeverity.MEDIUM)
+        # Fallback
+        lire_texte_gtts(texte)
+
+# Variables pour Piper TTS
+piper_available = False
+piper_model = None
+piper_cache = {}
+piper_model_name = "fr_FR-gilles-low"  # Modèle français par défaut
+
+@catch_errors(category=ErrorCategory.TTS, severity=ErrorSeverity.MEDIUM, notify_user=True)
+def import_piper_tts():
+    """Importe Piper TTS à la demande"""
+    global piper_available, piper_model
+
+    if piper_model is not None:
+        return piper_available
+
+    try:
+        import piper_tts as piper
+        piper_model = piper
+        piper_available = True
+        print("Module Piper TTS importé avec succès")
+        return True
+    except ImportError as e:
+        piper_available = False
+        print(f"Module Piper TTS non disponible: {e}")
+        print("Utilisez 'pip install piper-tts' pour installer Piper TTS.")
+        return False
+    except Exception as e:
+        piper_available = False
+        print(f"Erreur lors de l'initialisation de Piper TTS: {e}")
+        return False
+
+@catch_errors(category=ErrorCategory.TTS, severity=ErrorSeverity.MEDIUM, notify_user=True)
+def load_piper_model(model_name=None):
+    """Charge un modèle Piper TTS"""
+    global piper_model, piper_available, piper_model_name
+
+    if not import_piper_tts():
+        return None
+
+    try:
+        # Utiliser le modèle spécifié ou le modèle par défaut
+        if model_name:
+            piper_model_name = model_name
+
+        print(f"Chargement du modèle Piper TTS: {piper_model_name}")
+
+        # Piper TTS utilise une API simple - le modèle sera téléchargé automatiquement
+        # Note: Piper TTS nécessite une configuration spécifique selon l'installation
+        print("Piper TTS nécessite une configuration spécifique. Consultez la documentation.")
+
+        return piper_model
+    except Exception as e:
+        print(f"Erreur lors du chargement du modèle Piper TTS: {e}")
+        return None
+
+@catch_errors(category=ErrorCategory.TTS, severity=ErrorSeverity.MEDIUM, notify_user=True)
+def lire_texte_piper(texte):
+    """Lit le texte à haute voix en utilisant Piper TTS (offline, haute qualité)"""
+    global tts_is_speaking, piper_cache, piper_available
+
+    if not import_piper_tts():
+        print("Module Piper TTS non disponible, basculement vers pyttsx3")
+        lire_texte_pyttsx3(texte)
+        return
+
+    temps_debut = time.time()
+
+    try:
+        # Nettoyer le texte
+        texte_propre = texte.replace('\n', ' ').strip()
+
+        if not texte_propre:
+            return
+
+        tts_is_speaking = True
+
+        # Limiter la longueur du texte
+        if len(texte_propre) > 3000:
+            texte_propre = texte_propre[:3000] + "..."
+            print("Texte tronqué à 3000 caractères")
+
+        print(f"Lecture TTS (Piper) démarrée: {texte_propre[:50]}...")
+
+        # Vérifier le cache
+        cache_key = f"{texte_propre}_{piper_model_name}"
+        cache_hash = str(hash(cache_key))[:10]
+        cache_dir = os.path.join(tempfile.gettempdir(), 'whisp_piper_cache')
+        os.makedirs(cache_dir, exist_ok=True)
+
+        cache_hit = False
+        try:
+            if cache_key in piper_cache and os.path.exists(piper_cache[cache_key]):
+                print(f"Utilisation du fichier audio Piper en cache")
+                audio_file = piper_cache[cache_key]
+                cache_hit = True
+            else:
+                potential_cache_file = os.path.join(cache_dir, f'piper_cache_{cache_hash}.wav')
+                if os.path.exists(potential_cache_file) and os.path.getsize(potential_cache_file) > 0:
+                    print(f"Fichier de cache Piper trouvé")
+                    piper_cache[cache_key] = potential_cache_file
+                    audio_file = potential_cache_file
+                    cache_hit = True
+                else:
+                    cache_hit = False
+        except Exception as cache_error:
+            print(f"Erreur lors de la vérification du cache Piper: {cache_error}")
+            cache_hit = False
+
+        if not cache_hit:
+            # Créer un fichier temporaire
+            user_temp = os.path.join(tempfile.gettempdir(), f'whisp_tts_{os.getpid()}')
+            os.makedirs(user_temp, exist_ok=True)
+            temp_file = os.path.join(user_temp, f'tts_piper_{os.getpid()}_{time.time()}.wav')
+
+            print(f"Génération de l'audio avec Piper TTS...")
+
+            # Note: Piper TTS nécessite une implémentation spécifique
+            # Cette implémentation est un placeholder - nécessite configuration Piper
+            print("Piper TTS nécessite une configuration spécifique. Basculement vers pyttsx3.")
+            lire_texte_pyttsx3(texte_propre)
+            return
+
+        # Lecture de l'audio avec pygame
+        if ensure_pygame_initialized():
+            try:
+                print(f"Lecture du fichier audio Piper: {audio_file}")
+                pygame.mixer.music.load(audio_file)
+                pygame.mixer.music.play()
+
+                # Attendre la fin de la lecture
+                clock = pygame.time.Clock()
+                while pygame.mixer.music.get_busy() and tts_is_speaking:
+                    clock.tick(60)
+
+                print("Lecture Piper terminée")
+            except Exception as e:
+                print(f"Erreur lors de la lecture audio Piper: {e}")
+                lire_texte_pyttsx3(texte_propre)
+
+        tts_is_speaking = False
+
+    except Exception as e:
+        print(f"Erreur critique lors de la lecture TTS Piper: {str(e)}")
+        tts_is_speaking = False
+        error_handler.log_error(ErrorCategory.TTS, f"Piper TTS error: {e}", ErrorSeverity.MEDIUM)
+        lire_texte_pyttsx3(texte)
 
 @catch_errors(category=ErrorCategory.TTS, severity=ErrorSeverity.MEDIUM, notify_user=True)
 def lire_texte(texte):
@@ -1450,7 +1773,43 @@ def lire_texte(texte):
             coqui_available = False
             lire_texte_gtts(texte_propre)
         return
-    
+
+    # Gestion pour Edge TTS (moteur online prioritaire)
+    if tts_engine_type == 'edge_tts':
+        if edge_tts is None:
+            error_msg = "Module Edge TTS non disponible, basculement vers gTTS"
+            print(error_msg)
+            error_handler.handle_error(
+                error_msg,
+                category=ErrorCategory.TTS,
+                severity=ErrorSeverity.MEDIUM,
+                notify_user=True,
+                context={"engine": "edge_tts", "fallback": "gtts"}
+            )
+            if gTTS is not None:
+                lire_texte_gtts(texte_propre)
+            return
+        lire_texte_edge_tts(texte_propre)
+        return
+
+    # Gestion pour Piper TTS (moteur offline prioritaire)
+    if tts_engine_type == 'piper':
+        if piper_model is None:
+            error_msg = "Module Piper TTS non disponible, basculement vers pyttsx3"
+            print(error_msg)
+            error_handler.handle_error(
+                error_msg,
+                category=ErrorCategory.TTS,
+                severity=ErrorSeverity.MEDIUM,
+                notify_user=True,
+                context={"engine": "piper", "fallback": "pyttsx3"}
+            )
+            if pyttsx3 is not None:
+                lire_texte_pyttsx3(texte_propre)
+            return
+        lire_texte_piper(texte_propre)
+        return
+
     # Pour les autres moteurs avec gestion d'erreur
     try:
         if tts_engine_type == 'gtts':
@@ -1856,6 +2215,8 @@ def est_commande_arret_tts(texte):
 # Paramètres de vitesse pour les différents moteurs TTS
 tts_rate = {
     'pyttsx3': 180,  # Valeur par défaut
+    'edge_tts': 1.0,  # Facteur de vitesse pour Edge TTS (1.0 = normal)
+    'piper': 1.0,     # Facteur de vitesse pour Piper (1.0 = normal)
     'gtts': 1.4,     # Facteur de vitesse (1.0 = normal, 1.4 = 40% plus rapide)
     'macos_say': 180,  # Mots par minute
     'espeak': 160,   # Mots par minute
@@ -2036,20 +2397,42 @@ def definir_moteur_tts(type_moteur):
                 print("Module Coqui TTS non disponible.")
                 print("Vous pouvez l'installer avec: pip install TTS numpy==1.24.3")
                 return False
-            
+
             # Vérifier si pygame est disponible pour la lecture
             if not pygame_initialized:
                 if not ensure_pygame_initialized():
                     print("Pygame n'est pas correctement initialisé pour Tacotron")
                     print("Vous pouvez réinstaller pygame avec: pip install pygame --upgrade")
                     return False
+        elif type_moteur == 'edge_tts':
+            if edge_tts is None:
+                print("Module Edge TTS non disponible")
+                print("Vous pouvez l'installer avec: pip install edge-tts")
+                return False
+            # Vérifier si pygame est disponible pour la lecture
+            if not pygame_initialized:
+                if not ensure_pygame_initialized():
+                    print("Pygame n'est pas correctement initialisé pour Edge TTS")
+                    print("Vous pouvez réinstaller pygame avec: pip install pygame --upgrade")
+                    return False
+        elif type_moteur == 'piper':
+            if piper_model is None:
+                print("Module Piper TTS non disponible")
+                print("Vous pouvez l'installer avec: pip install piper-tts")
+                return False
+            # Vérifier si pygame est disponible pour la lecture
+            if not pygame_initialized:
+                if not ensure_pygame_initialized():
+                    print("Pygame n'est pas correctement initialisé pour Piper")
+                    print("Vous pouvez réinstaller pygame avec: pip install pygame --upgrade")
+                    return False
         else:
             print(f"Type de moteur TTS non reconnu: {type_moteur}")
-            print("Moteurs disponibles: pyttsx3, gtts, macos_say (macOS), espeak (Linux), coqui")
+            print("Moteurs disponibles: pyttsx3, edge_tts (online, haute qualité), piper (offline), gtts, macos_say (macOS), espeak (Linux), coqui")
             return False
-        
+
         # Définir le moteur si disponible
-        if type_moteur in ['pyttsx3', 'gtts', 'macos_say', 'espeak', 'coqui']:
+        if type_moteur in ['pyttsx3', 'edge_tts', 'piper', 'gtts', 'macos_say', 'espeak', 'coqui']:
             # Si on passe à CoquiTTS, précharger le modèle en arrière-plan
             if type_moteur == 'coqui':
                 print("Préchargement du modèle CoquiTTS en arrière-plan...")

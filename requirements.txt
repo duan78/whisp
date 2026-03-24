@@ -10,10 +10,12 @@
 # ------------------------------------------------------------------------------
 pyautogui>=0.9.54
 SpeechRecognition>=3.10.0
-pyttsx3>=2.91
+pyttsx3>=2.90
 gTTS>=2.5.0
+edge-tts>=6.1.0
 pygame>=2.5.0
 TTS>=0.22.0
+piper-tts>=1.2.0
 
 # ------------------------------------------------------------------------------
 # Framework web (Flask 3.0 - Mise à jour majeure)
@@ -49,7 +51,7 @@ pytesseract>=0.3.13
 # Reconnaissance vocale offline
 # ------------------------------------------------------------------------------
 vosk>=0.3.45
-faster-whisper>=0.9.0  # Alternative plus rapide que whisper original
+faster-whisper>=1.0.3  # Alternative plus rapide que whisper original
 
 # ------------------------------------------------------------------------------
 # Utilitaires système
@@ -66,11 +68,11 @@ cryptography>=41.0.0  # Pour le chiffrement des clés API
 # ------------------------------------------------------------------------------
 # Qualité de code et tests (Ajouté pour la modernisation)
 # ------------------------------------------------------------------------------
-pytest>=7.4.0
+pytest>=8.0.0
 pytest-cov>=4.1.0
-black>=23.0.0
+black>=24.0.0
 flake8>=6.0.0
-mypy>=1.5.0
+mypy>=1.9.0
 
 # ------------------------------------------------------------------------------
 # Dépendances conditionnelles selon l'OS
