@@ -717,20 +717,17 @@ def _executer_raccourci_personnalise_impl(voice_command):
             
         elif action_type == 'app':
             # Lancer une application
-            import subprocess
-            import os
-            
             # Vérifier si le chemin existe
             if not os.path.exists(action_data):
                 print(f"Chemin d'application non trouvé: {action_data}")
                 return False
-            
+
             # Lancer l'application
             if os.name == 'nt':  # Windows
                 subprocess.Popen([action_data], shell=True)
             else:  # Linux/Mac
                 subprocess.Popen(['open' if os.name == 'darwin' else 'xdg-open', action_data])
-            
+
             return True
             
         elif action_type == 'script':
