@@ -160,10 +160,6 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
-    "--cov=whisp_assistant",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -171,13 +167,24 @@ markers = [
     "unit: marks tests as unit tests",
 ]
 
+# Coverage configuration (requires pytest-cov)
+# To enable coverage reporting: pip install pytest-cov
+# Then uncomment the lines below:
+# addopts = [
+#     "--cov=.",
+#     "--cov-report=term-missing",
+#     "--cov-report=html",
+#     "--cov-report=xml",
+# ]
+
 [tool.coverage.run]
-source = ["whisp_assistant"]
+source = ["."]
 omit = [
     "*/tests/*",
     "*/test_*.py",
     "*/__pycache__/*",
     "*/.*",
+    "setup.py",
 ]
 
 [tool.coverage.report]
