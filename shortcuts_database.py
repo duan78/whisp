@@ -632,6 +632,21 @@ def refresh_shortcuts_cache():
 def executer_raccourci_personnalise(voice_command):
     """
     Exécute un raccourci personnalisé en fonction de la commande vocale
+
+    Args:
+        voice_command: Commande vocale à exécuter
+
+    Returns:
+        bool: True si un raccourci a été exécuté, False sinon
+    """
+    return _executer_raccourci_personnalise_impl(voice_command)
+
+# Alias pour la compatibilité avec les tests (backward compatibility)
+execute_custom_shortcut = executer_raccourci_personnalise
+
+def _executer_raccourci_personnalise_impl(voice_command):
+    """
+    Exécute un raccourci personnalisé en fonction de la commande vocale
     
     Args:
         voice_command: Commande vocale à exécuter
