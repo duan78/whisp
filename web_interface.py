@@ -120,7 +120,7 @@ def run_async(func, *args, **kwargs):
     return executor.submit(func, *args, **kwargs)
 
 # Créer l'application Flask
-app = Flask(__name__, 
+app = Flask(__name__,
             template_folder='templates',
             static_folder='static')
 
@@ -409,8 +409,7 @@ def status():
         "logs": assistant_state["logs"][-20:],  # Retourner seulement les 20 derniers logs
         "stt_engine": get_stt_engine(),
         "tts_engine": tts_engine,
-        "coqui_model": coqui_model_info,
-        "stt_metrics": get_stt_metrics()
+        "coqui_model": coqui_model_info
     })
 
 @app.post('/toggle')
