@@ -185,7 +185,7 @@ whisp/
 │   └── tests/integration/test_command_processing.py # Integration tests
 │
 └── Configuration & Documentation
-    ├── requirements.txt                   # Core dependencies (updated 2025)
+    ├── requirements.txt                   # Core dependencies (updated 2026)
     ├── requirements_optional.txt         # Optional dependencies
     ├── requirements-dev.txt              # Dev dependencies
     ├── pyproject.toml                    # Project config
@@ -222,7 +222,7 @@ whisp/
    - Input validation on endpoints
    - **Authentication removed** - local desktop use only
 
-### ✅ Security Fixes Applied (2025-03-24)
+### ✅ Security Fixes Applied (2026-03-24)
 
 #### CRITICAL: Arbitrary Code Execution - FIXED ✅
 
@@ -453,7 +453,7 @@ subprocess.Popen(
 
 ## 5. Dependency Status
 
-### Core Dependencies (requirements.txt - Updated 2025)
+### Core Dependencies (requirements.txt - Updated 2026)
 
 | Package | Version | Latest | Status | Notes |
 |---------|---------|--------|--------|-------|

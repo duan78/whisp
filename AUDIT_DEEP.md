@@ -30,7 +30,7 @@ This audit provides an **accurate, code-level analysis** of the Whisp Assistant 
 
 ### 1.1 Requirements Files Analysis
 
-**requirements.txt** (Core Dependencies - Updated 2025):
+**requirements.txt** (Core Dependencies - Updated 2026):
 ```
 pyautogui>=0.9.54
 SpeechRecognition>=3.10.0
