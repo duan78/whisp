@@ -1,9 +1,9 @@
-# 🎤 Whisp Assistant
+# 🎤 Whisp Assistant v2.1
 
 <div align="center">
 
 ![Whisp Assistant Logo](https://img.shields.io/badge/Whisp-Assistant-blue?style=for-the-badge&logo=python)
-![Python Version](https://img.shields.io/badge/python-3.12%2B-green?style=for-the-badge&logo=python)
+![Python Version](https://img.shields.io/badge/python-3.8%2B-green?style=for-the-badge&logo=python)
 ![License](https://img.shields.io/badge/license-GPL%20v3-blue?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey?style=for-the-badge)
 
@@ -15,22 +15,32 @@
 
 ---
 
-## 🎉 Nouveautés v2.0
+## 🎉 Nouveautés v2.1
 
-### ✨ Moteurs TTS Modernisés
-- **Edge-TTS** : Moteur online Microsoft de haute qualité (remplace gTTS comme moteur online prioritaire)
+### 🔒 Sécurité Renforcée
+- **Validation des entrées** améliorée pour prévenir les injections
+- **Tests de sécurité** intégrés et réguliers
+- **Nettoyage des commandes système** avec mode sandbox
+- **Suppression de l'authentification web** inutile (simplification du code)
+
+### 🎛️ Moteurs TTS Modernisés
+- **Edge-TTS** : Moteur online Microsoft de haute qualité (prioritaire)
 - **Piper TTS** : Synthèse offline rapide et de qualité supérieure
 - **pyttsx3** : Fallback offline natif
+- **gTTS** : Google Text-to-Speech (fallback online)
+- **27 tests TTS** pour garantir la fiabilité
 
-### 🎯 Backend Audio Universel
+### 🎯 Backend Audio Universel v2.0
 - **Détection automatique** du meilleur backend audio disponible
 - **Cross-platform** : Fonctionne sur Windows, macOS, Linux
 - **Offline natif** : Reconnaissance vocale offline avec Vosk
 - **Fallback intelligent** : Bascule automatiquement entre les backends
+- **Diagnostics audio** complets pour le dépannage
 
 ### 🤖 IA Intégrée
 - **OpenAI API** : Support complet pour les modèles GPT
 - **Mistral AI** : Alternative open-source performante
+- **Contexte conversationnel** intelligent
 
 **Backend audio prioritaire :**
 1. **Vosk + sounddevice** (offline, recommandé)
@@ -49,6 +59,7 @@
 - **SpeechRecognition** : Support multi-API (Google, Wit.ai, etc.)
 - **Support multilingue** avec optimisation française
 - **Mode continu** intelligent et adaptatif
+- **Diagnostics audio** intégrés
 
 ### 🔊 Synthèse Vocale de Haute Qualité
 - **Edge-TTS** : Moteur online Microsoft (prioritaire)
@@ -57,12 +68,14 @@
 - **gTTS** : Google Text-to-Speech (fallback online)
 - **Cache audio** pour réponses rapides
 - **Voices personnalisables** par langue
+- **27 tests TTS** pour fiabilité maximale
 
-### 🖥️ Interface Web Moderne
+### 🖥️ Interface Web Moderne v2.0
 - **Tableau de bord** responsive et élégant
 - **Configuration en temps réel**
 - **Visualisation des métriques** et logs
-- **Support multi-utilisateurs** avec authentification optionnelle
+- **Chat moderne** avec historique
+- **Accessibilité** améliorée
 - **Mode sombre/clair** automatique
 
 ### ⚡ Automatisation & Productivité
@@ -70,7 +83,8 @@
 - **Automatisation navigateur** et applications
 - **Intégration Git** pour développeurs
 - **Mode dictée** continue pour rédaction
-- **Raccourcis personnalisables**
+- **Raccourcis personnalisables** avec base de données SQLite
+- **Validation des entrées** pour sécurité
 
 ### 🤖 Intelligence Artificielle
 - **OpenAI GPT** : Modèles de langage state-of-the-art
@@ -89,7 +103,7 @@
 
 ## 📋 Prérequis
 
-- **Python 3.12+** (recommandé pour compatibilité optimale)
+- **Python 3.8+** (3.12+ recommandé pour compatibilité optimale)
 - **Microphone** (pour reconnaissance vocale)
 - **Haut-parleurs/casque** (pour synthèse vocale)
 - **Windows 10+/macOS 10.15+/Linux** (support multiplateforme complet)
@@ -249,7 +263,7 @@ WEB_HOST=127.0.0.1
 
 ```
 whisp-assistant/
-├── 🎙️ Système Audio Universel
+├── 🎙️ Système Audio Universel v2.0
 │   ├── universal_audio_backend.py  # Gestionnaire audio unifié
 │   ├── platform_audio_config.py    # Configuration par plateforme
 │   ├── stt_engine_factory.py       # Factory pour moteurs STT
@@ -260,7 +274,7 @@ whisp-assistant/
 │   ├── speech_recognition_module.py # Reconnaissance vocale
 │   ├── tts_module.py                # Synthèse vocale (Edge-TTS + Piper)
 │   └── command_processor.py         # Cœur de traitement
-├── 🖥️ Interface web
+├── 🖥️ Interface web v2.0
 │   ├── web_interface.py             # Flask web app
 │   ├── templates/                   # Templates HTML
 │   └── static/                      # CSS/JS assets
@@ -318,7 +332,7 @@ pytest tests/unit/test_tts_engines.py
 ### Tests de Sécurité
 
 ```bash
-# Tests de sécurité TTS
+# Tests de sécurité TTS (27 tests)
 python test_tts_security_fix.py
 
 # Tests de sécurité shortcuts
@@ -338,6 +352,7 @@ pytest tests/unit/test_shortcuts_security.py
 - **Chargement paresseux** des modules lourds
 - **Cache intelligent** pour réponses TTS fréquentes
 - **Threading async** pour non-bloquant
+- **Validation des entrées** pour sécurité
 
 ### Performance par Backend
 
@@ -366,8 +381,9 @@ pytest tests/unit/test_shortcuts_security.py
 - **Validation des entrées** pour prévenir injections
 - **Stockage sécurisé** des clés API (encryption avec cryptography)
 - **Mode sandbox** pour commandes système
-- **Authentification optionnelle** interface web
 - **Tests de sécurité** intégrés et réguliers
+- **Nettoyage des commandes** avant exécution
+- **Suppression de l'authentification web** inutile (réduction de la surface d'attaque)
 
 ---
 
@@ -401,6 +417,14 @@ pip install faster-whisper
 pip install edge-tts
 ```
 
+### Problème: "Niveaux audio trop bas"
+
+**Solution:**
+```bash
+# Lancer les diagnostics audio
+python test_universal_audio.py
+```
+
 ---
 
 ## 🤝 Contribuer
@@ -422,6 +446,7 @@ git checkout -b feature/nouvelle-fonctionnalite
 - Maintenir le style de code existant (PEP 8)
 - Documenter les changements
 - Exécuter les tests de sécurité
+- Vérifier la compatibilité multiplateforme
 
 ### 4. Soumettre une Pull Request
 ```bash
@@ -443,17 +468,17 @@ git push origin feature/nouvelle-fonctionnalite
 
 ## 🗺️ Feuille de Route
 
-### Version 2.0 (Actuelle) - ✅ TERMINE
-- ✅ **Backend audio universel** avec détection automatique
-- ✅ **faster-whisper** : Reconnaissance vocale optimisée
+### Version 2.1 (Actuelle) - ✅ TERMINE
 - ✅ **Edge-TTS + Piper** : Moteurs TTS modernisés
-- ✅ **OpenAI + Mistral** : IA intégrée
+- ✅ **Sécurité renforcée** : Validation et tests
+- ✅ **27 tests TTS** pour fiabilité
+- ✅ **Nettoyage code** : Suppression authentification web inutile
+- ✅ **Backend audio universel v2.0** avec diagnostics
 - ✅ Support multiplateforme (Windows, macOS, Linux)
 - ✅ Reconnaissance offline avec Vosk
-- ✅ Interface web moderne
-- ✅ Sécurité renforcée
+- ✅ Interface web moderne v2.0
 
-### Version 2.1 (En cours)
+### Version 2.2 (En cours)
 - 🔄 Support plugins externes
 - 🔄 Mode apprentissage automatique
 - 🔄 Voix personnalisables avancées
@@ -503,6 +528,6 @@ Made with ❤️ by the Whisp Team
 [![GitHub forks](https://img.shields.io/github/forks/votre-username/whisp-assistant?style=social)](https://github.com/votre-username/whisp-assistant/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/votre-username/whisp-assistant)](https://github.com/votre-username/whisp-assistant/issues)
 
-**Reconnaissance vocale offline • faster-whisper • Edge-TTS • Python 3.12+**
+**Reconnaissance vocale offline • faster-whisper • Edge-TTS • Piper TTS • Python 3.8+**
 
 </div>
