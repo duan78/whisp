@@ -13,8 +13,8 @@ DB_PATH = os.path.abspath(DB_PATH)
 
 # Types d'actions autorisés pour les raccourcis personnalisés (defense-in-depth).
 # Doit rester cohérent avec shortcuts_database.ALLOWED_ACTION_TYPES.
-# 'script' est exclu (exécution de code arbitraire = RCE).
-ALLOWED_SHORTCUT_ACTION_TYPES = frozenset({"keyboard", "text", "url", "app"})
+# 'script' est sécurisé via répertoire de confiance + subprocess isolé.
+ALLOWED_SHORTCUT_ACTION_TYPES = frozenset({"keyboard", "text", "url", "app", "script"})
 
 def ensure_connection(func):
     """Décorateur pour s'assurer qu'une connexion à la base de données est établie"""

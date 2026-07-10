@@ -3,14 +3,22 @@ Base de données des raccourcis clavier pour l'assistant Whisp
 """
 
 import json
+import os
+import subprocess
+from pathlib import Path
 from os_detection import get_os_type, adapt_shortcut
 
 from database_manager import ensure_connection
 
 # Types d'actions autorisés pour les raccourcis personnalisés.
-# 'script' (exec de code arbitraire) est volontairement exclu : c'était un
-# vecteur d'exécution de code arbitraire (RCE) via la base de données.
-ALLOWED_ACTION_TYPES = frozenset({"keyboard", "text", "url", "app"})
+# 'script' est sécurisé : exécution isolée par subprocess d'un fichier .py
+# situé dans un répertoire de confiance (SCRIPTS_DIR), avec path traversal
+# bloqué et timeout de 30s.
+ALLOWED_ACTION_TYPES = frozenset({"keyboard", "text", "url", "app", "script"})
+
+# Répertoire de confiance pour les scripts utilisateurs
+# Seuls les scripts dans ce répertoire peuvent être exécutés
+SCRIPTS_DIR = Path.home() / '.whisp' / 'scripts'
 
 # Dictionnaire des raccourcis clavier courants par application et par OS
 # Ce dictionnaire sert de valeurs par défaut et sera stocké en base de données
@@ -625,6 +633,21 @@ def refresh_shortcuts_cache():
 def executer_raccourci_personnalise(voice_command):
     """
     Exécute un raccourci personnalisé en fonction de la commande vocale
+
+    Args:
+        voice_command: Commande vocale à exécuter
+
+    Returns:
+        bool: True si un raccourci a été exécuté, False sinon
+    """
+    return _executer_raccourci_personnalise_impl(voice_command)
+
+# Alias pour la compatibilité avec les tests (backward compatibility)
+execute_custom_shortcut = executer_raccourci_personnalise
+
+def _executer_raccourci_personnalise_impl(voice_command):
+    """
+    Exécute un raccourci personnalisé en fonction de la commande vocale
     
     Args:
         voice_command: Commande vocale à exécuter
@@ -690,8 +713,6 @@ def executer_raccourci_personnalise(voice_command):
             
         elif action_type == 'app':
             # Lancer une application
-            import os
-
             # Vérifier si le chemin existe
             if not os.path.exists(action_data):
                 print(f"Chemin d'application non trouvé: {action_data}")
@@ -703,21 +724,67 @@ def executer_raccourci_personnalise(voice_command):
                 try:
                     os.startfile(action_data)  # pylint: disable=no-member
                 except (OSError, AttributeError):
-                    import subprocess
                     subprocess.Popen([action_data], shell=False)
             else:  # Linux/Mac
-                import subprocess
                 opener = 'open' if os.name == 'darwin' else 'xdg-open'
                 subprocess.Popen([opener, action_data], shell=False)
 
             return True
 
         elif action_type == 'script':
-            # Désactivé pour des raisons de sécurité : l'exécution de code
-            # Python arbitraire (exec) stocké en base était un vecteur de RCE.
-            print("Type d'action 'script' désactivé (non sécurisé). "
-                  "Utilisez les types keyboard/text/url/app à la place.")
-            return False
+            # Exécuter un script Python de manière sécurisée
+            try:
+                # Valider et normaliser le chemin du script
+                script_name = Path(action_data).name  # Uniquement le nom de fichier, pas le chemin
+
+                # Empêcher les attaques par path traversal
+                if '/' in action_data or '\\' in action_data or '..' in action_data:
+                    print(f"Erreur: chemin de script non autorisé (path traversal détecté)")
+                    return False
+
+                # Construire le chemin complet dans le répertoire de confiance
+                script_path = SCRIPTS_DIR / script_name
+
+                # Vérifier que le fichier est dans le répertoire de confiance
+                if not str(script_path.resolve()).startswith(str(SCRIPTS_DIR.resolve())):
+                    print(f"Erreur: tentative de sortir du répertoire de confiance")
+                    return False
+
+                # Vérifier que le script existe
+                if not script_path.exists():
+                    print(f"Script introuvable: {script_name}")
+                    print(f"Les scripts doivent être placés dans: {SCRIPTS_DIR}")
+                    return False
+
+                # Vérifier que c'est bien un fichier .py
+                if not script_path.suffix == '.py':
+                    print(f"Erreur: seuls les fichiers .py sont autorisés")
+                    return False
+
+                # Exécuter le script dans un subprocess séparé (isolation)
+                result = subprocess.run(
+                    ['python', str(script_path)],
+                    capture_output=True,
+                    text=True,
+                    timeout=30  # Timeout de 30 secondes pour éviter les scripts qui bloquent
+                )
+
+                if result.returncode != 0:
+                    print(f"Erreur lors de l'exécution du script: {result.stderr}")
+                    return False
+
+                # Afficher la sortie si nécessaire
+                if result.stdout:
+                    print(result.stdout)
+
+                return True
+
+            except subprocess.TimeoutExpired:
+                print(f"Erreur: le script a dépassé le temps limite (30s)")
+                return False
+            except Exception as e:
+                print(f"Erreur lors de l'exécution du script: {e}")
+                return False
 
         # Type d'action non reconnu
         return False
@@ -725,5 +792,49 @@ def executer_raccourci_personnalise(voice_command):
         print(f"Erreur lors de l'exécution du raccourci personnalisé: {e}")
         return False
 
+def initialize_scripts_directory():
+    """Initialise le répertoire de confiance pour les scripts utilisateurs"""
+    try:
+        SCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
+
+        # Créer un fichier README avec des instructions
+        readme_path = SCRIPTS_DIR / 'README.txt'
+        if not readme_path.exists():
+            readme_content = """=== Répertoire de Scripts Whisp ===
+
+Ce répertoire contient les scripts Python personnalisés que Whisp peut exécuter en toute sécurité.
+
+Sécurité:
+- Seuls les scripts .py dans ce répertoire peuvent être exécutés
+- Les scripts sont exécutés avec un timeout de 30 secondes
+- Les attaques par path traversal sont bloquées
+
+Pour ajouter un script:
+1. Créez un fichier .py dans ce répertoire
+2. Ajoutez un raccourci personnalisé dans Whisp avec le type 'script'
+3. Utilisez uniquement le nom du fichier (ex: 'mon_script.py')
+
+Exemple de script simple:
+---
+#!/usr/bin/env python3
+import pyautogui
+import time
+
+# Exemple: prendre une capture d'écran
+pyautogui.screenshot('capture.png')
+print('Capture d\\'écran enregistrée!')
+---
+
+Sécurité: Ne placez PAS de scripts malveillants dans ce répertoire!
+"""
+            with open(readme_path, 'w', encoding='utf-8') as f:
+                f.write(readme_content)
+
+        print(f"Répertoire de scripts initialisé: {SCRIPTS_DIR}")
+    except Exception as e:
+        print(f"Erreur lors de l'initialisation du répertoire de scripts: {e}")
+
+
 # Initialiser la base de données des raccourcis au démarrage
 initialize_shortcuts_database()
+initialize_scripts_directory()

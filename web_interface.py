@@ -317,8 +317,7 @@ def status():
         "logs": assistant_state["logs"][-20:],  # Retourner seulement les 20 derniers logs
         "stt_engine": get_stt_engine(),
         "tts_engine": tts_engine,
-        "coqui_model": coqui_model_info,
-        "stt_metrics": get_stt_metrics()
+        "coqui_model": coqui_model_info
     })
 
 @app.post('/toggle')

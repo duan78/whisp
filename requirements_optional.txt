@@ -20,11 +20,8 @@ transformers>=4.35.0
 # Vosk - reconnaissance vocale offline multilingue
 vosk>=0.3.45
 
-# NVIDIA NeMo - STT haute précision (requiert GPU)
-nemo_toolkit[asr]>=1.23.0; platform_system != "Darwin"
-
 # Faster-Whisper - version optimisée de Whisper
-faster-whisper>=1.0.0
+faster-whisper>=1.0.3
 
 # === MOTEURS TTS AVANCÉS ===
 # Coqui TTS - synthèse vocale neuronale de haute qualité

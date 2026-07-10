@@ -30,7 +30,14 @@
       "Bash(pip install:*)",
       "mcp__zread__get_repo_structure",
       "Bash(grep:*)",
-      "Bash(iconv:*)"
+      "Bash(iconv:*)",
+      "Bash(python3 -m ensurepip --version)",
+      "Bash(python3 -c \"import sys; print\\(sys.executable\\)\")",
+      "Bash(apt-get update:*)",
+      "Bash(apt-get install:*)",
+      "Bash(python3 -c \"import Piper; print\\(''Piper TTS import OK''\\)\")",
+      "Bash(python3 -c \"try::*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

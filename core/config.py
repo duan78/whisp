@@ -146,7 +146,7 @@ class WhispConfig:
             return self.stt_engine
 
     def set_stt_engine(self, engine: str) -> bool:
-        valid_engines = ["speechrecognition", "nemo", "whisper", "vosk", "sherpa_ncnn",
+        valid_engines = ["speechrecognition", "whisper", "vosk",
                         "whisper_ct2", "whisper_french"]
         if engine not in valid_engines:
             print(f"Moteur STT non valide: {engine}")

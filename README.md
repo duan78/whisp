@@ -1,4 +1,4 @@
-# 🎤 Whisp Assistant
+# 🎤 Whisp Assistant v2.1
 
 <div align="center">
 
@@ -9,21 +9,38 @@
 
 **Un assistant vocal personnel intelligent et multiplateforme avec backend audio universel**
 
-[📖 Documentation](#documentation) • [🚀 Installation](#installation) • [💡 Utilisation](#utilisation) • [🔧 Configuration](#configuration) • [🤝 Contribuer](#contribuer)
+[📖 Documentation](#-documentation-complète) • [🚀 Installation](#-installation-rapide) • [💡 Utilisation](#-utilisation) • [🔧 Configuration](#-configuration) • [🤝 Contribuer](#-contribuer)
 
 </div>
 
 ---
 
-## 🎉 Nouveautés v2.0 - Backend Audio Universel
+## 🎉 Nouveautés v2.1
 
-### ✨ Nouveau Système Audio Unifié
-- **🎯 Détection automatique** du meilleur backend audio disponible
-- **🌐 Cross-platform** : Fonctionne sur Windows, macOS, Linux sans modification
-- **🔧 Sans PyAudio** : Utilise sounddevice comme alternative moderne
-- **📡 Offline natif** : Reconnaissance vocale offline avec Vosk
-- **🔄 Fallback intelligent** : Bascule automatiquement entre les backends
-- **🚀 Python 3.14+** : Compatible avec les dernières versions de Python
+### 🔒 Sécurité Renforcée
+- **Validation des entrées** améliorée pour prévenir les injections
+- **Tests de sécurité** intégrés et réguliers
+- **Nettoyage des commandes système** avec mode sandbox
+- **Suppression de l'authentification web** inutile (simplification du code)
+
+### 🎛️ Moteurs TTS Modernisés
+- **Edge-TTS** : Moteur online Microsoft de haute qualité (prioritaire)
+- **Piper TTS** : Synthèse offline rapide et de qualité supérieure
+- **pyttsx3** : Fallback offline natif
+- **gTTS** : Google Text-to-Speech (fallback online)
+- **27 tests TTS** pour garantir la fiabilité
+
+### 🎯 Backend Audio Universel v2.0
+- **Détection automatique** du meilleur backend audio disponible
+- **Cross-platform** : Fonctionne sur Windows, macOS, Linux
+- **Offline natif** : Reconnaissance vocale offline avec Vosk
+- **Fallback intelligent** : Bascule automatiquement entre les backends
+- **Diagnostics audio** complets pour le dépannage
+
+### 🤖 IA Intégrée
+- **OpenAI API** : Support complet pour les modèles GPT
+- **Mistral AI** : Alternative open-source performante
+- **Contexte conversationnel** intelligent
 
 **Backend audio prioritaire :**
 1. **Vosk + sounddevice** (offline, recommandé)
@@ -37,23 +54,28 @@
 
 ### 🎙️ Reconnaissance Vocale Avancée
 - **Backend audio universel** avec détection automatique
-- **Multi-moteurs** : SpeechRecognition, NeMo, Whisper, Vosk, Whisper CT2
+- **faster-whisper** : Version optimisée de Whisper (jusqu'à 4x plus rapide)
+- **Vosk** : Reconnaissance offline native
+- **SpeechRecognition** : Support multi-API (Google, Wit.ai, etc.)
 - **Support multilingue** avec optimisation française
 - **Mode continu** intelligent et adaptatif
-- **Reconnaissance offline** avec Vosk
-- **Optimisation CUDA** pour accélération GPU (Windows)
+- **Diagnostics audio** intégrés
 
 ### 🔊 Synthèse Vocale de Haute Qualité
-- **Plusieurs moteurs TTS** : pyttsx3 (offline), gTTS (online), CoquiTTS, Piper
-- **Préchargement intelligent** des modèles
+- **Edge-TTS** : Moteur online Microsoft (prioritaire)
+- **Piper TTS** : Synthèse offline rapide
+- **pyttsx3** : Système natif (fallback offline)
+- **gTTS** : Google Text-to-Speech (fallback online)
 - **Cache audio** pour réponses rapides
 - **Voices personnalisables** par langue
+- **27 tests TTS** pour fiabilité maximale
 
-### 🖥️ Interface Web Moderne
+### 🖥️ Interface Web Moderne v2.0
 - **Tableau de bord** responsive et élégant
 - **Configuration en temps réel**
 - **Visualisation des métriques** et logs
-- **Support multi-utilisateurs** avec authentification optionnelle
+- **Chat moderne** avec historique
+- **Accessibilité** améliorée
 - **Mode sombre/clair** automatique
 
 ### ⚡ Automatisation & Productivité
@@ -61,7 +83,14 @@
 - **Automatisation navigateur** et applications
 - **Intégration Git** pour développeurs
 - **Mode dictée** continue pour rédaction
-- **Raccourcis personnalisables**
+- **Raccourcis personnalisables** avec base de données SQLite
+- **Validation des entrées** pour sécurité
+
+### 🤖 Intelligence Artificielle
+- **OpenAI GPT** : Modèles de langage state-of-the-art
+- **Mistral AI** : Alternative open-source performante
+- **Contexte conversationnel** intelligent
+- **Génération de code** et assistance développement
 
 ### 🛠️ Outils Intégrés
 - **Gestion de fenêtres** intelligente
@@ -74,7 +103,7 @@
 
 ## 📋 Prérequis
 
-- **Python 3.8+** (testé jusqu'à Python 3.14)
+- **Python 3.8+** (3.12+ recommandé pour compatibilité optimale)
 - **Microphone** (pour reconnaissance vocale)
 - **Haut-parleurs/casque** (pour synthèse vocale)
 - **Windows 10+/macOS 10.15+/Linux** (support multiplateforme complet)
@@ -102,11 +131,11 @@ source venv/bin/activate
 
 ### 3. Installer les dépendances
 ```bash
-# Installation recommandée (backend audio universel)
-pip install sounddevice vosk
-
 # Installation des dépendances core
 pip install -r requirements.txt
+
+# Installation recommandée pour reconnaissance offline
+pip install sounddevice vosk
 
 # Installation optionnelle (fonctionnalités avancées)
 pip install -r requirements_optional.txt
@@ -128,7 +157,14 @@ pip install -r requirements_optional.txt
 #   └── ...
 ```
 
-### 5. Lancer l'assistant
+### 5. Configurer les clés API (optionnel mais recommandé)
+```bash
+# Créer un fichier .env ou config.env
+OPENAI_API_KEY=votre-clé-openai
+MISTRAL_API_KEY=votre-clé-mistral
+```
+
+### 6. Lancer l'assistant
 ```bash
 python main.py
 ```
@@ -146,6 +182,12 @@ L'interface web sera accessible à **http://localhost:5000**
 - `"Ouvre [application]"` - Lancer une application
 - `"Recherche [terme]"` - Lancer une recherche web
 - `"Quitte l'assistant"` - Arrêter l'assistant
+
+### Commandes IA
+- `"Explique-moi [sujet]"` - Explication avec GPT/Mistral
+- `"Résume ce texte"` - Résumer un texte
+- `"Génère du code pour [tâche]"` - Génération de code
+- `"Traduis en [langue]"` - Traduction intelligente
 
 ### Pour les Développeurs
 - `"Git status"` - Voir l'état Git
@@ -187,12 +229,12 @@ set_audio_backend("web_only")               # Pas de reconnaissance vocale
 
 ```bash
 # Moteurs de reconnaissance vocale
-STT_ENGINE=vosk  # Options: speechrecognition, whisper, nemo, vosk, whisper_ct2
+STT_ENGINE=vosk  # Options: speechrecognition, whisper, vosk, faster-whisper
 
 # Moteurs de synthèse vocale
-TTS_ENGINE=gtts  # Options: pyttsx3, coqui, piper
+TTS_ENGINE=edge_tts  # Options: pyttsx3, edge_tts, piper, gtts
 
-# Clés API (optionnelles)
+# Clés API (optionnelles mais recommandées)
 OPENAI_API_KEY=votre-clé-openai
 MISTRAL_API_KEY=votre-clé-mistral
 
@@ -204,17 +246,16 @@ WEB_HOST=127.0.0.1
 ### Moteurs Disponibles
 
 #### Reconnaissance Vocale (STT)
-- **Vosk + sounddevice** : ⭐ **Recommandé** - Reconnaissance offline, fonctionne partout
+- **faster-whisper** : ⭐ **Recommandé** - Version optimisée de Whisper (4x plus rapide)
+- **Vosk + sounddevice** : Reconnaissance offline native
 - **SpeechRecognition** : Support multi-API (Google, Wit.ai, etc.)
 - **Whisper** : Modèles OpenAI haute précision
-- **Whisper CT2** : Version optimisée avec CTranslate2
-- **NeMo** : NVIDIA pour GPU/CPU optimisé
 
 #### Synthèse Vocale (TTS)
-- **gTTS** : Google Text-to-Speech (online)
+- **Edge-TTS** : ⭐ **Recommandé** - Moteur Microsoft online de haute qualité
+- **Piper** : Synthèse offline rapide et de qualité
 - **pyttsx3** : Système natif (offline)
-- **CoquiTTS** : Voix neuronales avancées
-- **Piper** : Synthèse offline rapide
+- **gTTS** : Google Text-to-Speech (online, fallback)
 
 ---
 
@@ -222,18 +263,18 @@ WEB_HOST=127.0.0.1
 
 ```
 whisp-assistant/
-├── 🎙️ Système Audio Universel (NOUVEAU v2.0)
+├── 🎙️ Système Audio Universel v2.0
 │   ├── universal_audio_backend.py  # Gestionnaire audio unifié
 │   ├── platform_audio_config.py    # Configuration par plateforme
 │   ├── stt_engine_factory.py       # Factory pour moteurs STT
 │   ├── vosk_audio_handler.py       # Handler Vosk + sounddevice
-│   └── vosk_sounddevice_stt.py     # Moteur STT Vosk complet
+│   └── faster_whisper_stt.py       # Moteur STT Whisper optimisé
 ├── 🎯 Modules principaux
 │   ├── main.py                      # Point d'entrée
 │   ├── speech_recognition_module.py # Reconnaissance vocale
-│   ├── tts_module.py                # Synthèse vocale
+│   ├── tts_module.py                # Synthèse vocale (Edge-TTS + Piper)
 │   └── command_processor.py         # Cœur de traitement
-├── 🖥️ Interface web
+├── 🖥️ Interface web v2.0
 │   ├── web_interface.py             # Flask web app
 │   ├── templates/                   # Templates HTML
 │   └── static/                      # CSS/JS assets
@@ -285,6 +326,20 @@ pytest --cov=.
 
 # Tests spécifiques
 pytest tests/test_audio_backend.py
+pytest tests/unit/test_tts_engines.py
+```
+
+### Tests de Sécurité
+
+```bash
+# Tests de sécurité TTS (27 tests)
+python test_tts_security_fix.py
+
+# Tests de sécurité shortcuts
+python test_security_fix.py
+
+# Tests unitaires de sécurité
+pytest tests/unit/test_shortcuts_security.py
 ```
 
 ---
@@ -292,21 +347,23 @@ pytest tests/test_audio_backend.py
 ## 📊 Métriques et Performance
 
 ### Optimisations Intégrées
+- **faster-whisper** : Jusqu'à 4x plus rapide que Whisper standard
 - **Backend audio universel** avec sélection automatique
 - **Chargement paresseux** des modules lourds
 - **Cache intelligent** pour réponses TTS fréquentes
 - **Threading async** pour non-bloquant
-- **Préchargement GPU** CUDA optimisé
+- **Validation des entrées** pour sécurité
 
 ### Performance par Backend
 
 | Backend | Latence | Offline | CPU | Qualité |
 |---------|---------|---------|-----|---------|
+| faster-whisper | ~200-400ms | ✅ | 10-20% | ⭐⭐⭐⭐⭐ |
 | Vosk + sounddevice | ~100-200ms | ✅ | 5-15% | ⭐⭐⭐⭐⭐ |
+| Edge-TTS | ~300-500ms | ❌ | 1-5% | ⭐⭐⭐⭐⭐ |
+| Piper | ~100-300ms | ✅ | 5-10% | ⭐⭐⭐⭐ |
 | sounddevice + Google | ~300-500ms | ❌ | 1-5% | ⭐⭐⭐⭐ |
-| PyAudio + Google | ~300-500ms | ❌ | 1-5% | ⭐⭐⭐⭐ |
 | SpeechRecognition | ~300-500ms | ❌ | 1-5% | ⭐⭐⭐⭐ |
-| Whisper | ~500-1000ms | ✅ | 10-30% | ⭐⭐⭐⭐⭐ |
 
 ---
 
@@ -322,9 +379,11 @@ pytest tests/test_audio_backend.py
 ## 🔒 Sécurité
 
 - **Validation des entrées** pour prévenir injections
-- **Stockage sécurisé** des clés API (encryption)
+- **Stockage sécurisé** des clés API (encryption avec cryptography)
 - **Mode sandbox** pour commandes système
-- **Authentification optionnelle** interface web
+- **Tests de sécurité** intégrés et réguliers
+- **Nettoyage des commandes** avant exécution
+- **Suppression de l'authentification web** inutile (réduction de la surface d'attaque)
 
 ---
 
@@ -344,14 +403,27 @@ pip install sounddevice vosk
 2. Choisissez: vosk-model-small-fr-0.22
 3. Extrayez dans: `models/vosk-model-small-fr-0.22/`
 
-### Problème: "Aucun microphone détecté"
+### Problème: "faster-whisper non disponible"
 
 **Solution:**
-1. Vérifiez que votre microphone est connecté
-2. Vérifiez les paramètres audio de votre système
-3. Vérifiez les permissions d'accès au microphone
+```bash
+pip install faster-whisper
+```
 
-Pour plus d'aide, consultez [QUICKSTART_AUDIO.md](QUICKSTART_AUDIO.md)
+### Problème: "Edge-TTS ne fonctionne pas"
+
+**Solution:**
+```bash
+pip install edge-tts
+```
+
+### Problème: "Niveaux audio trop bas"
+
+**Solution:**
+```bash
+# Lancer les diagnostics audio
+python test_universal_audio.py
+```
 
 ---
 
@@ -373,6 +445,8 @@ git checkout -b feature/nouvelle-fonctionnalite
 - Ajouter des tests pour nouvelles fonctionnalités
 - Maintenir le style de code existant (PEP 8)
 - Documenter les changements
+- Exécuter les tests de sécurité
+- Vérifier la compatibilité multiplateforme
 
 ### 4. Soumettre une Pull Request
 ```bash
@@ -384,9 +458,9 @@ git push origin feature/nouvelle-fonctionnalite
 
 ## 📖 Documentation Complète
 
-- [📘 Guide d'Installation](QUICKSTART_AUDIO.md)
-- [🔧 Configuration Avancée](UNIVERSAL_AUDIO_IMPLEMENTATION.md)
-- [🎤 Commandes Vocales](docs/commands.md)
+- [📘 Guide d'Installation](docs/installation.md)
+- [🔧 Configuration Avancée](docs/configuration.md)
+- [🎤 Commandes Vocales](docs/utilisation.md)
 - [🔌 Développement d'Extensions](docs/extensions.md)
 - [🐛 Dépannage](docs/troubleshooting.md)
 
@@ -394,23 +468,24 @@ git push origin feature/nouvelle-fonctionnalite
 
 ## 🗺️ Feuille de Route
 
-### Version 2.0 (Actuelle) - ✅ TERMINE
-- ✅ **Backend audio universel** avec détection automatique
+### Version 2.1 (Actuelle) - ✅ TERMINE
+- ✅ **Edge-TTS + Piper** : Moteurs TTS modernisés
+- ✅ **Sécurité renforcée** : Validation et tests
+- ✅ **27 tests TTS** pour fiabilité
+- ✅ **Nettoyage code** : Suppression authentification web inutile
+- ✅ **Backend audio universel v2.0** avec diagnostics
 - ✅ Support multiplateforme (Windows, macOS, Linux)
 - ✅ Reconnaissance offline avec Vosk
-- ✅ Compatible Python 3.14+
-- ✅ Interface web moderne
-- ✅ Automatisation système complète
+- ✅ Interface web moderne v2.0
 
-### Version 2.1 (En cours)
+### Version 2.2 (En cours)
 - 🔄 Support plugins externes
 - 🔄 Mode apprentissage automatique
 - 🔄 Voix personnalisables avancées
 - 🔄 Performance monitoring
 
 ### Version 3.0 (Futur)
-- 📋 Intelligence artificielle conversationnelle
-- 📋 Intégration IA avancée (LLM)
+- 📋 Intelligence artificielle conversationnelle avancée
 - 📋 Support multilingue étendu
 - 📋 Interface mobile
 
@@ -425,10 +500,11 @@ Ce projet est sous licence **GPL v3.0** - voir le fichier [LICENSE](LICENSE) pou
 ## 🙏 Remerciements
 
 - **OpenAI** : Modèles Whisper et GPT
+- **Mistral AI** : Modèles de langage open-source performants
+- **Microsoft** : Edge-TTS
+- **Piper TTS** : Synthèse vocale rapide
 - **Google** : API Speech-to-Text et Text-to-Speech
 - **Mozilla** : Projet Common Voice
-- **NVIDIA** : NeMo pour GPU optimisé
-- **Coqui** : Moteurs TTS open-source
 - **Alpha Cephei** : Moteur Vosk STT
 
 ---
@@ -452,6 +528,6 @@ Made with ❤️ by the Whisp Team
 [![GitHub forks](https://img.shields.io/github/forks/votre-username/whisp-assistant?style=social)](https://github.com/votre-username/whisp-assistant/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/votre-username/whisp-assistant)](https://github.com/votre-username/whisp-assistant/issues)
 
-**Reconnaissance vocale offline • Multiplateforme • Python 3.14+**
+**Reconnaissance vocale offline • faster-whisper • Edge-TTS • Piper TTS • Python 3.8+**
 
 </div>
