@@ -977,17 +977,14 @@ def get_custom_shortcuts(conn, action_type=None):
     # Convertir les résultats en liste de dictionnaires
     shortcuts = []
     for row in rows:
-        # Convertir action_data en dictionnaire si c'est du JSON
+        # Convertir action_data en dictionnaire uniquement si c'est du JSON
+        # (les raccourcis de type url/app/text contiennent du texte simple)
         action_data = row[4]
-        try:
-            action_data = json.loads(action_data)
-        except Exception as e:
+        if isinstance(action_data, str) and action_data.strip().startswith(('{', '[')):
             try:
-                from .error_handler import error_handler, ErrorCategory, ErrorSeverity
-                error_handler.log_error(ErrorCategory.DATABASE, f"Database error: {e}", ErrorSeverity.MEDIUM)
-            except ImportError:
-                print(f"Database error: {e}")
-            pass
+                action_data = json.loads(action_data)
+            except (json.JSONDecodeError, TypeError):
+                pass  # Garder la chaîne brute si le JSON est invalide
 
         shortcuts.append({
             "id": row[0],

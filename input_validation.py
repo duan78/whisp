@@ -103,10 +103,13 @@ class InputValidator:
             r'`.*`',
             r'&&\s*rm\s+',      # Ajout: détecte "&& rm -rf /"
             r'&&\s*del\s+',     # Ajout: détecte "&& del /s"
+            r'&\s*rm\s+',       # Ajout: détecte "& rm -rf /" (single &)
+            r'&\s*del\s+',      # Ajout: détecte "& del /s"
             r'\|\s*rm\s+',      # Ajout: détecte "| rm"
             r'\|\s*del\s+',     # Ajout: détecte "| del"
             r'&&\s*[^a-zA-Z]',  # Ajout: détecte "&&" suivi de commandes
             r'\|\s*[^a-zA-Z]',  # Ajout: détecte "|" suivi de commandes
+            r'&\s*[^a-zA-Z]',   # Ajout: détecte "&" suivi de commandes
         ]
 
         for pattern in dangerous_patterns:
