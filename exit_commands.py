@@ -133,7 +133,7 @@ def _gerer_timeout_confirmation():
 def traiter_reponse_confirmation(texte):
     """Traite la réponse à la demande de confirmation"""
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         print(f"Erreur de validation: {str(e)}")
         return False

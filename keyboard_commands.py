@@ -16,7 +16,7 @@ validator = InputValidator()
 def executer_commande_clavier(texte):
     """Exécute des commandes clavier en fonction du texte transcrit"""
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         return f"Erreur de validation: {str(e)}"
 

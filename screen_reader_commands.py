@@ -143,7 +143,7 @@ def executer_commande_lecture_ecran(texte):
         str: Résultat de la commande ou None si ce n'est pas une commande de lecture d'écran
     """
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         return f"Erreur de validation: {str(e)}"
 

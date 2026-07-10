@@ -3,7 +3,20 @@ Module d'optimisation du traitement des commandes avec Numba JIT
 Contient les fonctions de matching et de classification optimisées pour Whisp Assistant
 """
 import numpy as np
-from numba import jit, prange, float64, int32, boolean
+try:
+    from numba import jit, prange, float64, int32, boolean
+except ImportError:
+    # Numba absent : fallback no-op (les fonctions restent utilisables sans JIT)
+    def jit(*args, **kwargs):
+        if args and callable(args[0]):
+            return args[0]
+        def decorator(func):
+            return func
+        return decorator
+    prange = range
+    float64 = None
+    int32 = None
+    boolean = None
 import re
 import logging
 from typing import List, Tuple, Dict

@@ -71,7 +71,7 @@ def organiser_fenetres_multiscreen():
 def executer_commande_productivite(texte):
     """Exécute des commandes de productivité en fonction du texte transcrit"""
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         return f"Erreur de validation: {str(e)}"
 

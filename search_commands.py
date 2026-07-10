@@ -14,7 +14,7 @@ validator = InputValidator()
 def executer_commande_recherche(texte):
     """Exécute des commandes de recherche rapide"""
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         return f"Erreur de validation: {str(e)}"
 

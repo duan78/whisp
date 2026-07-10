@@ -3,7 +3,19 @@ Module d'optimisation des performances audio avec Numba JIT
 Contient les fonctions de traitement audio optimisées pour Whisp Assistant
 """
 import numpy as np
-from numba import jit, prange, float32, int32
+try:
+    from numba import jit, prange, float32, int32
+except ImportError:
+    # Numba absent : fallback no-op (les fonctions restent utilisables sans JIT)
+    def jit(*args, **kwargs):
+        if args and callable(args[0]):
+            return args[0]
+        def decorator(func):
+            return func
+        return decorator
+    prange = range
+    float32 = None
+    int32 = None
 import logging
 
 logger = logging.getLogger(__name__)

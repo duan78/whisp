@@ -17,7 +17,7 @@ validator = InputValidator()
 def executer_commande_web_dev(texte):
     """Exécute des commandes liées au développement web"""
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         return f"Erreur de validation: {str(e)}"
 

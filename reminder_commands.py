@@ -115,7 +115,7 @@ def start_reminder_checker():
 def executer_commande_rappel(texte):
     """Exécute des commandes de gestion des rappels et de l'agenda"""
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         return f"Erreur de validation: {str(e)}"
 

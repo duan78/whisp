@@ -18,7 +18,7 @@ validator = InputValidator()
 def executer_commande_fichier(texte):
     """Exécute des commandes de gestion de fichiers"""
     try:
-        validator.validate_command_input(texte)
+        validator.validate_command(texte)
     except ValidationError as e:
         return f"Erreur de validation: {str(e)}"
 
