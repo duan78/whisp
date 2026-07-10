@@ -17,7 +17,7 @@ maintainers = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -93,11 +93,10 @@ gpu = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/votre-username/whisp-assistant"
-Documentation = "https://docs.whisp-assistant.com"
-Repository = "https://github.com/votre-username/whisp-assistant.git"
-"Bug Tracker" = "https://github.com/votre-username/whisp-assistant/issues"
-Changelog = "https://github.com/votre-username/whisp-assistant/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/duan78/whisp"
+Repository = "https://github.com/duan78/whisp.git"
+"Bug Tracker" = "https://github.com/duan78/whisp/issues"
+Changelog = "https://github.com/duan78/whisp/blob/master/CHANGELOG.md"
 
 [project.scripts]
 whisp-assistant = "main:assistant_vocal"

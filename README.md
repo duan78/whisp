@@ -114,8 +114,8 @@
 
 ### 1. Cloner le repository
 ```bash
-git clone https://github.com/votre-username/whisp-assistant.git
-cd whisp-assistant
+git clone https://github.com/duan78/whisp.git
+cd whisp
 ```
 
 ### 2. Créer un environnement virtuel
@@ -262,22 +262,25 @@ WEB_HOST=127.0.0.1
 ## 🏗️ Architecture
 
 ```
-whisp-assistant/
+whisp/
 ├── 🎙️ Système Audio Universel v2.0
 │   ├── universal_audio_backend.py  # Gestionnaire audio unifié
 │   ├── platform_audio_config.py    # Configuration par plateforme
-│   ├── stt_engine_factory.py       # Factory pour moteurs STT
-│   ├── vosk_audio_handler.py       # Handler Vosk + sounddevice
-│   └── faster_whisper_stt.py       # Moteur STT Whisper optimisé
+│   └── stt_engine_factory.py       # Factory pour moteurs STT
 ├── 🎯 Modules principaux
 │   ├── main.py                      # Point d'entrée
-│   ├── speech_recognition_module.py # Reconnaissance vocale
-│   ├── tts_module.py                # Synthèse vocale (Edge-TTS + Piper)
+│   ├── speech_recognition_module.py # Reconnaissance vocale (STT)
+│   ├── tts_module.py                # Synthèse vocale (Edge-TTS, Piper, gTTS, pyttsx3)
 │   └── command_processor.py         # Cœur de traitement
 ├── 🖥️ Interface web v2.0
-│   ├── web_interface.py             # Flask web app
+│   ├── web_interface.py             # App Flask + enregistrement des blueprints
+│   ├── web/state.py                 # État partagé (logs, queues, handlers)
+│   ├── web/blueprints/              # Routes extraites (bugs, shortcuts, aliases, finetune)
 │   ├── templates/                   # Templates HTML
 │   └── static/                      # CSS/JS assets
+├── 🪟 Gestion des fenêtres
+│   ├── window_manager.py            # Shim de compatibilité
+│   └── window/                      # commands, focus, monitors, enumeration, active_app
 ├── ⚡ Modules de commande
 │   ├── keyboard_commands.py         # Contrôle clavier
 │   ├── mouse_commands.py            # Contrôle souris
@@ -289,24 +292,29 @@ whisp-assistant/
 │   ├── core/
 │   │   ├── config.py                # Configuration centralisée
 │   │   ├── database_manager.py      # Base de données SQLite
-│   │   └── api_security.py          # Sécurité API
-│   └── shortcuts_database.py        # Raccourcis perso
+│   │   ├── api_security.py          # Sécurité API (chiffrement clés)
+│   │   └── error_handler.py         # Gestion d'erreurs
+│   ├── stt/finetune.py              # Pipeline fine-tuning HuggingFace
+│   └── shortcuts_database.py        # Raccourcis perso (scripts sandboxés)
+├── 🧪 Tests
+│   ├── tests/unit/                  # Tests unitaires (config, validation, TTS, sécurité)
+│   └── tests/integration/           # Tests d'intégration
 └── 🔧 Utilitaires
-    ├── error_handler.py             # Gestion d'erreurs
+    ├── error_handler.py             # Shim → core/error_handler
     ├── lazy_loader.py               # Chargement paresseux
     ├── dependency_manager.py        # Gestion dépendances
-    └── text_processing.py           # Traitement texte
+    └── scripts/diagnostics/         # Scripts de diagnostic audio/performance
 ```
 
 ---
 
 ## 🧪 Tests
 
-### Tester le Backend Audio
+### Diagnostic du Backend Audio
 
 ```bash
 # Test complet du système audio universel
-python test_universal_audio.py
+python scripts/diagnostics/check_universal_audio.py
 
 # Le script vérifie:
 # - Détection des backends disponibles
@@ -315,31 +323,20 @@ python test_universal_audio.py
 # - Meilleur backend sélectionné
 ```
 
-### Tests Unitaires
+### Tests Unitaires et d'Intégration
 
 ```bash
-# Lancer tous les tests
+# Lancer tous les tests (68 tests, 5 skipped)
 pytest
 
 # Tests avec couverture
 pytest --cov=.
 
 # Tests spécifiques
-pytest tests/test_audio_backend.py
-pytest tests/unit/test_tts_engines.py
-```
-
-### Tests de Sécurité
-
-```bash
-# Tests de sécurité TTS (27 tests)
-python test_tts_security_fix.py
-
-# Tests de sécurité shortcuts
-python test_security_fix.py
-
-# Tests unitaires de sécurité
-pytest tests/unit/test_shortcuts_security.py
+pytest tests/unit/test_tts_engines.py        # 27 tests TTS
+pytest tests/unit/test_shortcuts_security.py  # Tests de sécurité raccourcis
+pytest tests/unit/test_config.py              # Tests de configuration
+pytest tests/unit/test_input_validation.py    # Tests de validation
 ```
 
 ---
@@ -422,7 +419,7 @@ pip install edge-tts
 **Solution:**
 ```bash
 # Lancer les diagnostics audio
-python test_universal_audio.py
+python scripts/diagnostics/check_universal_audio.py
 ```
 
 ---
@@ -433,7 +430,7 @@ Les contributions sont les bienvenues ! Voici comment participer :
 
 ### 1. Fork le projet
 ```bash
-git clone https://github.com/votre-username/whisp-assistant.git
+git clone https://github.com/duan78/whisp.git
 ```
 
 ### 2. Créer une branche
@@ -461,8 +458,8 @@ git push origin feature/nouvelle-fonctionnalite
 - [📘 Guide d'Installation](docs/installation.md)
 - [🔧 Configuration Avancée](docs/configuration.md)
 - [🎤 Commandes Vocales](docs/utilisation.md)
-- [🔌 Développement d'Extensions](docs/extensions.md)
-- [🐛 Dépannage](docs/troubleshooting.md)
+- [🔒 Sécurité](docs/security.md)
+- [🐛 Dépannage](#-dépannage)
 
 ---
 
@@ -470,9 +467,10 @@ git push origin feature/nouvelle-fonctionnalite
 
 ### Version 2.1 (Actuelle) - ✅ TERMINE
 - ✅ **Edge-TTS + Piper** : Moteurs TTS modernisés
-- ✅ **Sécurité renforcée** : Validation et tests
-- ✅ **27 tests TTS** pour fiabilité
-- ✅ **Nettoyage code** : Suppression authentification web inutile
+- ✅ **Sécurité renforcée** : bind Flask sur 127.0.0.1, fix path traversal `/records`, suppression `exec()` des raccourcis (sandbox isolée), suppression des injections `shell=True`, chiffrement des clés API (Fernet/PBKDF2), SQL allowlist SELECT-only
+- ✅ **Refactor architectural** : découpage de `window_manager.py` (package `window/`), `web_interface.py` (Flask Blueprints), `speech_recognition_module.py` (extraction `stt/finetune.py`)
+- ✅ **Nettoyage** : suppression du code mort, fix du packaging (package fantôme `whisp_assistant`), séparation requirements runtime/dev
+- ✅ **27 tests TTS** + tests de sécurité raccourcis (68 tests au total)
 - ✅ **Backend audio universel v2.0** avec diagnostics
 - ✅ Support multiplateforme (Windows, macOS, Linux)
 - ✅ Reconnaissance offline avec Vosk
@@ -524,10 +522,10 @@ Ce projet est sous licence **GPL v3.0** - voir le fichier [LICENSE](LICENSE) pou
 
 Made with ❤️ by the Whisp Team
 
-[![GitHub stars](https://img.shields.io/github/stars/votre-username/whisp-assistant?style=social)](https://github.com/votre-username/whisp-assistant/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/votre-username/whisp-assistant?style=social)](https://github.com/votre-username/whisp-assistant/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/votre-username/whisp-assistant)](https://github.com/votre-username/whisp-assistant/issues)
+[![GitHub stars](https://img.shields.io/github/stars/duan78/whisp?style=social)](https://github.com/duan78/whisp/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/duan78/whisp?style=social)](https://github.com/duan78/whisp/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/duan78/whisp)](https://github.com/duan78/whisp/issues)
 
-**Reconnaissance vocale offline • faster-whisper • Edge-TTS • Piper TTS • Python 3.8+**
+**Reconnaissance vocale offline • faster-whisper • Edge-TTS • Piper TTS • Python 3.12**
 
 </div>

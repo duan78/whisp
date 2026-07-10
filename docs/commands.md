@@ -269,10 +269,28 @@
 
 | Commande | Description | Exemple | Paramètres |
 |----------|------------|---------|-----------|
-| `"créer alias [alias] [commande]"` | Raccourci | `"créer alias check-email python -c 'import subprocess; subprocess.run([\"grep\", \"\\\"'rappor'\\\\' |', '\\\"$LOG_FILE\\\"', shell=True)'\""` | Alias et commande |
+| `"créer alias [alias] [commande]"` | Raccourci | `"créer alias check-email python ~/.whisp/scripts/check_email.py"` | Alias et commande |
 | `"lister aliases"` | Liste alias | `"lister aliases"` | Afficher tous les alias |
 | `"supprimer alias [alias]"` | Supprimer alias | `"supprimer alias check-email"` | Nom de l'alias |
 | `"exécuter script [fichier]"` | Script | `"exécuter script backup.sh"` | Fichier script |
+
+#### Exemple : créer un alias sûr
+
+Créez d'abord un script dédié dans le répertoire utilisateur des scripts
+(voir [security.md](security.md) — sandbox des raccourcis), puis déclarez
+l'alias qui l'invoque :
+
+```bash
+# 1. Script placé dans le répertoire des scripts utilisateur
+~/.whisp/scripts/check_email.py
+
+# 2. Alias qui exécute ce script (sans shell=True, liste d'arguments explicite)
+"créer alias check-email python ~/.whisp/scripts/check_email.py"
+```
+
+> **Note** : Préférez toujours des alias qui pointent vers un script
+> dédié plutôt que des commandes shell inline. Les scripts sont exécutés
+> dans un sous-processus isolé avec un timeout de 30 s.
 
 ### Automatisation Personnalisée
 

@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Ce document décrit les mesures de sécurité mises en place dans Whisp Assistant v2.0 pour protéger les utilisateurs contre les vulnérabilités courantes.
+Ce document décrit les mesures de sécurité mises en place dans Whisp Assistant v2.1 pour protéger les utilisateurs contre les vulnérabilités courantes.
 
 ## Validation des Entrées
 
@@ -126,6 +126,46 @@ validator.validate_file_path("../../../etc/passwd")
 validator.validate_file_path("~/Documents/mon_fichier.txt")
 ```
 
+## Sécurité de l'Interface Web
+
+### Liaison locale par défaut
+
+L'application Flask est liée à `127.0.0.1` par défaut, elle n'est donc pas
+exposée sur le réseau. Pour écouter sur une autre interface (par exemple pour
+un accès local réseau), définissez la variable d'environnement `WEB_HOST` :
+
+```bash
+# Par défaut : localhost uniquement (recommandé)
+WEB_HOST=127.0.0.1 python main.py
+
+# Exposition contrôlée (à n'utiliser qu'en cas de besoin)
+WEB_HOST=0.0.0.0 python main.py
+```
+
+### Protection de l'endpoint /records
+
+Le endpoint `/records` valide et normalise les chemins demandés afin de
+bloquer toute tentative de traversée de répertoires : aucun chemin en dehors
+des répertoires autorisés ne peut être lu via l'interface web.
+
+## Exécution de Scripts de Raccourcis (sandbox)
+
+Les raccourcis de type `script` ne permettent d'exécuter que des fichiers
+Python situés dans le répertoire dédié `~/.whisp/scripts`. Leur exécution
+est isolée :
+
+- **Fichiers autorisés** : uniquement les `.py` présents dans
+  `~/.whisp/scripts` (les chemins remontant `..` sont rejetés).
+- **Sous-processus isolé** : le script est lancé dans un `subprocess`
+  distinct, sans interprétation shell (`shell=False`).
+- **Délai d'attente** : un timeout de 30 secondes interrompt tout script qui
+  boucle ou se bloque.
+
+```bash
+# Emplacement des scripts utilisateur exécutables via raccourcis
+~/.whisp/scripts/
+```
+
 ## Exécution de Commandes
 
 ### subprocess.run() au lieu de os.system()
@@ -166,6 +206,33 @@ cursor.execute("CREATE TABLE IF NOT EXISTS (?)", (table_name,))
 - Échappement automatique des paramètres
 - Validation des noms de tables/colonnes
 - Whitelist des opérations SQL autorisées
+
+### Allowlist SELECT uniquement
+
+Les commandes de base de données (`core/commands/database_commands.py`)
+n'acceptent que des requêtes en lecture. La fonction `validate_sql_query()`
+applique les règles suivantes :
+
+- **Opérations autorisées** : uniquement `SELECT` et `WITH` (CTE) en tête de
+  requête ; tout `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, etc. est
+  rejeté.
+- **Multi-requêtes bloquées** : la présence d'un point-virgule `;` est
+  interdite, empêchant l'enchaînement de plusieurs instructions.
+- **Commentaires supprimés** : les commentaires SQL (`--`, `/* */`) sont
+  retirés avant l'analyse afin d'éviter les contournements.
+
+```python
+from core.commands.database_commands import validate_sql_query
+
+# ✅ AUTORISÉ
+validate_sql_query("SELECT * FROM records WHERE id = 1")
+
+# ❌ REJETÉ (écriture)
+validate_sql_query("DELETE FROM records")
+
+# ❌ REJETÉ (multi-requêtes via ';')
+validate_sql_query("SELECT 1; DROP TABLE records")
+```
 
 ## Logging et Audit
 
@@ -221,10 +288,22 @@ chmod 600 ~/.whisp/secure/*
 
 ### 3. Mises à Jour
 
-Gardez l'application à jour :
+Le projet n'est pas publié sur PyPI. Pour le garder à jour, installez-le
+depuis les sources :
 
 ```bash
-pip install --upgrade whisp-assistant
+git clone https://github.com/duan78/whisp.git
+cd whisp
+pip install -r requirements.txt
+```
+
+Pour mettre à jour une installation existante, récupérez les derniers
+changements puis réinstallez les dépendances :
+
+```bash
+cd whisp
+git pull
+pip install -r requirements.txt
 ```
 
 ### 4. Audit Régulier
@@ -242,7 +321,7 @@ pip install --upgrade whisp-assistant
 | Traversée de répertoires | ✅ PROTÉGÉ | Validation des chemins |
 | Clés API en clair | ✅ PROTÉGÉ | Chiffrement PBKDF2 |
 | Commandes destructrices | ✅ PROTÉGÉ | Whitelist + patterns |
-| Except clauses nues | 🔄 EN COURS | Remplacement progressif |
+| Except clauses nues | ✅ PROTÉGÉ | Remplacées par except typés |
 
 ## Améliorations Futures
 

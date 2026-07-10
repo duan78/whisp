@@ -11,8 +11,8 @@ Merci de votre intérêt pour contribuer à Whisp Assistant ! Ce guide vous aide
 3. Clonez votre fork localement :
 
 ```bash
-git clone https://github.com/VOTRE_USERNAME/whisp-assistant.git
-cd whisp-assistant
+git clone https://github.com/duan78/whisp.git
+cd whisp
 ```
 
 ### 2. Configurer votre Environnement
@@ -51,7 +51,7 @@ git checkout -b feature/nom-de-la-fonctionnalite
 
 Avant de rapporter un bug :
 
-1. [Vérifiez si le bug existe déjà](https://github.com/VOTRE_USERNAME/whisp-assistant/issues)
+1. [Vérifiez si le bug existe déjà](https://github.com/duan78/whisp/issues)
 2. Assurez-vous d'utiliser la dernière version
 3. Essayez de reproduire le bug dans un environnement clean
 
@@ -64,7 +64,7 @@ Pour rapporter un bug :
 
 ### ✨ Nouvelles Fonctionnalités
 
-1. Ouvrez une [issue](https://github.com/VOTRE_USERNAME/whisp-assistant/issues) pour discuter de la fonctionnalité
+1. Ouvrez une [issue](https://github.com/duan78/whisp/issues) pour discuter de la fonctionnalité
 2. Attendre l'approbation avant de commencer le développement
 3. Suivez les guidelines ci-dessous
 
@@ -142,40 +142,40 @@ def process_command(self, command: str, context: Dict[str, Any]) -> bool:
 
 ```python
 import unittest
-from unittest.mock import patch, MagicMock
-from speech_processor import SpeechProcessor
+from input_validation import InputValidator, ValidationError
 
-class TestSpeechProcessor(unittest.TestCase):
+class TestInputValidator(unittest.TestCase):
 
     def setUp(self):
-        self.processor = SpeechProcessor({"test": "config"})
+        self.validator = InputValidator()
 
-    def test_process_valid_command(self):
-        """Test le traitement d'une commande valide"""
-        result = self.processor.process_command("test")
-        self.assertTrue(result)
+    def test_valid_command(self):
+        """Test la validation d'une commande autorisée"""
+        result = self.validator.validate_command("ouvre notepad")
+        self.assertEqual(result, "ouvre notepad")
 
-    @patch('speech_processor.AudioFile')
-    def test_with_mock(self, mock_audio):
-        """Test avec un mock"""
-        mock_audio.return_value = MagicMock()
-        # Test logic here
+    def test_rejects_injection(self):
+        """Test le rejet d'un pattern d'injection"""
+        with self.assertRaises(ValidationError):
+            self.validator.validate_command("notepad; rm -rf /")
 ```
 
 ## 📁 Structure du Projet
 
 ```
-whisp-assistant/
-├── src/                    # Code source principal
-│   ├── core/              # Modules core
-│   ├── commands/          # Modules de commandes
-│   ├── interfaces/        # Interfaces (web, CLI)
-│   └── utils/             # Utilitaires
-├── tests/                 # Tests unitaires et intégration
-├── docs/                  # Documentation
-├── examples/              # Exemples d'utilisation
-├── scripts/               # Scripts de développement
-└── resources/             # Ressources (templates, assets)
+whisp/
+├── main.py                    # Point d'entrée
+├── speech_recognition_module.py  # Reconnaissance vocale (STT)
+├── tts_module.py              # Synthèse vocale (TTS)
+├── command_processor.py       # Traitement des commandes
+├── window_manager.py          # Shim → package window/
+├── web_interface.py           # App Flask + blueprints
+├── core/                      # Config, DB, sécurité (api_security, error_handler)
+├── window/                    # Gestion des fenêtres (commands, focus, monitors, ...)
+├── web/                       # Blueprints Flask + état partagé
+├── stt/                       # Modules STT extraits (finetune.py)
+├── tests/                     # Tests unitaires et d'intégration
+└── scripts/diagnostics/       # Scripts de diagnostic audio/performance
 ```
 
 ## 🧪 Tests
@@ -190,7 +190,7 @@ pytest
 pytest tests/test_speech.py
 
 # Avec couverture
-pytest --cov=src tests/
+pytest --cov=. tests/
 
 # Tests rapides (exclure les lents)
 pytest -m "not slow"
@@ -260,9 +260,9 @@ chore(deps): update pytest version
 - `priority: high` : Haute priorité
 
 ### Milestones
-- `v1.1.x` : Corrections et petites améliorations
-- `v1.2.0` : Nouvelles fonctionnalités
-- `v2.0.0` : Changements majeurs
+- `v2.1.x` : Version courante (refactor window/web/stt, sécurité renforcée)
+- `v2.2.0` : Nouvelles fonctionnalités prévues
+- `v3.0.0` : Changements majeurs à venir
 
 ## 🚨 Guidelines de Sécurité
 
@@ -281,7 +281,7 @@ Si vous découvrez une vulnérabilité de sécurité :
 
 ## 🎯 Priorités Actuelles
 
-Consultez notre [board de projets](https://github.com/VOTRE_USERNAME/whisp-assistant/projects) pour voir les priorités actuelles et où vous pouvez aider.
+Consultez notre [board de projets](https://github.com/duan78/whisp/projects) pour voir les priorités actuelles et où vous pouvez aider.
 
 ---
 

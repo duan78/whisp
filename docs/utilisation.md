@@ -47,12 +47,8 @@ L'assistant démarrera et sera accessible sur : **http://localhost:5000**
 ### Modifier la Voix
 
 ```bash
-# Configuration rapide du moteur TTS
-python -c "
-from tts_module import set_voice_rate
-set_voice_rate(150)  # Plus lent (50-200)
-print('✅ Vitesse de voix modifiée')
-"
+# Configuration rapide du moteur TTS (via variables d'environnement)
+TTS_ENGINE=edge_tts EDGE_TTS_RATE="-15%" python main.py
 ```
 
 ### Changer de Moteur STT
@@ -96,9 +92,12 @@ print('✅ Moteur STT changé vers Whisper')
 ##### Moteurs STT Disponibles
 - **SpeechRecognition** : Reconnaissance via API Google
 - **Whisper** : Reconnaissance offline (nécessite GPU)
-- **NeMo** : Reconnaissance NVIDIA (optimisé GPU)
+- **whisper_ct2** : Whisper accéléré (CTranslate2)
+- **whisper_french** : Whisper spécialisé français
+- **Vosk** : Reconnaissance offline légère
 
 ##### Moteurs TTS Disponibles
+- **Edge-TTS** : Synthèse neuronale en ligne (recommandée)
 - **gTTS** : Synthèse en ligne (Google)
 - **pyttsx3** : Synthèse offline (système)
 - **Piper** : Synthèse offline rapide
@@ -140,8 +139,8 @@ print('✅ Moteur STT changé vers Whisper')
 ### Mode Développeur
 
 ```bash
-# Activer les fonctionnalités développeur
-python main.py --dev-mode
+# Activer les fonctionnalités développeur (logs détaillés)
+LOG_LEVEL=DEBUG python main.py
 ```
 
 #### Commandes Développeur
@@ -216,16 +215,11 @@ command_processor.ajouter_module('personnalisé', MonModulePersonnalisé)
 
 #### Recherche dans l'Historique
 
-```bash
-# Rechercher une commande spécifique
-python -c "
-from database_manager import DatabaseManager
-db = DatabaseManager()
-resultats = db.rechercher_historique('recherche')
-for resultat in resultats:
-    print(f'{resultat[\"timestamp\"]} - {resultat[\"commande\"]}')
-"
-```
+La consultation de l'historique se fait via l'interface web (page
+**Historique**), qui offre filtrage par type et recherche par texte.
+L'historique est conservé dans la base de données locale SQLite gérée par
+`core/database.py` (les requêtes y sont strictement paramétrées et limitées
+à `SELECT`, voir [security.md](security.md)).
 
 ---
 
@@ -278,23 +272,20 @@ for key, value in os.environ.items():
 
 ### Configuration des API
 
-```bash
-# Tester la configuration des clés API
-python -c "
-import json
-from api_security import verifier_cles_api
+Les clés API sont stockées de manière chiffrée (gestionnaire `APIKeyManager`,
+chiffrement Fernet/PBKDF2). Pour les définir ou vérifier leur présence :
 
-try:
-    with open('api_keys.json', 'r') as f:
-        config = json.load(f)
-    if verifier_cles_api(config):
-        print('✅ Configuration API valide')
-    else:
-        print('❌ Configuration API invalide')
-except FileNotFoundError:
-    print('❌ Fichier api_keys.json non trouvé')
-except json.JSONDecodeError:
-    print('❌ Fichier api_keys.json invalide')
+```bash
+# Définir une clé (stockée chiffrée dans ~/.whisp/secure/)
+python set_mistral_api_key.py <votre-clé>
+
+# Vérifier qu'une clé est configurée (sans l'afficher en clair)
+python -c "
+from api_security import get_secure_api_key
+if get_secure_api_key('mistral'):
+    print('✅ Clé API Mistral configurée')
+else:
+    print('❌ Aucune clé API Mistral configurée')
 "
 ```
 
@@ -385,12 +376,12 @@ except json.JSONDecodeError:
 python -c "import speech_recognition_module; speech_recognition_module.tester_microphone()"
 
 # Tester la synthèse vocale
-python -c "import tts_module; tts_module.test_all_engines()"
+TTS_ENGINE=edge_tts python main.py
 
 # Vérifier la configuration audio
 python -c "
-import os
-print('FFmpeg disponible :', os.system('ffmpeg -version') == 0)
+import subprocess
+print('FFmpeg disponible :', subprocess.run(['ffmpeg', '-version'], capture_output=True).returncode == 0)
 print('Audio config :', 'AUDIO_ENABLED' in os.environ)
 "
 ```
@@ -426,11 +417,10 @@ export COMMAND_THREADS=2
 export WEB_PORT=5001
 python main.py
 
-# Redémarrer le service
+# Redémarrer le service (sans shell=True, liste d'arguments explicite)
 python -c "
-import subprocess
-subprocess.run(['taskkill', '/f', '/im', 'python.exe'], shell=True)
-import time
+import subprocess, time
+subprocess.run(['taskkill', '/f', '/im', 'python.exe'], check=False)
 time.sleep(2)
 subprocess.Popen(['python', 'main.py'])
 "

@@ -5,7 +5,42 @@ All notable changes to Whisp Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-01-XX
+## [2.1.0] - 2026-07
+
+### Added
+- **Moteurs TTS modernisés**
+  - **Edge-TTS** : moteur online Microsoft de haute qualité (prioritaire)
+  - **Piper TTS** : synthèse offline rapide et de qualité
+  - 27 tests TTS dédiés (`tests/unit/test_tts_engines.py`)
+- **Tests de sécurité** : `tests/unit/test_shortcuts_security.py` (validation path traversal, injection, isolation)
+
+### Changed — Sécurité
+- Interface web : bind sur `127.0.0.1` par défaut au lieu de `0.0.0.0` (configurable via `WEB_HOST`)
+- Correction du path traversal sur la route `/records/<filename>` (vérification `realpath`)
+- Suppression de l'exécution de code arbitraire (`exec()`) des raccourcis personnalisés : remplacée par un répertoire de confiance (`~/.whisp/scripts`) avec exécution isolée par subprocess (timeout 30s, `.py` uniquement, path traversal bloqué)
+- Suppression des injections shell (`shell=True`) dans `window_manager`, `productivity_commands`, `database_commands`
+- Clés API : stockage chiffré via `APIKeyManager` (Fernet/PBKDF2) au lieu du plaintext `api_keys.json`
+- SQL utilisateur : allowlist stricte SELECT-only (`validate_sql_query`), anti multi-statement, anti commentaire
+
+### Changed — Architecture (refactor)
+- Découpage de `window_manager.py` (1862 lignes) en package `window/` : `commands`, `focus`, `monitors`, `enumeration`, `active_app`
+- Découpage de `web_interface.py` (2715 lignes) via Flask Blueprints : `web/blueprints/{bugs, shortcuts, aliases, finetune}` + `web/state.py`
+- Extraction de `stt/finetune.py` (pipeline fine-tuning HuggingFace) depuis `speech_recognition_module.py`
+- Shims de compatibilité : les imports existants (`from window_manager import ...`, etc.) continuent de fonctionner
+
+### Removed
+- Code mort : `command_processor_v2.py`, `audio_backend_manager.py`, `vosk_audio_handler.py`, 4× `migrate_*.py`, `setup.py`, fichier `nul`
+- Artefacts de génération : 11 fichiers `.md` de rapports ponctuels
+- Imports `whisp_assistant.*` morts (le package n'existait pas) nettoyés dans 7 fichiers
+- Outils dev retirés de `requirements.txt` (déplacés vers `requirements-dev.txt`)
+
+### Fixed
+- Packaging : suppression du package fantôme `whisp_assistant` de `pyproject.toml` (coverage et `pytest` fonctionnent désormais par défaut)
+- Harmonisation de la licence : classifier corrigé MIT → GPL v3 dans `pyproject.toml`
+
+---
+
+## [2.0.0] - 2026-01
 
 ### Added
 - **Sécurité critique**
@@ -117,23 +152,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Future Versions]
 
-### [2.1.0] - Planifié
+### [2.2.0] - Planifié
 - [ ] Architecture de plugins
 - [ ] Support des intents NLP
 - [ ] Mode apprentissage automatique
-- [ ] Intégration Home Assistant
-
-### [2.2.0] - Planifié
-- [ ] Interface graphique native (PyQt/Tk)
-- [ ] Support des macros
-- [ ] Automatisation avancée
-- [ ] Cloud sync des préférences
+- [ ] Voix personnalisables avancées
 
 ### [3.0.0] - Planifié
-- [ ] Architecture microservices
-- [ ] API REST complète
-- [ ] Multi-utilisateurs
-- [ ] Deployment Docker/Kubernetes
+- [ ] Intelligence artificielle conversationnelle avancée
+- [ ] Support multilingue étendu
+- [ ] Interface mobile
 
 ---
 
@@ -202,7 +230,6 @@ Les versions de sécurité (2.0.X, 2.1.X) sont prioritaires.
 
 ## Support
 
-Pour de l'aide sur la migration :
-- Documentation : `docs/migration.md`
-- Issues : [GitHub Issues](https://github.com/votre-username/whisp/issues)
-- Discord : [Serveur Discord](https://discord.gg/...)
+Pour de l'aide :
+- Documentation : `docs/`
+- Issues : [GitHub Issues](https://github.com/duan78/whisp/issues)

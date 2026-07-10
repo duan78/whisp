@@ -4,7 +4,7 @@
 
 ### Prérequis Système
 - **Windows 10+** (recommandé) ou **macOS 10.15+** ou **Ubuntu 20.04+**
-- **Python 3.8+** (Python 3.10+ recommandé)
+- **Python 3.8+** (Python 3.12 recommandé)
 - **RAM** : 4GB minimum (8GB recommandé)
 - **Stockage** : 2GB d'espace libre
 - **Microphone** : Intégré ou USB
@@ -16,7 +16,7 @@
 
 ```bash
 git clone https://github.com/duan78/whisp.git
-cd whisp-assistant
+cd whisp
 ```
 
 ---
@@ -69,8 +69,8 @@ nano config.env  # ou votre éditeur préféré
 Configuration minimale requise dans `config.env` :
 ```env
 # Moteurs de reconnaissance vocale
-STT_ENGINE=speechrecognition  # Options: speechrecognition, whisper, nemo, vosk
-TTS_ENGINE=gtts              # Options: gtts, pyttsx3, coqui, piper
+STT_ENGINE=speechrecognition  # Options: speechrecognition, whisper, vosk, whisper_ct2, whisper_french
+TTS_ENGINE=edge_tts          # Options: edge_tts (recommandé), gtts, pyttsx3, coqui, piper
 LANGUAGE=fr-FR                # Langue par défaut
 
 # Interface web
@@ -90,17 +90,15 @@ LOG_LEVEL=INFO
 
 Si vous souhaitez utiliser les fonctionnalités avancées avec IA :
 
-```bash
-# Éditer api_keys.json
-nano api_keys.json
-```
+> **Note** : Les clés API sont stockées de manière chiffrée (`~/.whisp/secure/`) via le gestionnaire APIKeyManager (chiffrement Fernet/PBKDF2). Aucune clé n'est conservée en clair dans `api_keys.json`.
 
-Ajoutez vos clés API personnelles :
-```json
-{
-  "openai_api_key": "sk-your-openai-api-key-here",
-  "mistral_api_key": "your-mistral-api-key-here"
-}
+Pour configurer une clé, utilisez le script dédié ou l'interface web :
+
+```bash
+# Définir la clé API Mistral (stockée chiffrée)
+python set_mistral_api_key.py <votre-clé>
+
+# Ou passez par l'interface web : Configuration > Clés API
 ```
 
 ---
@@ -192,7 +190,7 @@ pip --version
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Installer les dépendances
-brew install python@3.10
+brew install python@3.12
 brew install portaudio
 brew install ffmpeg
 ```
@@ -204,7 +202,7 @@ brew install ffmpeg
 sudo apt update && sudo apt upgrade -y
 
 # Installer Python et outils
-sudo apt install python3.10 python3.10-pip python3.10-venv git
+sudo apt install python3.12 python3.12-pip python3.12-venv git
 sudo apt install portaudio19-dev python3-pyaudio ffmpeg
 
 # Installer dépendances X11 (pour contrôle fenêtres)
@@ -217,12 +215,16 @@ newgrp audio
 
 ---
 
-## 🎯 Installation Rapide via pip
+## 🎯 Installation Rapide
 
-Quand le projet sera publié sur PyPI :
+Whisp n'est pas publié sur PyPI. Pour l'installer, clonez le dépôt et
+installez les dépendances depuis les sources (voir Étape 1 et Étape 2
+ci-dessus) :
 
 ```bash
-pip install whisp-assistant
+git clone https://github.com/duan78/whisp.git
+cd whisp
+pip install -r requirements.txt
 ```
 
 ---
@@ -246,16 +248,15 @@ WHISPER_MODEL=base        # tiny, base, small, medium, large
 WHISPER_LANGUAGE=fr
 ```
 
-#### NeMo (GPU optimisé)
-
-```env
-STT_ENGINE=nemo
-CUDA_VISIBLE_DEVICES=0
-```
-
 ### Synthèse Vocale (TTS)
 
-#### gTTS (recommandé, online)
+#### Edge-TTS (recommandé, online, voix naturelles)
+
+```env
+TTS_ENGINE=edge_tts
+```
+
+#### gTTS (online)
 
 ```env
 TTS_ENGINE=gtts

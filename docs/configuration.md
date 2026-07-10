@@ -50,8 +50,9 @@ VOLUME_STEP=5
 |--------|------------|--------|---------|------------|
 | **SpeechRecognition** | API Google (online) | Microphone | Bonne |
 | **Whisper** | Modèles OpenAI (offline) | Microphone + GPU recommandé | Excellente |
-| **NeMo** | NVIDIA GPU/CPU (offline) | Microphone + GPU | Excellente |
 | **Vosk** | Reconnaissance offline légère | Microphone | Moyenne |
+| **whisper_ct2** | Whisper accéléré via CTranslate2 (offline) | Microphone + GPU recommandé | Excellente |
+| **whisper_french** | Whisper spécialisé français (offline) | Microphone + GPU recommandé | Excellente |
 
 ### Configuration des Moteurs
 
@@ -79,15 +80,6 @@ WHISPER_DEVICE=cuda              # cuda, cpu (auto)
 WHISPER_COMPUTE_TYPE=float16
 ```
 
-#### NeMo (GPU optimisé)
-
-```env
-# Configuration NeMo
-STT_ENGINE=nemo
-NEMO_MODEL_NAME=stt_fr_conformer_ctc_small
-CUDA_VISIBLE_DEVICES=0
-```
-
 #### Vosk (Offline léger)
 
 ```env
@@ -104,6 +96,7 @@ VOSK_MODEL_PATH=./models/vosk-model-fr/0.4/2
 
 | Moteur | Description | Requis | Performance | Qualité |
 |--------|------------|--------|-----------|---------|
+| **Edge-TTS** | Microsoft Edge (online, recommandé) | Connexion internet | Excellente | Très naturelle |
 | **gTTS** | Google Text-to-Speech (online) | Connexion internet | Bonne | Naturelle |
 | **pyttsx3** | Système natif (offline) | Aucun | Moyenne | Robotique |
 | **Piper** | Synthèse rapide (offline) | Aucun | Excellente | Très claire |
@@ -111,7 +104,17 @@ VOSK_MODEL_PATH=./models/vosk-model-fr/0.4/2
 
 ### Configuration des Moteurs
 
-#### gTTS (Recommandé)
+#### Edge-TTS (Recommandé, online, voix naturelles)
+
+```env
+# Configuration Edge-TTS
+TTS_ENGINE=edge_tts
+EDGE_TTS_VOICE=fr-FR-DeniseNeural   # Voix neuronale française
+EDGE_TTS_RATE=+0%                    # Vitesse (ex: +10%, -10%)
+EDGE_TTS_VOLUME=+0%                  # Volume (ex: +20%, -20%)
+```
+
+#### gTTS (Online)
 
 ```env
 # Configuration gTTS
@@ -243,9 +246,6 @@ export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 # Modèles Whisper optimisés
 WHISPER_MODEL=small      # Plus précis que base
 WHISPER_COMPUTE_TYPE=float16
-
-# Modèles NeMo optimisés
-NEMO_BATCH_SIZE=8
 ```
 
 ---
@@ -287,26 +287,31 @@ TTS_VOICE_VOLUME=0.7      # Volume métallique
 def configurer_voix_personnalisee():
     """
     Script pour configurer une voix personnalisée
-    basée sur les préférences de l'utilisateur
+    via les variables d'environnement de configuration.
     """
     import os
-    from tts_module import set_voice_settings
 
     # Demander les préférences utilisateur
     print("=== Configuration de Voix Personnalisée ===")
-    print("1. Type de voix (1=Masculine, 2=Féminine, 3=Robotique)")
-    voice_type = input("Votre choix : ")
+    print("1. Moteur TTS (edge_tts, pyttsx3, piper, ...)")
+    tts_engine = input("Moteur : ").strip() or "edge_tts"
 
-    print("2. Vitesse de parole (mots/minute, 100-300)")
-    voice_speed = int(input("Vitesse : "))
+    print("2. Voix / ID de voix (dépend du moteur)")
+    voice = input("Voix : ").strip()
 
-    print("3. Volume (0.0-1.0)")
-    voice_volume = float(input("Volume : ")) / 100
+    print("3. Vitesse (ex: pyttsx3 -> mots/minute, edge_tts -> +10%)")
+    rate = input("Vitesse : ").strip()
 
-    # Appliquer la configuration
-    set_voice_settings(voice_type, voice_speed, voice_volume)
+    # Appliquer la configuration via config.env / variables d'environnement
+    os.environ["TTS_ENGINE"] = tts_engine
+    if voice:
+        os.environ["EDGE_TTS_VOICE"] = voice      # pour Edge-TTS
+        os.environ["TTS_VOICE_ID"] = voice        # pour pyttsx3
+    if rate:
+        os.environ["EDGE_TTS_RATE"] = rate        # pour Edge-TTS
+        os.environ["TTS_VOICE_RATE"] = rate       # pour pyttsx3
 
-    print("✅ Configuration appliquée avec succès !")
+    print("✅ Configuration appliquée via les variables d'environnement !")
 
 if __name__ == "__main__":
     configurer_voix_personnalisee()
@@ -355,10 +360,14 @@ export WHISPER_LANGUAGE=fr
 pactl list
 
 # Tester un autre moteur TTS
-python -c "from tts_module import test_all_engines; test_all_engines()"
+TTS_ENGINE=edge_tts python main.py
 
 # Vérifier la configuration audio
-python -c "import os; print('Audio device:', os.system('python -c \"import pyttsx3; engine=pyttsx3; engine.initProxyDriverFonts()\"'))"
+python -c "
+import pyttsx3
+engine = pyttsx3.init()
+print('Voix disponibles :', [v.id for v in engine.getProperty('voices')])
+"
 ```
 
 **Symptôme** : Qualité audio faible
@@ -383,8 +392,8 @@ export WEB_PORT=5001
 # Vérifier le firewall
 sudo ufw allow 5001/tcp
 
-# Redémarrer le service
-python -c "import web_interface; web_interface.restart_server()"
+# Redémarrer l'application
+python main.py
 ```
 
 **Symptôme** : Erreur 500
