@@ -6,55 +6,54 @@ import json
 import sys
 
 def set_mistral_api_key(key):
-    """Définit la clé API Mistral dans le fichier de configuration et comme variable d'environnement"""
-    # Chemin vers le fichier de configuration des clés API
-    api_keys_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_keys.json")
-    
-    # Charger les clés API existantes
-    keys = {}
-    if os.path.exists(api_keys_file):
-        try:
-            with open(api_keys_file, 'r') as f:
-                keys = json.load(f)
-        except Exception as e:
-            print(f"Erreur lors du chargement des clés API: {e}")
-    
-    # Mettre à jour la clé Mistral
-    keys["mistral"] = key
-    
-    # Créer le répertoire parent si nécessaire
-    os.makedirs(os.path.dirname(api_keys_file), exist_ok=True)
-    
-    # Sauvegarder les clés API
+    """Définit la clé API Mistral de manière sécurisée et comme variable d'environnement.
+
+    La clé est stockée chiffrée via APIKeyManager (Fernet/PBKDF2) dans
+    ~/.whisp/secure/api_keys.enc. Le stockage plaintext dans api_keys.json
+    n'est utilisé qu'en repli si la bibliothèque cryptography est absente.
+    """
+    # Définir la variable d'environnement pour la session courante
+    os.environ["MISTRAL_API_KEY"] = key
+
+    # Stockage chiffré (méthode privilégiée)
     try:
-        with open(api_keys_file, 'w') as f:
-            json.dump(keys, f, indent=4)
-        print(f"Clé API Mistral sauvegardée dans {api_keys_file}")
+        from api_security import set_secure_api_key
+        set_secure_api_key("mistral", key)
+        print("Clé API Mistral stockée de manière chiffrée (~/.whisp/secure/)")
+    except ImportError:
+        # Repli : stockage plaintext si cryptography n'est pas disponible
+        api_keys_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_keys.json")
+        keys = {}
+        if os.path.exists(api_keys_file):
+            try:
+                with open(api_keys_file, 'r') as f:
+                    keys = json.load(f)
+            except Exception as e:
+                print(f"Erreur lors du chargement des clés API: {e}")
+        keys["mistral"] = key
+        os.makedirs(os.path.dirname(api_keys_file), exist_ok=True)
+        try:
+            with open(api_keys_file, 'w') as f:
+                json.dump(keys, f, indent=4)
+            print(f"AVERTISSEMENT: cryptography indisponible — clé stockée en clair dans {api_keys_file}")
+            print("Installez 'cryptography' pour un stockage chiffré.")
+        except Exception as e:
+            print(f"Erreur lors de la sauvegarde de la clé API Mistral: {e}")
+            return False
     except Exception as e:
-        print(f"Erreur lors de la sauvegarde de la clé API Mistral: {e}")
+        print(f"Erreur lors du stockage chiffré de la clé API: {e}")
         return False
-    
+
+
     # Définir la variable d'environnement
     try:
         os.environ["MISTRAL_API_KEY"] = key
         print(f"Variable d'environnement MISTRAL_API_KEY définie")
-        
+
         # Vérifier que la variable d'environnement est bien définie
         env_key = os.environ.get("MISTRAL_API_KEY", "")
         if not env_key:
             print("AVERTISSEMENT: La variable d'environnement MISTRAL_API_KEY n'a pas été correctement définie")
-            
-            # Essayer une méthode alternative pour Windows
-            try:
-                import subprocess
-                subprocess.run(f'set MISTRAL_API_KEY={key}', shell=True)
-                print("Tentative alternative de définition de la variable d'environnement")
-                
-                # Vérifier à nouveau
-                if not os.environ.get("MISTRAL_API_KEY", ""):
-                    print("La variable d'environnement n'a toujours pas été définie correctement")
-            except Exception as e:
-                print(f"Erreur lors de la tentative alternative: {e}")
     except Exception as e:
         print(f"Erreur lors de la définition de la variable d'environnement: {e}")
         return False

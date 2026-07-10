@@ -113,6 +113,9 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+# `nul` est le périphérique null sous Windows ; un `> nul` mal formé crée un
+# fichier littéral nommé "nul" qu'il ne faut jamais committer.
+nul
 
 # === Linux Specific ===
 *~

@@ -1324,8 +1324,9 @@ def basculer_vers_fenetre(recherche, par_titre=True, par_process=True, exact=Fal
                 # Méthode supprimée: Win+R n'est plus utilisé comme demandé
                 
                 # Méthode 3: Essayer de lancer directement via subprocess (silencieux)
+                # shell=False pour éviter l'injection de commandes via recherche
                 try:
-                    subprocess.Popen(recherche, shell=True)
+                    subprocess.Popen(recherche, shell=False)
                     time.sleep(1)
                     
                     # Vérifier si une nouvelle fenêtre correspondante est maintenant active

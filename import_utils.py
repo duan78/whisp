@@ -18,23 +18,14 @@ def safe_import(module_name: str, attribute: Optional[str] = None) -> Any:
         Le module importé ou l'attribut demandé
     """
     try:
-        # Essayer d'abord l'import en tant que package
         if attribute:
-            module = __import__(f'whisp_assistant.{module_name}', fromlist=[attribute])
+            module = __import__(module_name, fromlist=[attribute])
             return getattr(module, attribute)
         else:
-            return __import__(f'whisp_assistant.{module_name}')
-    except ImportError:
-        try:
-            # Sinon, utiliser l'import relatif
-            if attribute:
-                module = __import__(module_name, fromlist=[attribute])
-                return getattr(module, attribute)
-            else:
-                return __import__(module_name)
-        except ImportError as e:
-            print(f"Impossible d'importer {module_name}: {e}")
-            return None
+            return __import__(module_name)
+    except ImportError as e:
+        print(f"Impossible d'importer {module_name}: {e}")
+        return None
 
 def ensure_module_path():
     """S'assure que le chemin du module est dans sys.path"""

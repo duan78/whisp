@@ -1,20 +1,11 @@
 """
 Module de gestion des alias de commandes pour l'assistant Whisp
 """
-try:
-    # Essayer d'abord l'import en tant que package
-    from whisp_assistant.database_manager import (
-        load_command_aliases, save_command_aliases, 
-        add_command_alias as db_add_alias, 
-        remove_command_alias as db_remove_alias
-    )
-except ImportError:
-    # Sinon, utiliser l'import relatif
-    from database_manager import (
-        load_command_aliases, save_command_aliases, 
-        add_command_alias as db_add_alias, 
-        remove_command_alias as db_remove_alias
-    )
+from database_manager import (
+    load_command_aliases, save_command_aliases, 
+    add_command_alias as db_add_alias, 
+    remove_command_alias as db_remove_alias
+)
 
 class CommandAliases:
     """Classe pour gérer les alias de commandes"""

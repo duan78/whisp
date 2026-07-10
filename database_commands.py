@@ -43,16 +43,25 @@ def validate_db_name(name: str) -> bool:
 
 
 def validate_sql_query(query: str) -> bool:
-    """Basic validation for SQL queries"""
+    """Valide une requête SQL utilisateur (allowlist stricte : SELECT seul).
+
+    Seules les requêtes en lecture seule (commençant par SELECT ou WITH...SELECT)
+    sont autorisées, afin d'éviter toute modification ou exfiltration de données.
+    """
     if not query:
         return False
-    query_upper = query.strip().upper()
-    # Block dangerous operations
-    dangerous = ['DROP', 'DELETE', 'TRUNCATE', 'ALTER', 'GRANT', 'REVOKE']
-    for danger in dangerous:
-        if danger in query_upper:
+    # Retirer les commentaires SQL (-- ...) et espaces pour éviter les contournements
+    cleaned = re.sub(r'--[^\n]*', '', query).strip()
+    if not cleaned:
+        return False
+    query_stripped = re.sub(r'\s+', ' ', cleaned).upper()
+    # Autoriser uniquement SELECT (et WITH ... SELECT pour les CTE)
+    if query_stripped.startswith('SELECT') or query_stripped.startswith('WITH'):
+        # Refuser les instructions multiples (séparateur ;)
+        if ';' in cleaned.rstrip(';'):
             return False
-    return True
+        return True
+    return False
 
 def executer_commande_database(texte):
     """Exécute des commandes liées aux bases de données"""
@@ -145,12 +154,11 @@ def executer_commande_database(texte):
             if not validate_db_name(db_name):
                 return "Nom de base de données invalide"
 
-            # Allow SELECT queries and safe INSERT/UPDATE queries
+            # Allowlist stricte : SELECT uniquement (lecture seule)
+            if not validate_sql_query(query):
+                return "Seules les requêtes SELECT (en lecture seule) sont autorisées"
+
             query_upper = query.strip().upper()
-            if not (query_upper.startswith("SELECT") or
-                    query_upper.startswith("INSERT") or
-                    query_upper.startswith("UPDATE")):
-                return "Seules les requêtes SELECT, INSERT et UPDATE sont autorisées"
 
             try:
                 # Créer une connexion à la base de données avec context manager
@@ -160,20 +168,15 @@ def executer_commande_database(texte):
                     # Exécuter la requête
                     cursor.execute(query)
 
-                    # Si c'est une requête SELECT, récupérer les résultats
-                    if query_upper.startswith("SELECT"):
-                        results = cursor.fetchall()
+                    # Récupérer les résultats (SELECT)
+                    results = cursor.fetchall()
 
-                        # Formater les résultats
-                        if results:
-                            result_str = "\n".join([str(row) for row in results])
-                            return f"Résultats de la requête :\n{result_str}"
-                        else:
-                            return "La requête n'a retourné aucun résultat"
+                    # Formater les résultats
+                    if results:
+                        result_str = "\n".join([str(row) for row in results])
+                        return f"Résultats de la requête :\n{result_str}"
                     else:
-                        # Pour les autres types de requêtes (INSERT, UPDATE, etc.)
-                        conn.commit()
-                        return f"Requête exécutée avec succès"
+                        return "La requête n'a retourné aucun résultat"
             except sqlite3.OperationalError as e:
                 return f"Erreur opérationnelle sur la base de données : {str(e)}"
             except sqlite3.DatabaseError as e:
@@ -285,10 +288,10 @@ def executer_commande_database(texte):
                     if match_user:
                         user = match_user.group(1).strip()
 
-                    # Exécuter le script avec mysql
+                    # Exécuter le script avec mysql (shell=False : args en liste)
                     try:
                         result = subprocess.run(["mysql", "-u", user, "-p"],
-                                              shell=True, capture_output=True, text=True)
+                                              capture_output=True, text=True)
                         if result.returncode != 0:
                             return f"Erreur MySQL : {result.stderr}"
                         return f"Script SQL '{sql_file}' exécuté sur MySQL"
@@ -407,10 +410,10 @@ def executer_commande_database(texte):
                     if match_user:
                         user = match_user.group(1).strip()
 
-                    # Exécuter la sauvegarde avec mysqldump
+                    # Exécuter la sauvegarde avec mysqldump (shell=False : args en liste)
                     try:
                         result = subprocess.run(["mysqldump", "-u", user, "-p", db_name],
-                                              shell=True, capture_output=True, text=True)
+                                              capture_output=True, text=True)
                         if result.returncode != 0:
                             return f"Erreur MySQL : {result.stderr}"
 

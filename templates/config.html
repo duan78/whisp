@@ -1300,7 +1300,6 @@
                                     <option value="text">Saisie de texte</option>
                                     <option value="url">Ouvrir URL</option>
                                     <option value="app">Lancer application</option>
-                                    <option value="script">Exécuter script</option>
                                 </select>
                             </div>
                             
@@ -1326,11 +1325,7 @@
                                     <label for="app-path">Chemin de l'application</label>
                                     <input type="text" id="app-path" class="form-control" placeholder="C:\Program Files\App\app.exe" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
                                 </div>
-                                
-                                <div id="script-config" class="action-config" style="display: none;">
-                                    <label for="script-content">Script à exécuter</label>
-                                    <textarea id="script-content" class="form-control" placeholder="Code Python à exécuter" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem; min-height: 100px;"></textarea>
-                                </div>
+
                             </div>
                         </div>
                         <div class="config-card-footer">
@@ -1361,7 +1356,6 @@
                                 <li><strong>Saisie de texte</strong> : Saisit automatiquement un texte prédéfini</li>
                                 <li><strong>Ouvrir URL</strong> : Ouvre une page web dans votre navigateur par défaut</li>
                                 <li><strong>Lancer application</strong> : Démarre un programme sur votre ordinateur</li>
-                                <li><strong>Exécuter script</strong> : Exécute un script Python personnalisé</li>
                             </ul>
                         </div>
                     </div>
@@ -2394,13 +2388,6 @@
                                 return;
                             }
                             break;
-                        case 'script':
-                            actionData = document.getElementById('script-content').value.trim();
-                            if (!actionData) {
-                                showNotification('Veuillez saisir le script à exécuter', 'error');
-                                return;
-                            }
-                            break;
                         default:
                             showNotification('Type d\'action non valide', 'error');
                             return;
@@ -2431,8 +2418,7 @@
                             document.getElementById('text-content').value = '';
                             document.getElementById('url-address').value = '';
                             document.getElementById('app-path').value = '';
-                            document.getElementById('script-content').value = '';
-                            
+
                             // Recharger la liste des raccourcis
                             loadCustomShortcuts();
                         } else {
@@ -2632,9 +2618,6 @@
                         case 'app':
                             document.getElementById('app-path').value = shortcut.action_data;
                             break;
-                        case 'script':
-                            document.getElementById('script-content').value = shortcut.action_data;
-                            break;
                     }
                     
                     // Modifier le bouton d'ajout pour qu'il mette à jour le raccourci
@@ -2672,9 +2655,6 @@
                             case 'app':
                                 actionData = document.getElementById('app-path').value.trim();
                                 break;
-                            case 'script':
-                                actionData = document.getElementById('script-content').value.trim();
-                                break;
                         }
                         
                         // Envoyer la requête pour mettre à jour le raccourci
@@ -2703,8 +2683,7 @@
                                 document.getElementById('text-content').value = '';
                                 document.getElementById('url-address').value = '';
                                 document.getElementById('app-path').value = '';
-                                document.getElementById('script-content').value = '';
-                                
+
                                 // Restaurer le bouton d'ajout
                                 addButton.innerHTML = '<i class="fas fa-save"></i> Enregistrer';
                                 addButton.removeAttribute('data-edit-id');

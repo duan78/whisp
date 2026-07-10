@@ -14,12 +14,7 @@ from input_validation import InputValidator, ValidationError
 
 validator = InputValidator()
 
-try:
-    # Essayer d'abord l'import en tant que package
-    from whisp_assistant.database_manager import ensure_connection
-except ImportError:
-    # Sinon, utiliser l'import relatif
-    from database_manager import ensure_connection
+from database_manager import ensure_connection
 
 @ensure_connection
 def load_reminders(conn):

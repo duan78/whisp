@@ -5,12 +5,12 @@ Base de données des raccourcis clavier pour l'assistant Whisp
 import json
 from os_detection import get_os_type, adapt_shortcut
 
-try:
-    # Essayer d'abord l'import en tant que package
-    from whisp_assistant.database_manager import ensure_connection
-except ImportError:
-    # Sinon, utiliser l'import relatif
-    from database_manager import ensure_connection
+from database_manager import ensure_connection
+
+# Types d'actions autorisés pour les raccourcis personnalisés.
+# 'script' (exec de code arbitraire) est volontairement exclu : c'était un
+# vecteur d'exécution de code arbitraire (RCE) via la base de données.
+ALLOWED_ACTION_TYPES = frozenset({"keyboard", "text", "url", "app"})
 
 # Dictionnaire des raccourcis clavier courants par application et par OS
 # Ce dictionnaire sert de valeurs par défaut et sera stocké en base de données
@@ -634,12 +634,7 @@ def executer_raccourci_personnalise(voice_command):
     """
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import get_custom_shortcut_by_command, update_custom_shortcut_usage, get_custom_shortcuts
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import get_custom_shortcut_by_command, update_custom_shortcut_usage, get_custom_shortcuts
+        from database_manager import get_custom_shortcut_by_command, update_custom_shortcut_usage, get_custom_shortcuts
         
         # Nettoyer la commande vocale pour améliorer la correspondance
         voice_command = voice_command.lower().strip()
@@ -695,42 +690,35 @@ def executer_raccourci_personnalise(voice_command):
             
         elif action_type == 'app':
             # Lancer une application
-            import subprocess
             import os
-            
+
             # Vérifier si le chemin existe
             if not os.path.exists(action_data):
                 print(f"Chemin d'application non trouvé: {action_data}")
                 return False
-            
-            # Lancer l'application
-            if os.name == 'nt':  # Windows
-                subprocess.Popen([action_data], shell=True)
+
+            # Lancer l'application sans interpréteur de commande (shell=False)
+            # pour éviter l'injection de commandes via action_data.
+            if os.name == 'nt':  # Windows : os.startfile évite le shell
+                try:
+                    os.startfile(action_data)  # pylint: disable=no-member
+                except (OSError, AttributeError):
+                    import subprocess
+                    subprocess.Popen([action_data], shell=False)
             else:  # Linux/Mac
-                subprocess.Popen(['open' if os.name == 'darwin' else 'xdg-open', action_data])
-            
+                import subprocess
+                opener = 'open' if os.name == 'darwin' else 'xdg-open'
+                subprocess.Popen([opener, action_data], shell=False)
+
             return True
-            
+
         elif action_type == 'script':
-            # Exécuter un script Python
-            try:
-                # Créer un environnement d'exécution sécurisé
-                exec_globals = {
-                    '__builtins__': __builtins__,
-                    'pyautogui': __import__('pyautogui'),
-                    'webbrowser': __import__('webbrowser'),
-                    'os': __import__('os'),
-                    'subprocess': __import__('subprocess'),
-                    'time': __import__('time')
-                }
-                
-                # Exécuter le script
-                exec(action_data, exec_globals)
-                return True
-            except Exception as e:
-                print(f"Erreur lors de l'exécution du script: {e}")
-                return False
-        
+            # Désactivé pour des raisons de sécurité : l'exécution de code
+            # Python arbitraire (exec) stocké en base était un vecteur de RCE.
+            print("Type d'action 'script' désactivé (non sécurisé). "
+                  "Utilisez les types keyboard/text/url/app à la place.")
+            return False
+
         # Type d'action non reconnu
         return False
     except Exception as e:

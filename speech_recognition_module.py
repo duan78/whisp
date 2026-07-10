@@ -582,12 +582,7 @@ def load_stt_settings():
     
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import load_stt_settings
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import load_stt_settings
+        from database_manager import load_stt_settings
         
         # Charger les paramètres depuis la base de données
         loaded_settings = load_stt_settings(DEFAULT_STT_SETTINGS)
@@ -619,12 +614,7 @@ def save_stt_settings():
     """Sauvegarde les paramètres de reconnaissance vocale dans la base de données"""
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import save_stt_settings
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import save_stt_settings
+        from database_manager import save_stt_settings
         
         # Sauvegarder les paramètres dans la base de données
         success = save_stt_settings(stt_settings)
@@ -822,10 +812,7 @@ def is_cuda_available():
         try:
             print("Tentative de correction des chemins CUDA...")
             # Importer l'utilitaire cuda_path_fixer
-            try:
-                from whisp_assistant.cuda_path_fixer import fix_cuda_paths, verify_cudnn_availability, get_cuda_installation_info
-            except ImportError:
-                from cuda_path_fixer import fix_cuda_paths, verify_cudnn_availability, get_cuda_installation_info
+            from cuda_path_fixer import fix_cuda_paths, verify_cudnn_availability, get_cuda_installation_info
             
             # Obtenir des informations détaillées sur CUDA
             cuda_info = get_cuda_installation_info()
@@ -998,10 +985,7 @@ def setup_whisper_french_model():
             # Vérifier et corriger les chemins CUDA si nécessaire
             try:
                 # Importer l'utilitaire cuda_path_fixer
-                try:
-                    from whisp_assistant.cuda_path_fixer import fix_cuda_paths, get_cuda_installation_info
-                except ImportError:
-                    from cuda_path_fixer import fix_cuda_paths, get_cuda_installation_info
+                from cuda_path_fixer import fix_cuda_paths, get_cuda_installation_info
                 
                 # Essayer de corriger les chemins CUDA avant de vérifier la disponibilité
                 success, message = fix_cuda_paths()
@@ -1149,10 +1133,7 @@ def setup_whisper_ct2_model():
             # Vérifier et corriger les chemins CUDA si nécessaire
             try:
                 # Importer l'utilitaire cuda_path_fixer
-                try:
-                    from whisp_assistant.cuda_path_fixer import fix_cuda_paths, get_cuda_installation_info
-                except ImportError:
-                    from cuda_path_fixer import fix_cuda_paths, get_cuda_installation_info
+                from cuda_path_fixer import fix_cuda_paths, get_cuda_installation_info
                 
                 # Essayer de corriger les chemins CUDA avant de vérifier la disponibilité
                 success, message = fix_cuda_paths()
@@ -1756,27 +1737,21 @@ stt_metrics = {
 # Charger les métriques depuis la base de données au démarrage
 try:
     # Importer le module de base de données
-    try:
-        from whisp_assistant.database_manager import get_stt_metrics as get_db_metrics
-    except ImportError:
-        try:
-            from database_manager import get_stt_metrics as get_db_metrics
-            
-            # Récupérer les métriques depuis la base de données
-            db_metrics = get_db_metrics()
-            
-            # Mettre à jour les métriques en mémoire
-            for engine, metrics in db_metrics.items():
-                if engine in stt_metrics:
-                    for key, value in metrics.items():
-                        if key in stt_metrics[engine] and key not in ["latencies", "audio_durations"]:
-                            stt_metrics[engine][key] = value
-            
-            print("Métriques STT chargées depuis la base de données")
-        except Exception as e:
-            print(f"Erreur lors du chargement des métriques depuis la base de données: {e}")
+    from database_manager import get_stt_metrics as get_db_metrics
+
+    # Récupérer les métriques depuis la base de données
+    db_metrics = get_db_metrics()
+
+    # Mettre à jour les métriques en mémoire
+    for engine, metrics in db_metrics.items():
+        if engine in stt_metrics:
+            for key, value in metrics.items():
+                if key in stt_metrics[engine] and key not in ["latencies", "audio_durations"]:
+                    stt_metrics[engine][key] = value
+
+    print("Métriques STT chargées depuis la base de données")
 except Exception as e:
-    print(f"Erreur lors de l'importation du module de base de données: {e}")
+    print(f"Erreur lors du chargement des métriques depuis la base de données: {e}")
 
 def get_stt_metrics(from_db=False):
     """
@@ -1793,12 +1768,7 @@ def get_stt_metrics(from_db=False):
     if from_db:
         try:
             # Importer le module de base de données
-            try:
-                # Essayer d'abord l'import en tant que package
-                from whisp_assistant.database_manager import get_stt_metrics as get_db_metrics
-            except ImportError:
-                # Sinon, utiliser l'import relatif
-                from database_manager import get_stt_metrics as get_db_metrics
+            from database_manager import get_stt_metrics as get_db_metrics
             
             # Récupérer les métriques depuis la base de données
             db_metrics = get_db_metrics()
@@ -1864,12 +1834,7 @@ def reset_stt_metrics():
     # Réinitialiser également dans la base de données
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import reset_stt_metrics_db
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import reset_stt_metrics_db
+        from database_manager import reset_stt_metrics_db
         
         # Réinitialiser les métriques dans la base de données
         success = reset_stt_metrics_db()
@@ -1885,12 +1850,7 @@ def reset_stt_metrics():
     # Réinitialiser également dans la base de données
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import reset_stt_metrics_db
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import reset_stt_metrics_db
+        from database_manager import reset_stt_metrics_db
         
         # Réinitialiser les métriques dans la base de données
         success = reset_stt_metrics_db()
@@ -1978,12 +1938,7 @@ def update_stt_metrics(engine, success=True, latency=0, audio_duration=0, text="
     # Sauvegarder les métriques dans la base de données
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import save_stt_metric, save_stt_metrics_history
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import save_stt_metric, save_stt_metrics_history
+        from database_manager import save_stt_metric, save_stt_metrics_history
         
         # Sauvegarder les métriques principales dans la base de données
         # Nous ne sauvegardons pas les listes complètes pour des raisons de performance
@@ -2030,12 +1985,7 @@ def update_stt_metrics(engine, success=True, latency=0, audio_duration=0, text="
     # Sauvegarder les métriques dans la base de données
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import save_stt_metric, save_stt_metrics_history
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import save_stt_metric, save_stt_metrics_history
+        from database_manager import save_stt_metric, save_stt_metrics_history
         
         # Sauvegarder les métriques principales dans la base de données
         # Nous ne sauvegardons pas les listes complètes pour des raisons de performance

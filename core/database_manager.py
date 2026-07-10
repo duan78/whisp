@@ -11,6 +11,11 @@ from functools import wraps
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "whisp_data.db")
 DB_PATH = os.path.abspath(DB_PATH)
 
+# Types d'actions autorisés pour les raccourcis personnalisés (defense-in-depth).
+# Doit rester cohérent avec shortcuts_database.ALLOWED_ACTION_TYPES.
+# 'script' est exclu (exécution de code arbitraire = RCE).
+ALLOWED_SHORTCUT_ACTION_TYPES = frozenset({"keyboard", "text", "url", "app"})
+
 def ensure_connection(func):
     """Décorateur pour s'assurer qu'une connexion à la base de données est établie"""
     @wraps(func)
@@ -901,6 +906,11 @@ def save_custom_shortcut(conn, name, voice_command, action_type, action_data):
     Returns:
         int: ID du raccourci créé ou None en cas d'erreur
     """
+    # Defense-in-depth : rejeter les types d'action non autorisés (anti-RCE)
+    if action_type not in ALLOWED_SHORTCUT_ACTION_TYPES:
+        print(f"Type d'action non autorisé pour save_custom_shortcut: {action_type}")
+        return None
+
     try:
         cursor = conn.cursor()
 
@@ -1067,6 +1077,11 @@ def update_custom_shortcut(conn, shortcut_id, name=None, voice_command=None, act
     Returns:
         bool: True si la mise à jour a réussi
     """
+    # Defense-in-depth : rejeter les types d'action non autorisés (anti-RCE)
+    if action_type is not None and action_type not in ALLOWED_SHORTCUT_ACTION_TYPES:
+        print(f"Type d'action non autorisé pour update_custom_shortcut: {action_type}")
+        return False
+
     try:
         cursor = conn.cursor()
 

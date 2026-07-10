@@ -14,7 +14,7 @@ Performance Optimizations:
 - Concurrent execution with ThreadPoolExecutor
 """
 
-from flask import Flask, render_template, request, jsonify, Response, stream_with_context
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context, abort
 import threading
 import queue
 import time
@@ -172,12 +172,7 @@ def add_log(message, type="info"):
     # Enregistrer le log dans la base de données
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import save_web_log
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import save_web_log
+        from database_manager import save_web_log
         
         # Enregistrer le log dans la base de données
         save_web_log(timestamp, message, type)
@@ -200,14 +195,27 @@ def add_response(response):
         # Envoyer directement la réponse pour mise à jour en temps réel
         web_message_queue.put(json.dumps({"type": "response", "data": response}))
 
-def start_web_server(host='0.0.0.0', port=5000):
-    """Démarre le serveur web dans un thread séparé"""
+def start_web_server(host=None, port=None):
+    """Démarre le serveur web dans un thread séparé.
+
+    Par défaut, le serveur se lie à 127.0.0.1 (localhost) uniquement, afin de
+    ne pas exposer l'interface sur le réseau. Pour l'exposer (déconseillé), il
+    faut définir explicitement WEB_HOST=0.0.0.0 dans l'environnement.
+    """
     # Enregistrer l'interface web auprès du gestionnaire d'erreurs
     error_handler = get_error_handler()
     get_error_handler().register_web_interface(sys.modules[__name__])
 
+    # Configuration depuis l'environnement (voir config.example.env).
+    # Valeur par défaut sûre : 127.0.0.1 (accessible uniquement en local).
+    if host is None:
+        host = os.environ.get('WEB_HOST', '127.0.0.1')
+    if port is None:
+        port = int(os.environ.get('WEB_PORT', '5000'))
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() in ('1', 'true', 'yes')
+
     # Démarrer le serveur dans un thread séparé
-    threading.Thread(target=lambda: app.run(host=host, port=port, debug=False, use_reloader=False),
+    threading.Thread(target=lambda: app.run(host=host, port=port, debug=debug, use_reloader=False),
                     daemon=True).start()
 
     print(f"Interface web disponible à l'adresse http://{host}:{port}")
@@ -350,11 +358,22 @@ def config():
 
 @app.route('/records/<path:filename>')
 def serve_records(filename):
-    """Sert les fichiers du dossier records"""
-    records_dir = os.path.join(os.getcwd(), "records")
-    file_path = os.path.join(records_dir, filename)
+    """Sert les fichiers du dossier records.
 
-    # Use context manager for proper file cleanup
+    Sécurisé contre le path traversal : le chemin résolu doit rester dans le
+    dossier ``records/`` (comparaison par realpath).
+    """
+    records_dir = os.path.realpath(os.path.join(os.getcwd(), "records"))
+    file_path = os.path.realpath(os.path.join(records_dir, filename))
+
+    # Empêcher la sortie du dossier records (path traversal type ../)
+    if not file_path.startswith(records_dir + os.sep) and file_path != records_dir:
+        add_log(f"Tentative d'accès hors de records/ : {filename}", "warning")
+        abort(403)
+
+    if not os.path.isfile(file_path):
+        abort(404)
+
     with open(file_path, 'rb') as f:
         audio_data = f.read()
 
@@ -365,12 +384,7 @@ def aliases():
     """Page de gestion des alias de commandes"""
     try:
         # Importer le module des alias de commandes
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.command_aliases import command_aliases
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from command_aliases import command_aliases
+        from command_aliases import command_aliases
             
         # Récupérer tous les alias pour les passer au template
         all_aliases = command_aliases.aliases
@@ -777,12 +791,7 @@ def get_stt_metrics_route():
         if history:
             try:
                 # Importer le module de base de données
-                try:
-                    # Essayer d'abord l'import en tant que package
-                    from whisp_assistant.database_manager import get_stt_metrics_history
-                except ImportError:
-                    # Sinon, utiliser l'import relatif
-                    from database_manager import get_stt_metrics_history
+                from database_manager import get_stt_metrics_history
                 
                 # Récupérer l'historique des métriques
                 metrics_history = get_stt_metrics_history(engine=engine, limit=50)
@@ -822,12 +831,7 @@ def get_logs():
             # Récupérer les logs depuis la base de données
             try:
                 # Importer le module de base de données
-                try:
-                    # Essayer d'abord l'import en tant que package
-                    from whisp_assistant.database_manager import get_web_logs
-                except ImportError:
-                    # Sinon, utiliser l'import relatif
-                    from database_manager import get_web_logs
+                from database_manager import get_web_logs
                 
                 # Récupérer les logs depuis la base de données
                 logs = get_web_logs(limit=count)
@@ -1322,12 +1326,7 @@ def get_stt_settings_route():
     """Récupère les paramètres de reconnaissance vocale"""
     try:
         # Importer le module de reconnaissance vocale
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.speech_recognition_module import get_stt_settings, DEFAULT_STT_SETTINGS
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from speech_recognition_module import get_stt_settings, DEFAULT_STT_SETTINGS
+        from speech_recognition_module import get_stt_settings, DEFAULT_STT_SETTINGS
         
         # Récupérer les paramètres
         settings = get_stt_settings()
@@ -1351,12 +1350,7 @@ def update_stt_setting_route():
     """Met à jour un paramètre de reconnaissance vocale"""
     try:
         # Importer le module de reconnaissance vocale
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.speech_recognition_module import update_stt_setting
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from speech_recognition_module import update_stt_setting
+        from speech_recognition_module import update_stt_setting
 
         data = request.get_json()
         key = data.get('key')
@@ -1394,12 +1388,7 @@ def reset_stt_settings_route():
     """Réinitialise les paramètres de reconnaissance vocale aux valeurs par défaut"""
     try:
         # Importer les modules nécessaires
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.speech_recognition_module import DEFAULT_STT_SETTINGS, update_stt_setting
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from speech_recognition_module import DEFAULT_STT_SETTINGS, update_stt_setting
+        from speech_recognition_module import DEFAULT_STT_SETTINGS, update_stt_setting
         
         # Réinitialiser chaque paramètre
         for key, value in DEFAULT_STT_SETTINGS.items():
@@ -1731,12 +1720,7 @@ def get_custom_shortcuts_route():
     """Récupère les raccourcis vocaux personnalisés"""
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import get_custom_shortcuts
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import get_custom_shortcuts
+        from database_manager import get_custom_shortcuts
         
         # Récupérer un type d'action spécifique si demandé
         action_type = request.args.get('action_type', None)
@@ -1764,24 +1748,28 @@ def add_custom_shortcut_route():
     """Ajoute un raccourci vocal personnalisé"""
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import save_custom_shortcut
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import save_custom_shortcut
+        from database_manager import save_custom_shortcut
 
         data = request.get_json()
         name = data.get('name')
         voice_command = data.get('voice_command')
         action_type = data.get('action_type')
         action_data = data.get('action_data')
-        
+
         print(f"Tentative d'ajout de raccourci personnalisé: nom='{name}', commande='{voice_command}'")
-        
+
         if not name or not voice_command or not action_type or not action_data:
             return jsonify({"success": False, "error": "Tous les champs sont requis"})
-        
+
+        # Valider le type d'action contre une allowlist (anti-RCE)
+        from shortcuts_database import ALLOWED_ACTION_TYPES
+        if action_type not in ALLOWED_ACTION_TYPES:
+            return jsonify({
+                "success": False,
+                "error": f"Type d'action non autorisé: {action_type}. "
+                         f"Types valides: {', '.join(sorted(ALLOWED_ACTION_TYPES))}"
+            })
+
         # Sauvegarder le raccourci
         shortcut_id = save_custom_shortcut(name, voice_command, action_type, action_data)
         
@@ -1814,12 +1802,7 @@ def update_custom_shortcut_route():
     """Met à jour un raccourci vocal personnalisé"""
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import update_custom_shortcut
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import update_custom_shortcut
+        from database_manager import update_custom_shortcut
 
         data = request.get_json()
         shortcut_id = data.get('id')
@@ -1827,10 +1810,20 @@ def update_custom_shortcut_route():
         voice_command = data.get('voice_command')
         action_type = data.get('action_type')
         action_data = data.get('action_data')
-        
+
         if not shortcut_id:
             return jsonify({"success": False, "error": "ID du raccourci non spécifié"})
-        
+
+        # Valider le type d'action contre une allowlist (anti-RCE)
+        if action_type is not None:
+            from shortcuts_database import ALLOWED_ACTION_TYPES
+            if action_type not in ALLOWED_ACTION_TYPES:
+                return jsonify({
+                    "success": False,
+                    "error": f"Type d'action non autorisé: {action_type}. "
+                             f"Types valides: {', '.join(sorted(ALLOWED_ACTION_TYPES))}"
+                })
+
         # Mettre à jour le raccourci
         success = update_custom_shortcut(
             shortcut_id, 
@@ -1867,12 +1860,7 @@ def delete_custom_shortcut_route():
     """Supprime un raccourci vocal personnalisé"""
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import delete_custom_shortcut
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import delete_custom_shortcut
+        from database_manager import delete_custom_shortcut
 
         data = request.get_json()
         shortcut_id = data.get('id')
@@ -1910,12 +1898,7 @@ def get_command_aliases_route():
     """Récupère les alias de commandes"""
     try:
         # Importer le module des alias de commandes
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.command_aliases import command_aliases
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from command_aliases import command_aliases
+        from command_aliases import command_aliases
         
         # Récupérer une commande spécifique si demandée
         command = request.args.get('command', None)
@@ -1955,12 +1938,7 @@ def get_command_aliases_route():
 def add_command_alias_route():
     """Ajoute un alias de commande"""
     try:
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.command_aliases import command_aliases
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from command_aliases import command_aliases
+        from command_aliases import command_aliases
 
         data = request.get_json()
         command = data.get('command')
@@ -2024,12 +2002,7 @@ def add_command_alias_route():
 def remove_command_alias_route():
     """Supprime un alias de commande"""
     try:
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.command_aliases import command_aliases
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from command_aliases import command_aliases
+        from command_aliases import command_aliases
 
         data = request.get_json()
         alias = data.get('alias')
@@ -2080,12 +2053,7 @@ def remove_command_alias_route():
 def reload_command_aliases_route():
     """Recharge les alias de commandes depuis la base de données"""
     try:
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.command_aliases import command_aliases
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from command_aliases import command_aliases
+        from command_aliases import command_aliases
         
         # Recharger les alias depuis la base de données
         success = command_aliases.reload_from_database()
@@ -2118,12 +2086,7 @@ def optimize_database_route():
     """Optimise la base de données SQLite"""
     try:
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import ensure_connection
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import ensure_connection
+        from database_manager import ensure_connection
         
         @ensure_connection
         def optimize_db(conn):
@@ -2167,12 +2130,7 @@ def backup_database_route():
         import datetime
         
         # Importer le module de base de données
-        try:
-            # Essayer d'abord l'import en tant que package
-            from whisp_assistant.database_manager import DB_PATH
-        except ImportError:
-            # Sinon, utiliser l'import relatif
-            from database_manager import DB_PATH
+        from database_manager import DB_PATH
         
         # Créer un répertoire de sauvegarde s'il n'existe pas
         backup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backups")

@@ -4,6 +4,7 @@ Module de commandes de productivité pour l'assistant Whisp
 
 import pyautogui
 import subprocess
+import shlex
 import os
 import time
 import pyperclip
@@ -664,8 +665,10 @@ def executer_commande_productivite(texte):
                             webbrowser.open(shortcut_cmd)
                             return f"Raccourci '{shortcut_name}' exécuté : URL ouverte"
                         else:
-                            # Sinon, essayer de l'exécuter comme une commande système
-                            subprocess.Popen(shortcut_cmd, shell=True)
+                            # Sinon, essayer de l'exécuter comme une commande système.
+                            # shell=False + shlex.split pour éviter l'injection de
+                            # commandes shell via le contenu du fichier de raccourcis.
+                            subprocess.Popen(shlex.split(shortcut_cmd), shell=False)
                             return f"Raccourci '{shortcut_name}' exécuté"
                     else:
                         return f"Raccourci '{shortcut_name}' non trouvé"

@@ -63,14 +63,8 @@ plyer>=2.1.0
 # ------------------------------------------------------------------------------
 cryptography>=41.0.0  # Pour le chiffrement des clés API
 
-# ------------------------------------------------------------------------------
-# Qualité de code et tests (Ajouté pour la modernisation)
-# ------------------------------------------------------------------------------
-pytest>=7.4.0
-pytest-cov>=4.1.0
-black>=23.0.0
-flake8>=6.0.0
-mypy>=1.5.0
+# Les outils de développement (pytest, black, flake8, mypy, ...) sont dans
+# requirements-dev.txt et pyproject.toml [project.optional-dependencies] dev.
 
 # ------------------------------------------------------------------------------
 # Dépendances conditionnelles selon l'OS
