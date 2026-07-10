@@ -500,7 +500,7 @@ def get_all_shortcuts(conn):
     cursor = conn.cursor()
     
     # Créer la table si elle n'existe pas
-    initialize_shortcuts_database(conn)
+    initialize_shortcuts_database()
     
     # Récupérer tous les raccourcis
     cursor.execute("SELECT os_type, application, command, shortcut FROM shortcuts")
@@ -529,7 +529,7 @@ def add_or_update_shortcut(conn, os_type, application, command, shortcut):
     cursor = conn.cursor()
     
     # Créer la table si elle n'existe pas
-    initialize_shortcuts_database(conn)
+    initialize_shortcuts_database()
     
     # Convertir le raccourci en JSON pour le stockage
     shortcut_json = json.dumps(shortcut)

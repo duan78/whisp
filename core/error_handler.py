@@ -34,10 +34,19 @@ class ErrorCategory:
     SPEECH_RECOGNITION = "Reconnaissance vocale"
     TTS = "Synthèse vocale"
     COMMAND_PROCESSING = "Traitement des commandes"
+    COMMAND = "Traitement des commandes"  # alias
     WEB_INTERFACE = "Interface web"
     SYSTEM = "Système"
     NETWORK = "Réseau"
     API = "API externe"
+    AUDIO = "Audio"
+    DATABASE = "Base de données"
+    FILE_IO = "Entrées/Sorties fichiers"
+    GENERAL = "Général"
+    INPUT = "Entrée utilisateur"
+    PRODUCTIVITY = "Productivité"
+    WINDOW_MANAGEMENT = "Gestion des fenêtres"
+    DEV_ENVIRONMENT = "Environnement de développement"
     UNKNOWN = "Erreur inconnue"
 
 # Niveaux de gravité
@@ -60,8 +69,23 @@ class ErrorHandler:
     def register_web_interface(self, web_interface):
         """Enregistre l'interface web pour les notifications"""
         self.web_interface = web_interface
-    
-    def handle_error(self, error, category=ErrorCategory.UNKNOWN, severity=ErrorSeverity.MEDIUM, 
+
+    def log_error(self, category, message, severity=ErrorSeverity.MEDIUM, context=None):
+        """Alias de compatibilité pour handle_error.
+
+        De nombreux modules appellent error_handler.log_error(category, message, severity)
+        avec cet ordre d'arguments. Cette méthode adapte vers handle_error dont la
+        signature est handle_error(error, category=..., severity=...).
+        """
+        return self.handle_error(
+            message,
+            category=category,
+            severity=severity,
+            context=context,
+            notify_user=False,
+        )
+
+    def handle_error(self, error, category=ErrorCategory.UNKNOWN, severity=ErrorSeverity.MEDIUM,
                     context=None, notify_user=True, recovery_action=None):
         """
         Gère une erreur de manière centralisée

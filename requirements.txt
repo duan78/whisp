@@ -31,10 +31,8 @@ numpy>=1.26.0
 scipy>=1.11.0
 Pillow>=10.0.0
 
-# ------------------------------------------------------------------------------
-# Optimisation JIT pour calculs intensifs
-# ------------------------------------------------------------------------------
-numba>=0.59.0
+# L'optimisation JIT Numba est optionnelle (fallback automatique vers les
+# fonctions standards si non installé). Voir requirements_optional.txt.
 
 # ------------------------------------------------------------------------------
 # IA et API

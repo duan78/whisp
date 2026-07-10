@@ -5,6 +5,7 @@ Extracted verbatim from ``web_interface.py``. Only the decorators changed
 """
 
 from flask import Blueprint, request, jsonify
+from error_handler import ErrorCategory, ErrorSeverity
 from web.state import add_log, get_error_handler, get_error_types, get_bug_tracker
 
 bp = Blueprint('bugs', __name__)

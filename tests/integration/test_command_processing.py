@@ -4,23 +4,21 @@ Tests d'intégration pour le traitement des commandes
 
 import os
 import sys
+import platform
 import pytest
 
-# Skip tests if DISPLAY is not available (no GUI environment)
+# Ces tests valident le traitement de commandes (InputValidator, fonctions système
+# retournant des chaînes) — ils n'interagissent pas réellement avec le GUI.
+# On ne les skip que sur Linux sans DISPLAY (headless CI), pas sur Windows/macOS.
+_skip_no_gui = platform.system() == "Linux" and not os.environ.get('DISPLAY')
+
 pytestmark = pytest.mark.skipif(
-    not os.environ.get('DISPLAY'),
-    reason="DISPLAY environment variable not set - skipping GUI integration tests"
+    _skip_no_gui,
+    reason="Environnement headless Linux (pas de DISPLAY) - tests nécessitant un GUI"
 )
 
-# Only import GUI-dependent modules if DISPLAY is available
-if os.environ.get('DISPLAY'):
-    from input_validation import InputValidator, ValidationError
-    from system_commands import executer_commande_systeme
-else:
-    # Create mock imports for test collection
-    InputValidator = None
-    ValidationError = None
-    executer_commande_systeme = None
+from input_validation import InputValidator, ValidationError
+from system_commands import executer_commande_systeme
 
 
 class TestCommandProcessingIntegration:

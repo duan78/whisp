@@ -7,6 +7,7 @@ Extracted verbatim from ``web_interface.py``. Only the decorators changed
 import traceback
 
 from flask import Blueprint, request, jsonify
+from error_handler import ErrorCategory, ErrorSeverity
 from web.state import add_log, get_error_handler, get_error_types
 
 bp = Blueprint('aliases', __name__)
