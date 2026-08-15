@@ -59,6 +59,10 @@ __all__ = [
     'set_openai_api_key',
     'get_mistral_api_key',
     'set_mistral_api_key',
+    'get_audio_backend',
+    'set_audio_backend',
+    'is_audio_backend_auto_detected',
+    'set_audio_backend_auto_detected',
 
     # From core.api_security (may be stubs)
     'get_secure_api_key',

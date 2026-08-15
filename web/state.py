@@ -6,6 +6,7 @@ mutable singletons and helper functions.
 """
 
 import queue
+import threading
 import time
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -45,6 +46,46 @@ def get_bug_tracker():
 
 # File d'attente pour les messages à afficher dans l'interface web
 web_message_queue = queue.Queue()
+
+# Registre des clients SSE : chaque client /events reçoit sa propre file.
+# Une file unique partagée entre les clients faisait que chaque message
+# n'était livré qu'à un seul d'entre eux (round-robin du Queue.get).
+_sse_clients = []
+_sse_clients_lock = threading.Lock()
+
+def register_sse_client(maxsize=500):
+    """Inscrit un nouveau client SSE et retourne sa file dédiée"""
+    client_queue = queue.Queue(maxsize=maxsize)
+    with _sse_clients_lock:
+        _sse_clients.append(client_queue)
+    return client_queue
+
+def unregister_sse_client(client_queue):
+    """Retire la file d'un client SSE déconnecté"""
+    with _sse_clients_lock:
+        if client_queue in _sse_clients:
+            _sse_clients.remove(client_queue)
+
+def publish_web_message(message):
+    """Publie un message vers tous les clients SSE (fan-out).
+
+    Le message est aussi placé dans web_message_queue pour les éventuels
+    consommateurs historiques.
+    """
+    web_message_queue.put(message)
+    with _sse_clients_lock:
+        clients = list(_sse_clients)
+    for client_queue in clients:
+        try:
+            client_queue.put_nowait(message)
+        except queue.Full:
+            # Client lent : abandonner son message le plus ancien
+            try:
+                client_queue.get_nowait()
+                client_queue.task_done()
+                client_queue.put_nowait(message)
+            except (queue.Empty, queue.Full):
+                pass
 
 # Thread pool for concurrent I/O operations
 executor = ThreadPoolExecutor(max_workers=4)
@@ -100,7 +141,7 @@ def add_log(message, type="info"):
             assistant_state["errors"] = assistant_state["errors"][-20:]
 
     # Ajouter à la file d'attente pour SSE
-    web_message_queue.put(json.dumps({"type": "log", "data": log_entry}))
+    publish_web_message(json.dumps({"type": "log", "data": log_entry}))
 
     # Si c'est une erreur ou un avertissement, enregistrer également dans le gestionnaire d'erreurs
     if type in ["error", "warning"]:
@@ -131,7 +172,7 @@ def add_command(command):
     assistant_state["last_command"] = command
     add_log(f"Commande: {command}", "command")
     # Envoyer directement la commande pour mise à jour en temps réel
-    web_message_queue.put(json.dumps({"type": "command", "data": command}))
+    publish_web_message(json.dumps({"type": "command", "data": command}))
 
 def add_response(response):
     """Enregistre une réponse de l'assistant"""
@@ -139,4 +180,4 @@ def add_response(response):
         assistant_state["last_response"] = response
         add_log(f"Réponse: {response}", "response")
         # Envoyer directement la réponse pour mise à jour en temps réel
-        web_message_queue.put(json.dumps({"type": "response", "data": response}))
+        publish_web_message(json.dumps({"type": "response", "data": response}))

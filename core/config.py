@@ -14,15 +14,10 @@ def _get_db_functions():
         from .database_manager import load_config, save_config, save_user_preference, load_user_preferences
         return load_config, save_config, save_user_preference, load_user_preferences
     except ImportError:
-        # Fallback to old location during migration
-        try:
-            from database_manager import load_config, save_config, save_user_preference, load_user_preferences
-            return load_config, save_config, save_user_preference, load_user_preferences
-        except ImportError:
-            # Return stubs if database_manager is not available yet
-            def stub(*args, **kwargs):
-                pass
-            return stub, stub, stub, stub
+        # Return stubs if database_manager is not available yet
+        def stub(*args, **kwargs):
+            pass
+        return stub, stub, stub, stub
 
 # Import api_security functions using lazy import
 def _get_api_security_functions():
@@ -31,11 +26,6 @@ def _get_api_security_functions():
         from .api_security import get_secure_api_key, set_secure_api_key, migrate_api_keys
         return get_secure_api_key, set_secure_api_key, migrate_api_keys
     except ImportError:
-        # Fallback to old location during migration
-        try:
-            from api_security import get_secure_api_key, set_secure_api_key, migrate_api_keys
-            return get_secure_api_key, set_secure_api_key, migrate_api_keys
-        except ImportError:
             # Return stubs if api_security is not available
             def stub_get(service: str) -> str:
                 return ""

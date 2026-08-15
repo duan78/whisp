@@ -5,6 +5,7 @@ Module de gestion des commandes de navigateur pour l'assistant Whisp
 import webbrowser
 import pyautogui
 import re
+from urllib.parse import quote
 from window_manager import detect_application_context, is_browser_active, get_active_browser, get_active_browser_tab_info
 from input_validation import InputValidator, ValidationError
 
@@ -407,13 +408,13 @@ def executer_commande_navigateur(texte):
                 site = texte.split("sur")[1].strip()
                 
                 if "google" in site:
-                    webbrowser.open(f'https://www.google.com/search?q={recherche}')
+                    webbrowser.open(f'https://www.google.com/search?q={quote(recherche)}')
                     return f"Recherche de '{recherche}' sur Google"
                 elif "youtube" in site:
-                    webbrowser.open(f'https://www.youtube.com/results?search_query={recherche}')
+                    webbrowser.open(f'https://www.youtube.com/results?search_query={quote(recherche)}')
                     return f"Recherche de '{recherche}' sur YouTube"
                 elif "wikipédia" in site:
-                    webbrowser.open(f'https://fr.wikipedia.org/wiki/{recherche}')
+                    webbrowser.open(f'https://fr.wikipedia.org/wiki/{quote(recherche)}')
                     return f"Recherche de '{recherche}' sur Wikipédia"
                 else:
                     return f"Site de recherche '{site}' non reconnu"
@@ -444,7 +445,7 @@ def executer_commande_navigateur(texte):
                     return f"Recherche de '{recherche}' dans un nouvel onglet"
                 else:
                     # Si aucun navigateur n'est actif, ouvrir Google
-                    webbrowser.open(f'https://www.google.com/search?q={recherche}')
+                    webbrowser.open(f'https://www.google.com/search?q={quote(recherche)}')
                     return f"Recherche de '{recherche}' sur Google"
         except Exception as e:
             return f"Erreur lors de la recherche: {str(e)}"
@@ -520,7 +521,14 @@ def executer_commande_navigateur(texte):
                     
                     return f"Ouverture de {site_name} dans un nouvel onglet"
                 else:
-                    webbrowser.open(site_name)
+                    # Ne passer à webbrowser que des URLs http(s) ou des noms
+                    # simples ; toute autre chaîne (ex. file://, C:\...) est refusée
+                    if re.match(r'^https?://', site_name, re.IGNORECASE):
+                        webbrowser.open(site_name)
+                    elif re.match(r'^[A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z]{2,}$', site_name):
+                        webbrowser.open(f'https://{site_name}')
+                    else:
+                        return f"'{site_name}' n'est pas une adresse valide"
                     return f"Ouverture de {site_name} dans une nouvelle fenêtre"
             else:
                 # Essayer avec .com, .fr, etc.

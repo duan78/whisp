@@ -786,8 +786,15 @@ def get_error_logs(conn, limit=50, category=None, min_severity=None):
         params.append(category)
 
     if min_severity:
-        conditions.append("severity = ?")
-        params.append(min_severity)
+        # min_severity = niveau MINIMUM : filtrer par ordre de gravité et
+        # non par égalité stricte. Accepte un nom simple ("medium") ou un
+        # enum ("ErrorSeverity.MEDIUM").
+        severity_order = ["DEBUG", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        wanted = str(min_severity).rsplit(".", 1)[-1].upper()
+        if wanted in severity_order:
+            allowed = severity_order[severity_order.index(wanted):]
+            conditions.append(f"UPPER(severity) IN ({','.join('?' * len(allowed))})")
+            params.extend(allowed)
 
     if conditions:
         query += " WHERE " + " AND ".join(conditions)

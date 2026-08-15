@@ -213,7 +213,7 @@ class SoundDeviceInputStream:
 
             print(f"Vosk Debug: Flux audio démarré sur {platform_config['system']} "
                   f"(taux: {self.sample_rate}, canaux: {self.channels}, "
-                  f"chunk: {stream_config['block_size']})")
+                  f"chunk: {stream_config['blocksize']})")
 
         except Exception as e:
             print(f"Erreur lors de l'ouverture du flux sounddevice: {e}")
@@ -691,6 +691,11 @@ audio_queue = queue.Queue()
 
 # Liste des threads actifs pour pouvoir les arrêter proprement
 active_threads = []
+
+# Signal d'arrêt du thread de traitement audio : get_running() reste True
+# pendant toute la vie de l'app, il ne suffit donc pas à arrêter le thread
+# lors d'un redémarrage de la reconnaissance (changement de moteur).
+audio_processing_stop = threading.Event()
 
 
 
@@ -1838,23 +1843,7 @@ def reset_stt_metrics():
     try:
         # Importer le module de base de données
         from database_manager import reset_stt_metrics_db
-        
-        # Réinitialiser les métriques dans la base de données
-        success = reset_stt_metrics_db()
-        if success:
-            print("Métriques STT réinitialisées dans la base de données")
-        else:
-            print("Échec de la réinitialisation des métriques STT dans la base de données")
-    except Exception as e:
-        print(f"Erreur lors de la réinitialisation des métriques dans la base de données: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Réinitialiser également dans la base de données
-    try:
-        # Importer le module de base de données
-        from database_manager import reset_stt_metrics_db
-        
+
         # Réinitialiser les métriques dans la base de données
         success = reset_stt_metrics_db()
         if success:
@@ -1984,61 +1973,14 @@ def update_stt_metrics(engine, success=True, latency=0, audio_duration=0, text="
         print(f"Erreur lors de la sauvegarde des métriques dans la base de données: {e}")
         import traceback
         traceback.print_exc()
-    
-    # Sauvegarder les métriques dans la base de données
-    try:
-        # Importer le module de base de données
-        from database_manager import save_stt_metric, save_stt_metrics_history
-        
-        # Sauvegarder les métriques principales dans la base de données
-        # Nous ne sauvegardons pas les listes complètes pour des raisons de performance
-        metrics_to_save = {
-            "requests": metrics["requests"],
-            "success": metrics["success"],
-            "errors": metrics["errors"],
-            "avg_latency": metrics["avg_latency"],
-            "min_latency": metrics["min_latency"] if "min_latency" in metrics else 0,
-            "max_latency": metrics["max_latency"] if "max_latency" in metrics else 0,
-            "last_latency": metrics["last_latency"],
-            "avg_audio_duration": metrics["avg_audio_duration"],
-            "last_audio_duration": metrics["last_audio_duration"],
-            "word_count": metrics["word_count"],
-            "char_count": metrics["char_count"],
-            "words_per_minute": metrics["words_per_minute"] if "words_per_minute" in metrics else 0
-        }
-        
-        # Ajouter le coût pour Whisper
-        if engine == "whisper" and "cost" in metrics:
-            metrics_to_save["cost"] = metrics["cost"]
-        
-        # Sauvegarder chaque métrique
-        for key, value in metrics_to_save.items():
-            save_stt_metric(engine, key, str(value))
-            
-        # Sauvegarder un point d'historique toutes les 10 requêtes
-        if metrics["requests"] % 10 == 0:
-            save_stt_metrics_history(
-                engine=engine,
-                requests=metrics["requests"],
-                success=metrics["success"],
-                errors=metrics["errors"],
-                avg_latency=metrics["avg_latency"],
-                avg_audio_duration=metrics["avg_audio_duration"],
-                word_count=metrics["word_count"],
-                char_count=metrics["char_count"]
-            )
-    except Exception as e:
-        print(f"Erreur lors de la sauvegarde des métriques dans la base de données: {e}")
-        import traceback
-        traceback.print_exc()
-    
+
     # Notifier l'interface web des nouvelles métriques
     try:
-        if 'web_interface' in sys.modules:
-            from web_interface import web_message_queue
+        if 'web_interface' in sys.modules or 'web.state' in sys.modules:
+            from web.state import publish_web_message
             import json
-            # Envoyer les métriques mises à jour via SSE
-            web_message_queue.put(json.dumps({"type": "metrics", "data": stt_metrics}))
+            # Envoyer les métriques mises à jour via SSE (fan-out vers tous les clients)
+            publish_web_message(json.dumps({"type": "metrics", "data": stt_metrics}))
             # Ajouter un log pour le débogage des métriques Whisper CT2
             if engine == "whisper_ct2":
                 print(f"Métriques Whisper CT2 envoyées à l'interface web - Requêtes: {metrics['requests']}, Succès: {metrics['success']}, Latence: {metrics['last_latency']:.0f}ms")
@@ -2139,7 +2081,7 @@ def _setup_vosk_universal(vosk_engine):
     print("✅ Configuration Vosk + sounddevice")
 
     # Créer une fonction d'arrêt
-    def stop_vosk_listening():
+    def stop_vosk_listening(wait_for_stop=False):
         try:
             vosk_engine.stop_listening()
             print("Écoute Vosk arrêtée")
@@ -3335,7 +3277,7 @@ def start_speechrecognition_listening(recognizer, microphone, command_processor)
     # Thread de traitement audio
     def audio_processing_thread():
         print("Thread de traitement audio SpeechRecognition démarré")
-        while get_running():
+        while get_running() and not audio_processing_stop.is_set():
             try:
                 # Récupérer l'audio de la file d'attente avec un timeout court
                 # pour réagir rapidement à l'arrêt
@@ -3346,16 +3288,17 @@ def start_speechrecognition_listening(recognizer, microphone, command_processor)
             except queue.Empty:
                 # Pas d'audio à traiter, continuer la boucle
                 # Vérifier si on doit s'arrêter
-                if not get_running():
+                if not get_running() or audio_processing_stop.is_set():
                     break
                 continue
             except Exception as e:
                 print(f"Erreur dans le thread de traitement audio: {e}")
                 # Vérifier si on doit s'arrêter
-                if not get_running():
+                if not get_running() or audio_processing_stop.is_set():
                     break
-    
+
     # Démarrer le thread de traitement audio
+    audio_processing_stop.clear()
     processing_thread = threading.Thread(
         target=audio_processing_thread,
         daemon=True,
@@ -3408,14 +3351,20 @@ _stop_listening_func = None
 def arreter_threads_reconnaissance():
     """Arrête tous les threads de reconnaissance vocale"""
     global active_threads, audio_queue, vosk_running, vosk_thread, whisper_ct2_running, whisper_ct2_thread, whisper_french_running, whisper_french_thread, _stop_listening_func, _recognizer, _microphone
-    
+
     # Arrêter la fonction d'écoute si elle existe
     if _stop_listening_func:
         try:
             _stop_listening_func(wait_for_stop=False)
-            _stop_listening_func = None
+        except TypeError:
+            # Certaines fonctions stop n'acceptent pas wait_for_stop
+            try:
+                _stop_listening_func()
+            except Exception:
+                pass
         except Exception:
             pass
+        _stop_listening_func = None
     
     # Arrêter Vosk si actif
     vosk_running = False
@@ -3452,7 +3401,15 @@ def arreter_threads_reconnaissance():
         except Exception:
             pass
     
-    # Vider la liste des threads sans attendre leur terminaison
+    # Arrêter le thread de traitement audio et attendre brièvement sa
+    # terminaison : sans join, chaque redémarrage (changement de moteur)
+    # laissait un thread supplémentaire consommer audio_queue en parallèle.
+    audio_processing_stop.set()
+    for t in list(active_threads):
+        if t.name == "audio_processing_thread" and t.is_alive():
+            t.join(timeout=2.0)
+
+    # Vider la liste des threads
     active_threads.clear()
     
     # Réinitialiser le thread Vosk
@@ -3665,7 +3622,7 @@ def start_whisper_listening(recognizer, microphone, command_processor):
     active_threads.append(whisper_thread)
     
     # Fonction pour arrêter l'écoute
-    def stop_whisper_listening():
+    def stop_whisper_listening(wait_for_stop=False):
         whisper_running[0] = False
     
     return stop_whisper_listening
@@ -3973,7 +3930,13 @@ def start_vosk_listening(recognizer, microphone, command_processor):
         print("Arrêt du thread Vosk existant...")
         vosk_running = False
         vosk_thread.join(timeout=1.0)
-    
+        if vosk_thread.is_alive():
+            # Le thread est bloqué dans une lecture audio : si on remettait
+            # vosk_running = True ci-dessous, il repartirait en parallèle du
+            # nouveau thread (lectures concurrentes du même micro).
+            print("ERREUR: l'ancien thread Vosk ne s'est pas arrêté — démarrage annulé")
+            return lambda **kwargs: None
+
     # Variable pour contrôler l'exécution du thread
     vosk_running = True
     
@@ -4263,10 +4226,10 @@ def start_vosk_listening(recognizer, microphone, command_processor):
     active_threads.append(vosk_thread)
     
     # Fonction pour arrêter l'écoute
-    def stop_vosk_listening():
+    def stop_vosk_listening(wait_for_stop=False):
         global vosk_running
         vosk_running = False
-    
+
     return stop_vosk_listening
 
 def process_vosk_result(texte, audio_duration, command_processor):

@@ -16,6 +16,18 @@ warnings.filterwarnings("ignore", message="Couldn't find ffmpeg or avconv")
 if not hasattr(signal, 'SIGKILL'):
     signal.SIGKILL = signal.SIGTERM
 
+# Configurer le logging AVANT tout autre import : plusieurs modules appellent
+# logging.basicConfig à l'import — le premier importé gagne et impose sa
+# config au reste de l'application. Ce branchement garantit une config
+# cohérente (fichier tournant + console) quel que soit l'ordre d'import.
+try:
+    from logger_config import setup_logging
+    setup_logging(log_to_file=True, log_to_console=True)
+except Exception as _log_err:
+    print(f"Configuration du logging impossible, repli sur basicConfig: {_log_err}")
+    import logging
+    logging.basicConfig(level=logging.INFO)
+
 # Importer le module de chargement paresseux
 from lazy_loader import lazy_import, background_load
 

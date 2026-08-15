@@ -34,6 +34,8 @@ ALLOWED_COMMANDS = {
 }
 
 # Allowed directories for file operations
+# NB : '~' (home entier) est volontairement absent — il autoriserait aussi
+# ~/.ssh, ~/.aws, les profils navigateur, etc.
 ALLOWED_DIRECTORIES = [
     '~/Documents',
     '~/Desktop',
@@ -42,7 +44,6 @@ ALLOWED_DIRECTORIES = [
     '~/Music',
     '~/Videos',
     '~/OneDrive',
-    '~',
 ]
 
 class InputValidator:
@@ -149,14 +150,28 @@ class InputValidator:
         """Vérifie si un chemin est dans les répertoires autorisés"""
         abs_path = os.path.abspath(path)
 
+        def _contained_in(base, candidate):
+            # commonpath + normcase : confinement réel, insensible à la casse
+            # sous Windows (un simple startswith laisserait passer
+            # ~/Documents-secret pour ~/Documents)
+            base_norm = os.path.normcase(os.path.abspath(base))
+            cand_norm = os.path.normcase(candidate)
+            try:
+                return os.path.commonpath((base_norm, cand_norm)) == base_norm
+            except ValueError:
+                return False  # lecteurs différents sous Windows
+
         for allowed_dir in self.allowed_directories:
-            if abs_path.startswith(os.path.abspath(allowed_dir)):
+            if _contained_in(allowed_dir, abs_path):
                 return True
 
         # Autoriser aussi les fichiers temporaires
-        if abs_path.startswith(os.path.expanduser('~/AppData/Local/Temp')) or \
-           abs_path.startswith('/tmp') or \
-           abs_path.startswith('/var/tmp'):
+        temp_dirs = [
+            os.path.expanduser('~/AppData/Local/Temp'),
+            '/tmp',
+            '/var/tmp',
+        ]
+        if any(_contained_in(t, abs_path) for t in temp_dirs):
             return True
 
         return False

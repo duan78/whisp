@@ -868,18 +868,24 @@
                     filteredAliases.forEach(alias => {
                         const aliasItem = document.createElement('li');
                         aliasItem.className = 'alias-item';
-                        
+
+                        // Échappement HTML avant insertion dans le DOM (anti-XSS)
+                        const escHtml = s => String(s).replace(/[&<>"']/g, c => ({
+                            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                        })[c]);
+                        const escRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
                         // Mettre en surbrillance l'alias s'il correspond au filtre
-                        let displayAlias = alias;
+                        let displayAlias = escHtml(alias);
                         if (filter && !matchingCommand && alias.toLowerCase().includes(filter)) {
-                            const regex = new RegExp(`(${filter})`, 'gi');
-                            displayAlias = alias.replace(regex, '<span class="highlight">$1</span>');
+                            const regex = new RegExp(`(${escRegex(escHtml(filter))})`, 'gi');
+                            displayAlias = displayAlias.replace(regex, '<span class="highlight">$1</span>');
                         }
-                        
+
                         aliasItem.innerHTML = `
                             <div class="alias-text">${displayAlias}</div>
                             <div class="alias-actions">
-                                <button class="delete-button" data-alias="${alias}">
+                                <button class="delete-button" data-alias="${escHtml(alias)}">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -899,7 +905,7 @@
                     aliasesContainer.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-search"></i>
-                            <p>Aucun résultat pour "${filter}"</p>
+                            <p>Aucun résultat pour "${String(filter).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}"</p>
                         </div>
                     `;
                 }

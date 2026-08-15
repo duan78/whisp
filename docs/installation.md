@@ -51,39 +51,18 @@ pip install -e ".[dev]"
 
 ## Étape 3: Configuration Initiale
 
-### Copier les fichiers de configuration
+### Configuration
 
-```bash
-# Copier les templates de configuration
-cp config.example.env config.env
-cp api_keys.json.example api_keys.json
-```
+La configuration des moteurs (STT/TTS, préférences) se fait dans l'interface
+web (page Configuration) et est persistée dans la base SQLite `whisp_data.db` :
+il n'y a pas de fichier `config.env` à créer.
 
-### Éditer la configuration
-
-```bash
-# Ouvrir le fichier de configuration
-nano config.env  # ou votre éditeur préféré
-```
-
-Configuration minimale requise dans `config.env` :
+Seules quelques variables d'environnement sont lues au démarrage — voir
+`config.example.env` :
 ```env
-# Moteurs de reconnaissance vocale
-STT_ENGINE=speechrecognition  # Options: speechrecognition, whisper, vosk, whisper_ct2, whisper_french
-TTS_ENGINE=edge_tts          # Options: edge_tts (recommandé), gtts, pyttsx3, coqui, piper
-LANGUAGE=fr-FR                # Langue par défaut
-
-# Interface web
 WEB_PORT=5000
 WEB_HOST=127.0.0.1
-
-# Configuration audio
-MAX_AUDIO_LENGTH=60
-COMMAND_TIMEOUT=30
-COMMAND_THREADS=4
-
-# Niveau de logs
-LOG_LEVEL=INFO
+FLASK_DEBUG=False
 ```
 
 ### Configuration des clés API (optionnel)
@@ -95,8 +74,8 @@ Si vous souhaitez utiliser les fonctionnalités avancées avec IA :
 Pour configurer une clé, utilisez le script dédié ou l'interface web :
 
 ```bash
-# Définir la clé API Mistral (stockée chiffrée)
-python set_mistral_api_key.py <votre-clé>
+# Définir la clé API Mistral (stockée chiffrée) — saisie masquée interactive
+python set_mistral_api_key.py
 
 # Ou passez par l'interface web : Configuration > Clés API
 ```

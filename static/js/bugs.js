@@ -153,15 +153,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fonction pour ajouter un ticket à la liste
     function addTicketToList(ticket) {
+        // Échappement HTML pour toute donnée insérée dans le DOM (anti-XSS)
+        const esc = s => s === null || s === undefined ? '' :
+            String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]));
+
         // Vérifier si la liste des tickets existe
         if (!ticketsList) return;
-        
+
         // Vérifier s'il n'y a pas de tickets
         const noTickets = ticketsList.querySelector('.no-tickets');
         if (noTickets) {
             noTickets.remove();
         }
-        
+
         // Créer l'élément de ticket
         const ticketItem = document.createElement('div');
         ticketItem.className = 'ticket-item';
@@ -169,31 +175,31 @@ document.addEventListener('DOMContentLoaded', function() {
         ticketItem.dataset.status = ticket.status;
         ticketItem.dataset.category = ticket.category;
         ticketItem.dataset.priority = ticket.priority;
-        
+
         // Formater la date
-        const createdAt = ticket.created_at.replace('T', ' ').substring(0, 16);
-        
+        const createdAt = esc(ticket.created_at.replace('T', ' ').substring(0, 16));
+
         ticketItem.innerHTML = `
             <div class="ticket-header">
-                <div class="ticket-title">${ticket.title}</div>
+                <div class="ticket-title">${esc(ticket.title)}</div>
                 <div class="ticket-meta">
-                    <span class="ticket-id">#${ticket.id.substring(0, 8)}</span>
+                    <span class="ticket-id">#${esc(ticket.id.substring(0, 8))}</span>
                     <span class="ticket-date">${createdAt}</span>
                 </div>
             </div>
             <div class="ticket-content">
-                <div class="ticket-description">${ticket.description.length > 150 ? ticket.description.substring(0, 150) + '...' : ticket.description}</div>
+                <div class="ticket-description">${ticket.description.length > 150 ? esc(ticket.description.substring(0, 150)) + '...' : esc(ticket.description)}</div>
                 <div class="ticket-badges">
-                    <span class="status-badge ${ticket.status}">${ticket.status}</span>
-                    <span class="status-badge ${ticket.priority}">${ticket.priority}</span>
-                    <span class="status-badge category">${ticket.category}</span>
+                    <span class="status-badge ${esc(ticket.status)}">${esc(ticket.status)}</span>
+                    <span class="status-badge ${esc(ticket.priority)}">${esc(ticket.priority)}</span>
+                    <span class="status-badge category">${esc(ticket.category)}</span>
                 </div>
             </div>
             <div class="ticket-actions">
-                <button class="btn-view-ticket" data-id="${ticket.id}">
+                <button class="btn-view-ticket" data-id="${esc(ticket.id)}">
                     <i class="fas fa-eye"></i> Voir
                 </button>
-                <button class="btn-edit-ticket" data-id="${ticket.id}">
+                <button class="btn-edit-ticket" data-id="${esc(ticket.id)}">
                     <i class="fas fa-edit"></i> Modifier
                 </button>
             </div>

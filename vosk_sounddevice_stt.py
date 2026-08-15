@@ -257,20 +257,31 @@ class VoskSTTEngine:
 
         return None
 
-    def stop_listening(self):
-        """Arrête l'écoute"""
+    def stop_listening(self, wait_for_stop: bool = False):
+        """Arrête l'écoute.
+
+        ``wait_for_stop`` est accepté (et ignoré) pour être compatible avec
+        l'API des autres fonctions stop, appelées avec ce paramètre par le
+        gestionnaire d'arrêt de l'application.
+        """
         self.is_running = False
 
         if self.stream:
-            self.stream.stop()
-            self.stream.close()
+            try:
+                self.stream.stop()
+                self.stream.close()
+            except Exception:
+                pass  # le flux peut déjà être fermé
             self.stream = None
 
         print("Écoute Vosk arrêtée")
 
     def __del__(self):
         """Nettoyage à la destruction"""
-        self.stop_listening()
+        try:
+            self.stop_listening()
+        except Exception:
+            pass
 
 
 def create_vosk_engine(model_path: Optional[str] = None) -> VoskSTTEngine:

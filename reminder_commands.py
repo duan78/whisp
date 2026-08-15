@@ -84,32 +84,52 @@ def save_reminders(conn, reminders_data):
     conn.commit()
 
 def check_reminders():
-    """Vérifie les rappels et affiche des notifications pour ceux qui sont dus"""
-    reminders_data = load_reminders()
-    current_time = datetime.datetime.now()
-    
-    for reminder in reminders_data["reminders"]:
-        if not reminder["completed"]:
-            reminder_time = datetime.datetime.fromisoformat(reminder["time"])
-            if current_time >= reminder_time:
-                # Afficher une notification
-                notification.notify(
-                    title="Rappel Whisp",
-                    message=reminder["description"],
-                    timeout=10
-                )
-                
-                # Marquer le rappel comme complété
-                reminder["completed"] = True
-    
-    # Enregistrer les modifications
-    save_reminders(reminders_data)
-    
+    """Vérifie les rappels et affiche des notifications pour ceux qui sont dus.
+
+    Le corps est protégé : sans cela, une seule exception (notification
+    indisponible, base verrouillée...) tuerait silencieusement la chaîne de
+    vérifications planifiées.
+    """
+    try:
+        reminders_data = load_reminders()
+        current_time = datetime.datetime.now()
+
+        for reminder in reminders_data["reminders"]:
+            if not reminder["completed"]:
+                reminder_time = datetime.datetime.fromisoformat(reminder["time"])
+                if current_time >= reminder_time:
+                    # Afficher une notification
+                    try:
+                        notification.notify(
+                            title="Rappel Whisp",
+                            message=reminder["description"],
+                            timeout=10
+                        )
+                    except Exception as e:
+                        print(f"Impossible d'afficher la notification de rappel: {e}")
+
+                    # Marquer le rappel comme complété
+                    reminder["completed"] = True
+
+        # Enregistrer les modifications
+        save_reminders(reminders_data)
+    except Exception as e:
+        print(f"Erreur lors de la vérification des rappels: {e}")
+
     # Planifier la prochaine vérification dans 1 minute
     threading.Timer(60, check_reminders).start()
 
+# Garde-fou : CommandProcessor est recréé à chaque redémarrage de la
+# reconnaissance vocale ; sans ce flag, chaque redémarrage lancerait une
+# chaîne de vérification supplémentaire (notifications en double).
+_reminder_checker_started = False
+
 def start_reminder_checker():
-    """Démarre le vérificateur de rappels en arrière-plan"""
+    """Démarre le vérificateur de rappels en arrière-plan (une seule fois)"""
+    global _reminder_checker_started
+    if _reminder_checker_started:
+        return
+    _reminder_checker_started = True
     threading.Timer(5, check_reminders).start()
 
 def executer_commande_rappel(texte):
@@ -213,8 +233,10 @@ def executer_commande_rappel(texte):
         reminders_data = load_reminders()
         
         # Créer un nouveau rappel
+        # NB : max()+1 et non len()+1 — après des suppressions, len()+1
+        # produirait un id déjà utilisé (IntegrityError à l'insertion)
         new_reminder = {
-            "id": len(reminders_data["reminders"]) + 1,
+            "id": max((r["id"] for r in reminders_data["reminders"]), default=0) + 1,
             "description": description,
             "time": reminder_time.isoformat(),
             "created_at": datetime.datetime.now().isoformat(),

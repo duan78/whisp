@@ -11,6 +11,24 @@ from flask import Blueprint, request, jsonify
 
 bp = Blueprint('finetune', __name__)
 
+
+def _resolve_in_records(rel_path):
+    """Résout un chemin relatif fourni par le client et vérifie qu'il reste
+    confiné dans le dossier ``records/`` (protection path traversal).
+
+    Retourne le chemin absolu résolu, ou None si le chemin sort de records/.
+    """
+    records_dir = os.path.realpath(os.path.join(os.getcwd(), "records"))
+    abs_path = os.path.realpath(os.path.join(os.getcwd(), rel_path))
+    records_norm = os.path.normcase(records_dir)
+    try:
+        if os.path.commonpath((records_norm, os.path.normcase(abs_path))) == records_norm:
+            return abs_path
+    except ValueError:
+        # Lecteurs différents sous Windows (ex. C: vs D:)
+        return None
+    return None
+
 # Routes API pour la gestion des données de fine-tuning
 
 @bp.get('/api/finetune/samples')
@@ -112,9 +130,12 @@ def update_transcription():
         if not text_path or not new_transcription or not json_path:
             return jsonify({"success": False, "error": "Paramètres manquants"})
 
-        # Convertir le chemin relatif en chemin absolu
-        abs_text_path = os.path.join(os.getcwd(), text_path)
-        abs_json_path = os.path.join(os.getcwd(), json_path)
+        # Convertir le chemin relatif en chemin absolu, confiné dans records/
+        abs_text_path = _resolve_in_records(text_path)
+        abs_json_path = _resolve_in_records(json_path)
+
+        if abs_text_path is None or abs_json_path is None:
+            return jsonify({"success": False, "error": "Chemin non autorisé"})
 
         # Vérifier que les fichiers existent
         if not os.path.exists(abs_text_path) or not os.path.exists(abs_json_path):
@@ -197,10 +218,13 @@ def delete_sample():
         if not text_path or not json_path or not audio_path:
             return jsonify({"success": False, "error": "Paramètres manquants"})
 
-        # Convertir les chemins relatifs en chemins absolus
-        abs_text_path = os.path.join(os.getcwd(), text_path)
-        abs_json_path = os.path.join(os.getcwd(), json_path)
-        abs_audio_path = os.path.join(os.getcwd(), audio_path)
+        # Convertir les chemins relatifs en chemins absolus, confinés dans records/
+        abs_text_path = _resolve_in_records(text_path)
+        abs_json_path = _resolve_in_records(json_path)
+        abs_audio_path = _resolve_in_records(audio_path)
+
+        if abs_text_path is None or abs_json_path is None or abs_audio_path is None:
+            return jsonify({"success": False, "error": "Chemin non autorisé"})
 
         # Vérifier que les fichiers existent
         files_to_delete = []
@@ -279,10 +303,13 @@ def change_split():
         if new_split not in ["train", "validation", "test"]:
             return jsonify({"success": False, "error": "Split invalide. Doit être 'train', 'validation' ou 'test'"})
 
-        # Convertir les chemins relatifs en chemins absolus
-        abs_text_path = os.path.join(os.getcwd(), text_path)
-        abs_json_path = os.path.join(os.getcwd(), json_path)
-        abs_audio_path = os.path.join(os.getcwd(), audio_path)
+        # Convertir les chemins relatifs en chemins absolus, confinés dans records/
+        abs_text_path = _resolve_in_records(text_path)
+        abs_json_path = _resolve_in_records(json_path)
+        abs_audio_path = _resolve_in_records(audio_path)
+
+        if abs_text_path is None or abs_json_path is None or abs_audio_path is None:
+            return jsonify({"success": False, "error": "Chemin non autorisé"})
 
         # Vérifier que les fichiers existent
         for file_path in [abs_text_path, abs_json_path, abs_audio_path]:

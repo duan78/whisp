@@ -8,9 +8,27 @@ import pyautogui
 import re
 import time
 from text_processing import ecrire_texte_avec_accents
+from input_validation import InputValidator, ValidationError
+
+validator = InputValidator()
+
+# Caractères autorisés pour un nom de package/image (pip, npm, docker) :
+# pas de métacaractères de shell, pas de chemins absolus ni de ".."
+_NAME_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9@/._\-+~=,]*$')
+
+def _safe_name(name: str) -> bool:
+    """Valide un nom de package / image / script passé en argument de subprocess."""
+    if not name or '..' in name or name.startswith(('/', '\\')) or os.path.isabs(name):
+        return False
+    return bool(_NAME_RE.match(name))
 
 def executer_commande_dev(texte):
     """Exécute des commandes liées aux environnements de développement"""
+    # Valider l'entrée avant tout traitement (cohérent avec les autres modules)
+    try:
+        texte = validator.validate_command(texte)
+    except ValidationError as e:
+        return f"Commande refusée : {e}"
     texte = texte.lower()
     
     # ===== COMMANDES VS CODE =====
@@ -122,6 +140,8 @@ def executer_commande_dev(texte):
         match = re.search(r"conteneur\s+(?:avec image|image)?\s*[:\"]?(.+?)[\"]?(?:\s|$)", texte)
         if match:
             image_name = match.group(1).strip()
+            if not _safe_name(image_name):
+                return "Nom d'image invalide"
             try:
                 subprocess.run(["docker", "run", "-d", image_name])
                 return f"Conteneur Docker lancé avec l'image {image_name}"
@@ -170,6 +190,8 @@ def executer_commande_dev(texte):
         match = re.search(r"(?:package|module|pip install)\s+(?:nommé|appelé)?\s*[:\"]?(.+?)[\"]?(?:\s|$)", texte)
         if match:
             package_name = match.group(1).strip()
+            if not _safe_name(package_name):
+                return "Nom de package invalide"
             try:
                 subprocess.run(["pip", "install", package_name])
                 return f"Package {package_name} installé"
@@ -191,6 +213,8 @@ def executer_commande_dev(texte):
         match = re.search(r"(?:npm install|package npm)\s+(?:nommé|appelé)?\s*[:\"]?(.+?)[\"]?(?:\s|$)", texte)
         if match:
             package_name = match.group(1).strip()
+            if not _safe_name(package_name):
+                return "Nom de package npm invalide"
             try:
                 subprocess.run(["npm", "install", package_name])
                 return f"Package npm {package_name} installé"
@@ -217,6 +241,8 @@ def executer_commande_dev(texte):
         match = re.search(r"(?:script python|python)\s+(?:nommé|appelé)?\s*[:\"]?(.+?)[\"]?(?:\s|$)", texte)
         if match:
             script_name = match.group(1).strip()
+            if not _safe_name(script_name) or not script_name.endswith('.py'):
+                return "Nom de script invalide (chemin relatif simple avec extension .py uniquement)"
             try:
                 subprocess.Popen(["python", script_name])
                 return f"Script Python {script_name} exécuté"

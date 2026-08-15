@@ -277,7 +277,7 @@ chiffrement Fernet/PBKDF2). Pour les définir ou vérifier leur présence :
 
 ```bash
 # Définir une clé (stockée chiffrée dans ~/.whisp/secure/)
-python set_mistral_api_key.py <votre-clé>
+python set_mistral_api_key.py
 
 # Vérifier qu'une clé est configurée (sans l'afficher en clair)
 python -c "

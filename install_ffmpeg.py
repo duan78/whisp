@@ -63,8 +63,10 @@ def install_ffmpeg_windows(download_url):
         # Cette commande modifie le PATH pour la session en cours
         os.environ["PATH"] = dest_dir + os.pathsep + user_path
         
-        # Pour une modification permanente, on utilise setx (Windows uniquement)
-        subprocess.run(["setx", "PATH", f"{dest_dir};%PATH%"], shell=True)
+        # Pour une modification permanente, on utilise setx (Windows uniquement).
+        # shell=True est inutile et nuisible ici : sous Windows, une liste
+        # d'arguments combinée à shell=True n'exécute que le premier élément.
+        subprocess.run(["setx", "PATH", f"{dest_dir};%PATH%"])
     
     # Nettoyer les fichiers temporaires
     shutil.rmtree(temp_dir)

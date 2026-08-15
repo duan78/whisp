@@ -59,9 +59,9 @@ def ameliorer_formatage(texte):
         texte = texte.replace(mot, remplacement)
     
     # Améliorer la ponctuation
-    # Ajouter un espace après la ponctuation si nécessaire
+    # Insérer une espace après la ponctuation collée à une voyelle
+    # (artefact fréquent de la reconnaissance vocale : ".a" -> ". a")
     for ponctuation in ['.', ',', ':', ';', '!', '?']:
-        texte = texte.replace(ponctuation + ' ', ponctuation + ' ')
         texte = texte.replace(ponctuation + 'a', ponctuation + ' a')
         texte = texte.replace(ponctuation + 'à', ponctuation + ' à')
         texte = texte.replace(ponctuation + 'e', ponctuation + ' e')

@@ -6,6 +6,7 @@ import threading
 import queue
 import time
 import os
+import hashlib
 import subprocess
 import tempfile
 import re
@@ -675,7 +676,7 @@ def lire_texte_gtts(texte):
         
         # Vérifier si le texte est dans le cache
         cache_key = f"{texte_propre}_{acceleration_factor}"
-        cache_hash = str(hash(cache_key))[:10]  # Utiliser seulement les 10 premiers caractères du hash
+        cache_hash = hashlib.md5(cache_key.encode('utf-8')).hexdigest()[:10]  # hash stable entre sessions
         temps_cache_verification = time.time()
         cache_hit = False
         
@@ -1360,15 +1361,10 @@ def lire_texte_coqui(texte):
                 # Essayer avec le lecteur système en dernier recours
                 try:
                     print("Tentative de lecture avec le lecteur système...")
-                    # Utiliser subprocess au lieu de os.system pour éviter les injections de commande
                     if is_windows():
-                        # Windows: utiliser start pour ouvrir avec l'application par défaut
-                        subprocess.Popen(
-                            ['cmd', '/c', 'start', '', temp_file],
-                            shell=True,
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL
-                        )
+                        # os.startfile : ouvre avec l'application associée,
+                        # sans passer par un shell (pas de shell=True)
+                        os.startfile(temp_file)
                     elif is_mac():
                         # macOS: utiliser open
                         subprocess.Popen(
@@ -1444,7 +1440,7 @@ def lire_texte_edge_tts(texte):
 
         # Vérifier le cache
         cache_key = f"{texte_propre}_{edge_tts_voice}"
-        cache_hash = str(hash(cache_key))[:10]
+        cache_hash = hashlib.md5(cache_key.encode('utf-8')).hexdigest()[:10]
         cache_dir = os.path.join(tempfile.gettempdir(), 'whisp_edge_tts_cache')
         os.makedirs(cache_dir, exist_ok=True)
 
@@ -1477,11 +1473,20 @@ def lire_texte_edge_tts(texte):
 
             # Générer l'audio avec edge-tts
             try:
-                communicate = edge_tts.Communicate(texte_propre, edge_tts_voice)
+                # edge_tts.Communicate est une API asynchrone : la méthode
+                # save() de l'objet coroutine écrit elle-même le fichier MP3.
+                import asyncio
 
-                # Sauvegarder dans le fichier
-                with open(temp_file, 'wb') as audio_file_write:
-                    audio_file_write.write(communicate.stream.getbuffer())
+                async def _synth_edge():
+                    communicate = edge_tts.Communicate(texte_propre, edge_tts_voice)
+                    await communicate.save(temp_file)
+
+                asyncio.run(_synth_edge())
+
+                # Vérifier que le fichier a bien été écrit (évite de cacher
+                # un fichier vide en cas d'échec silencieux)
+                if not os.path.exists(temp_file) or os.path.getsize(temp_file) == 0:
+                    raise RuntimeError("Edge TTS n'a produit aucun audio")
 
                 # Ajouter au cache
                 edge_tts_cache[cache_key] = temp_file
@@ -1533,7 +1538,7 @@ def lire_texte_edge_tts(texte):
                 except:
                     # Fallback au lecteur système
                     if is_windows():
-                        subprocess.Popen(['cmd', '/c', 'start', '', audio_file], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        os.startfile(audio_file)
                     elif is_mac():
                         subprocess.Popen(['open', audio_file], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     else:
@@ -1633,7 +1638,7 @@ def lire_texte_piper(texte):
 
         # Vérifier le cache
         cache_key = f"{texte_propre}_{piper_model_name}"
-        cache_hash = str(hash(cache_key))[:10]
+        cache_hash = hashlib.md5(cache_key.encode('utf-8')).hexdigest()[:10]
         cache_dir = os.path.join(tempfile.gettempdir(), 'whisp_piper_cache')
         os.makedirs(cache_dir, exist_ok=True)
 
@@ -2203,13 +2208,11 @@ def est_commande_arret_tts(texte):
     # Vérifier les correspondances exactes
     if texte_lower in commandes_arret_exactes:
         return True
-    
-    # Vérifier si la commande commence par un mot d'arrêt
-    mots_debut = ["stop", "arrête", "pause", "tais", "chut", "silence"]
-    for mot in mots_debut:
-        if texte_lower.startswith(mot):
-            return True
-    
+
+    # NB : uniquement des correspondances exactes. Une vérification par
+    # préfixe (startswith "stop", "arrête"...) intercepterait des commandes
+    # légitimes avant leur traitement — notamment "stop dictée" et
+    # "arrête dictée", les phrases officielles de fin de dictée.
     return False
 
 # Paramètres de vitesse pour les différents moteurs TTS

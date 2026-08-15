@@ -8,8 +8,12 @@ import re
 from screen_context import localiser_element_ecran, localiser_element_par_attributs
 from os_detection import get_os_type, is_windows, is_mac, is_linux
 from input_validation import InputValidator, ValidationError
+from error_handler import get_error_handler, ErrorCategory, ErrorSeverity
 
 validator = InputValidator()
+
+# Gestionnaire d'erreurs utilisé dans les blocs except des commandes souris
+error_handler = get_error_handler()
 
 # Importation conditionnelle de mouse selon l'OS
 try:
@@ -224,8 +228,16 @@ def executer_commande_souris(texte):
             error_handler.log_error(ErrorCategory.INPUT, f"Mouse control error: {e}", ErrorSeverity.MEDIUM)
             return "Erreur lors du glisser-déposer"
     
-    elif any(cmd in texte for cmd in ["défile vers le bas", "défiler vers le bas", "défilé vers le bas", 
-                                     "défilé bas", "défiler bas", "défile bas", "scroll vers le bas", 
+    # Les variantes "beaucoup" doivent être testées AVANT les variantes
+    # génériques : "défile beaucoup vers le bas" contient "défile" et serait
+    # sinon capturé par la branche du défilement simple.
+    elif any(cmd in texte for cmd in ["défile beaucoup vers le bas", "défiler beaucoup vers le bas",
+                                     "descends beaucoup", "défile vite vers le bas"]):
+        pyautogui.scroll(-50)
+        return "Défilement important vers le bas"
+
+    elif any(cmd in texte for cmd in ["défile vers le bas", "défiler vers le bas", "défilé vers le bas",
+                                     "défilé bas", "défiler bas", "défile bas", "scroll vers le bas",
                                      "scrolle vers le bas", "scroll down", "scrolle down", "défile en bas",
                                      "défiler en bas", "descends la page", "descendre la page",
                                      "fais défiler vers le bas", "faire défiler vers le bas",
@@ -235,13 +247,14 @@ def executer_commande_souris(texte):
                                      "défilé en bas", "défilement bas", "défilement vers le bas"]):
         pyautogui.scroll(-10)
         return "Défilement vers le bas"
-        
-    elif "défile beaucoup vers le bas" in texte:
-        pyautogui.scroll(-50)
-        return "Défilement important vers le bas"
-        
-    elif any(cmd in texte for cmd in ["défile vers le haut", "défiler vers le haut", "défilé vers le haut", 
-                                     "défilé haut", "défiler haut", "défile haut", "scroll vers le haut", 
+
+    elif any(cmd in texte for cmd in ["défile beaucoup vers le haut", "défiler beaucoup vers le haut",
+                                     "monte beaucoup", "défile vite vers le haut"]):
+        pyautogui.scroll(50)
+        return "Défilement important vers le haut"
+
+    elif any(cmd in texte for cmd in ["défile vers le haut", "défiler vers le haut", "défilé vers le haut",
+                                     "défilé haut", "défiler haut", "défile haut", "scroll vers le haut",
                                      "scrolle vers le haut", "scroll up", "scrolle up", "défile en haut",
                                      "défiler en haut", "monte la page", "monter la page",
                                      "fais défiler vers le haut", "faire défiler vers le haut",
@@ -251,10 +264,6 @@ def executer_commande_souris(texte):
                                      "défilé en haut", "défilement haut", "défilement vers le haut"]):
         pyautogui.scroll(10)
         return "Défilement vers le haut"
-        
-    elif "défile beaucoup vers le haut" in texte:
-        pyautogui.scroll(50)
-        return "Défilement important vers le haut"
     
     elif "quelle est ma position souris" in texte:
         x, y = mouse.get_position()

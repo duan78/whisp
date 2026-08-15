@@ -211,6 +211,11 @@ models/
 pretrained_models/
 
 # === Specific to this project ===
+# Binaires vendors Piper TTS (38 Mo de DLL) : téléchargés/installés localement,
+# jamais committés — voir README pour l'installation
+piper/
+piper-phonemize/
+
 # Fichiers de configuration avec clés API
 api_keys.json
 .env.local

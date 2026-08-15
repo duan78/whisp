@@ -75,11 +75,18 @@ def set_mistral_api_key(key):
 
 def main():
     """Fonction principale"""
-    if len(sys.argv) != 2:
-        print("Usage: python set_mistral_api_key.py <votre_clé_api>")
-        return
-    
-    key = sys.argv[1]
+    import getpass
+
+    if len(sys.argv) == 2:
+        # Clé passée en argument (déconseillé : visible dans l'historique shell
+        # et la liste des processus)
+        key = sys.argv[1]
+        print("Note: préférez le mode interactif (sans argument) pour éviter "
+              "d'exposer la clé dans l'historique du shell.")
+    else:
+        print("Configuration de la clé API Mistral")
+        key = getpass.getpass("Entrez votre clé API Mistral : ")
+
     if not key:
         print("La clé API ne peut pas être vide")
         return
@@ -93,13 +100,6 @@ def main():
             print(f"Variable d'environnement MISTRAL_API_KEY vérifiée: {env_key[:4]}...{env_key[-4:] if len(env_key) > 8 else ''}")
         else:
             print("AVERTISSEMENT: La variable d'environnement MISTRAL_API_KEY n'est pas définie")
-            
-            # Afficher toutes les variables d'environnement pour le débogage
-            print("\nVariables d'environnement actuelles:")
-            for key, value in os.environ.items():
-                if "API" in key:
-                    masked_value = f"{value[:4]}...{value[-4:]}" if len(value) > 8 else value
-                    print(f"{key}: {masked_value}")
     else:
         print("Échec de la configuration de la clé API Mistral")
 

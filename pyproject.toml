@@ -20,8 +20,6 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -43,7 +41,7 @@ keywords = [
     "ai",
     "python",
 ]
-requires-python = ">=3.8,<3.15"
+requires-python = ">=3.10,<3.15"
 dependencies = [
     "pyautogui>=0.9.54",
     "SpeechRecognition>=3.10.0",
@@ -53,6 +51,7 @@ dependencies = [
     "pygame>=2.5.0",
     "TTS>=0.22.0",
     "piper-tts>=1.2.0",
+    "pyperclip>=1.8.0",
     "pywin32>=228; platform_system=='Windows'",
     "mouse>=0.7.1; platform_system=='Windows'",
     "pyobjc>=7.3; platform_system=='Darwin'",
@@ -90,10 +89,10 @@ optimization = [
     "numba>=0.59.0",  # Optimisation JIT (fallback automatique si absent)
 ]
 gpu = [
-    "torch>=1.12.0",
-    "torchaudio>=0.12.0",
-    "transformers>=4.21.0",
-    "openai-whisper>=20230314",
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "transformers>=4.35.0",
+    "openai-whisper>=20231117",
 ]
 
 [project.urls]
@@ -105,19 +104,38 @@ Changelog = "https://github.com/duan78/whisp/blob/master/CHANGELOG.md"
 [project.scripts]
 whisp-assistant = "main:assistant_vocal"
 
-# Le code vit à plat à la racine (main.py, config.py, ...) + dans le package
-# `core/`. Il n'y a pas de package `whisp_assistant/`.
+# Le code vit à plat à la racine (main.py, config.py, ...) + dans les
+# packages core/, web/, window/ et stt/. La liste des py-modules doit être
+# exhaustive : une installation pip avec une liste partielle produisait un
+# whisp-assistant qui plantait au premier import manquant.
+# Limitation connue : templates/ et static/ (données racine) ne sont
+# embarquées que dans le sdist via MANIFEST.in — l'app est conçue pour être
+# lancée depuis le dépôt.
 [tool.setuptools]
-py-modules = ["main", "config", "command_processor", "web_interface"]
-packages = ["core"]
+py-modules = [
+    "accessibility_commands", "analysis_commands", "api_security",
+    "audio_optimization", "base_command_module", "browser_commands",
+    "bug_tracker", "cache_manager", "command_aliases", "command_optimization",
+    "command_processor", "config", "cuda_path_fixer", "database_commands",
+    "database_manager", "dev_environment_commands", "dictation_mode",
+    "error_handler", "exit_commands", "file_commands", "git_commands",
+    "input_validation", "install_ffmpeg", "install_vosk_model",
+    "keyboard_commands", "lazy_loader", "logger_config", "main",
+    "math_optimization", "mouse_commands", "os_detection",
+    "platform_audio_config", "platform_utils", "productivity_commands",
+    "project_management_commands", "reminder_commands", "screen_context",
+    "screen_reader", "screen_reader_commands", "search_commands",
+    "set_mistral_api_key", "shortcuts_database", "speech_recognition_module",
+    "stt_engine_factory", "system_commands", "text_processing", "tts_module",
+    "universal_audio_backend", "vosk_sounddevice_stt", "web_dev_commands",
+    "web_interface", "window_manager",
+]
+packages = ["core", "web", "window", "stt"]
 include-package-data = true
-
-[tool.setuptools.package-data]
-core = ["templates/*.html", "static/css/*.css", "static/js/*.js"]
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310', 'py311']
+target-version = ['py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -143,7 +161,7 @@ line_length = 88
 known_first_party = ["main", "core", "config", "web_interface"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

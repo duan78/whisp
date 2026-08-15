@@ -57,6 +57,7 @@ faster-whisper>=1.0.3  # Alternative plus rapide que whisper original
 keyboard>=0.13.5
 psutil>=5.9.0
 plyer>=2.1.0
+pyperclip>=1.8.0  # Importé sans garde par text_processing, file_commands, etc.
 
 # ------------------------------------------------------------------------------
 # Sécurité (Ajouté pour la modernisation)

@@ -45,23 +45,34 @@ def validate_db_name(name: str) -> bool:
 def validate_sql_query(query: str) -> bool:
     """Valide une requête SQL utilisateur (allowlist stricte : SELECT seul).
 
-    Seules les requêtes en lecture seule (commençant par SELECT ou WITH...SELECT)
-    sont autorisées, afin d'éviter toute modification ou exfiltration de données.
+    Seules les requêtes en lecture seule sont autorisées : elles doivent
+    commencer par SELECT (ou WITH pour les CTE), ne contenir aucun mot-clé
+    d'écriture, ni instruction multiple, afin d'éviter toute modification
+    ou exfiltration de données.
     """
     if not query:
         return False
-    # Retirer les commentaires SQL (-- ...) et espaces pour éviter les contournements
-    cleaned = re.sub(r'--[^\n]*', '', query).strip()
+    # Retirer les commentaires SQL (-- et /* */) pour éviter les contournements
+    cleaned = re.sub(r'--[^\n]*', '', query)
+    cleaned = re.sub(r'/\*.*?\*/', '', cleaned, flags=re.DOTALL).strip()
     if not cleaned:
         return False
     query_stripped = re.sub(r'\s+', ' ', cleaned).upper()
     # Autoriser uniquement SELECT (et WITH ... SELECT pour les CTE)
-    if query_stripped.startswith('SELECT') or query_stripped.startswith('WITH'):
-        # Refuser les instructions multiples (séparateur ;)
-        if ';' in cleaned.rstrip(';'):
-            return False
-        return True
-    return False
+    if not (query_stripped.startswith('SELECT') or query_stripped.startswith('WITH')):
+        return False
+    # Refuser les instructions multiples (séparateur ;)
+    if ';' in cleaned.rstrip(';'):
+        return False
+    # Refuser tout mot-clé de modification : SQLite accepte les CTE en tête
+    # d'instruction d'écriture (WITH c AS (SELECT 1) DELETE FROM t), il ne
+    # suffit donc pas de vérifier le premier mot. Les littéraux de chaîne sont
+    # retirés avant la vérification pour éviter les faux positifs.
+    no_literals = re.sub(r"'(?:[^']|'')*'", "''", cleaned)
+    if re.search(r'\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|REPLACE|ATTACH|DETACH|PRAGMA|VACUUM|REINDEX)\b',
+                 no_literals, re.IGNORECASE):
+        return False
+    return True
 
 def executer_commande_database(texte):
     """Exécute des commandes liées aux bases de données"""
@@ -239,7 +250,11 @@ def executer_commande_database(texte):
                 db_type = "sqlite"
             elif "postgresql" in texte or "postgres" in texte:
                 db_type = "postgresql"
-            
+
+            # Valider le chemin du fichier SQL pour tous les SGBD (anti-traversal)
+            if '..' in sql_file or sql_file.startswith('/') or os.path.isabs(sql_file):
+                return "Chemin de fichier SQL non autorisé"
+
             try:
                 if db_type == "sqlite":
                     # Extraire le nom de la base de données
@@ -252,10 +267,6 @@ def executer_commande_database(texte):
                         # Validate inputs
                         if not validate_db_name(db_name):
                             return "Nom de base de données invalide"
-
-                        # Validate SQL file path to prevent directory traversal
-                        if '..' in sql_file or sql_file.startswith('/'):
-                            return "Chemin de fichier SQL non autorisé"
 
                         try:
                             # Lire le contenu du fichier SQL

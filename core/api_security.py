@@ -39,7 +39,8 @@ class APIKeyManager:
         
         # Utiliser une combinaison d'identifiants système comme base
         system_id = f"{os.environ.get('COMPUTERNAME', '')}{os.environ.get('USERNAME', '')}"
-        if not system_id:
+        if not system_id and hasattr(os, 'uname'):
+            # os.uname() n'existe pas sous Windows
             system_id = f"{os.uname().nodename}{os.getuid()}"
         
         key_material = system_id.encode() + salt
@@ -147,6 +148,13 @@ def set_secure_api_key(service: str, api_key: str):
 
 def migrate_api_keys():
     """Migre les clés API depuis l'ancien système"""
-    old_api_keys_file = os.path.join(os.path.dirname(__file__), "api_keys.json")
-    if os.path.exists(old_api_keys_file):
-        api_key_manager.migrate_from_plaintext(old_api_keys_file)
+    # Le repli plaintext (set_mistral_api_key.py) écrit api_keys.json à la
+    # racine du projet ; l'ancien emplacement core/ est aussi vérifié.
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidates = [
+        os.path.join(project_root, "api_keys.json"),
+        os.path.join(os.path.dirname(__file__), "api_keys.json"),
+    ]
+    for old_api_keys_file in candidates:
+        if os.path.exists(old_api_keys_file):
+            api_key_manager.migrate_from_plaintext(old_api_keys_file)

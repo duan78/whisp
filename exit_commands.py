@@ -25,20 +25,11 @@ def est_commande_sortie(texte):
     # Vérifier si c'est un alias de la commande "exit"
     if is_command_alias(texte_nettoye, "exit"):
         return True
-    
-    # Phrases ambiguës à exclure
-    phrases_ambigues = [
-        "je vais y aller", "je dois y aller", "je dois partir", "je vais partir",
-        "je m'en vais", "je m'en va", "je dois m'en aller", "je vais m'en aller",
-        "fin de traduction", "terminer traduction", "arrêter traduction", "finir traduction",
-        "fin traduction", "stop traduction", "arrête traduction", "termine traduction"
-    ]
-    
-    # Si c'est une phrase ambiguë, ne pas la considérer comme une commande de sortie
-    texte_lower = texte.lower().strip()
-    if any(phrase == texte_lower for phrase in phrases_ambigues) or any(phrase in texte_lower for phrase in phrases_ambigues):
-        return False
-    
+
+    # NB : les phrases ambiguës ("je dois partir", "stop traduction"...)
+    # ne sont volontairement pas traitées comme commandes de sortie : elles
+    # sont interceptées plus tôt par les modes traduction/dictée. Tout le
+    # reste n'est pas une commande de sortie non plus.
     return False
 
 def est_confirmation_positive(texte):

@@ -302,7 +302,7 @@ whisp/
 └── 🔧 Utilitaires
     ├── error_handler.py             # Shim → core/error_handler
     ├── lazy_loader.py               # Chargement paresseux
-    ├── dependency_manager.py        # Gestion dépendances
+    ├── logger_config.py             # Logging centralisé (fichier tournant)
     └── scripts/diagnostics/         # Scripts de diagnostic audio/performance
 ```
 

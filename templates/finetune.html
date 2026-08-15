@@ -1052,6 +1052,14 @@
     <script src="{{ url_for('static', filename='js/finetune-batch.js') }}"></script>
     
     <script>
+        // Échappement HTML pour toute donnée insérée dans le DOM (anti-XSS)
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
+
         // Variables globales
         let allSamples = [];
         let filteredSamples = [];
@@ -1252,8 +1260,8 @@
                         <div class="card-header">
                             <div>
                                 <span class="quality-indicator ${qualityClass}" title="Qualité estimée"></span>
-                                <span class="split-badge ${splitClass}">${sample.split}</span>
-                                <strong>${sample.engine}</strong>
+                                <span class="split-badge ${splitClass}">${escapeHtml(sample.split)}</span>
+                                <strong>${escapeHtml(sample.engine)}</strong>
                             </div>
                             <div>
                                 <span class="stats-badge" title="Date d'enregistrement">
@@ -1271,18 +1279,18 @@
                                 </audio>
                             </div>
                             <textarea class="transcription-textarea" 
-                                    data-sample-id="${sample.id}" 
-                                    data-text-path="${sample.text_path}"
-                                    data-json-path="${sample.json_path}"
-                                    data-original="${sample.transcription}">${sample.transcription}</textarea>
+                                    data-sample-id="${escapeHtml(sample.id)}" 
+                                    data-text-path="${escapeHtml(sample.text_path)}"
+                                    data-json-path="${escapeHtml(sample.json_path)}"
+                                    data-original="${escapeHtml(sample.transcription)}">${escapeHtml(sample.transcription)}</textarea>
                             <div class="action-buttons">
-                                <button class="btn btn-sm save-btn" data-sample-id="${sample.id}" title="Enregistrer (S)">
+                                <button class="btn btn-sm save-btn" data-sample-id="${escapeHtml(sample.id)}" title="Enregistrer (S)">
                                     <i class="fas fa-save"></i> Enregistrer
                                 </button>
-                                <button class="btn btn-sm change-split-btn" data-sample-id="${sample.id}" title="Changer split (1-3)">
+                                <button class="btn btn-sm change-split-btn" data-sample-id="${escapeHtml(sample.id)}" title="Changer split (1-3)">
                                     <i class="fas fa-exchange-alt"></i> Split
                                 </button>
-                                <button class="btn btn-sm delete-btn" data-sample-id="${sample.id}" title="Supprimer">
+                                <button class="btn btn-sm delete-btn" data-sample-id="${escapeHtml(sample.id)}" title="Supprimer">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -1293,8 +1301,8 @@
                         <div class="card-header">
                             <div>
                                 <span class="quality-indicator ${qualityClass}" title="Qualité estimée"></span>
-                                <span class="split-badge ${splitClass}">${sample.split}</span>
-                                <strong>${sample.engine}</strong>
+                                <span class="split-badge ${splitClass}">${escapeHtml(sample.split)}</span>
+                                <strong>${escapeHtml(sample.engine)}</strong>
                             </div>
                             <div>
                                 <span class="stats-badge" title="Date d'enregistrement">
@@ -1312,20 +1320,20 @@
                                 </audio>
                             </div>
                             <textarea class="transcription-textarea" 
-                                    data-sample-id="${sample.id}" 
-                                    data-text-path="${sample.text_path}"
-                                    data-json-path="${sample.json_path}"
-                                    data-original="${sample.transcription}">${sample.transcription}</textarea>
+                                    data-sample-id="${escapeHtml(sample.id)}" 
+                                    data-text-path="${escapeHtml(sample.text_path)}"
+                                    data-json-path="${escapeHtml(sample.json_path)}"
+                                    data-original="${escapeHtml(sample.transcription)}">${escapeHtml(sample.transcription)}</textarea>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="action-buttons">
-                                    <button class="btn btn-sm save-btn" data-sample-id="${sample.id}" title="Enregistrer (S)">
+                                    <button class="btn btn-sm save-btn" data-sample-id="${escapeHtml(sample.id)}" title="Enregistrer (S)">
                                         <i class="fas fa-save"></i> Enregistrer
                                     </button>
-                                    <button class="btn btn-sm change-split-btn" data-sample-id="${sample.id}" title="Changer split (1-3)">
+                                    <button class="btn btn-sm change-split-btn" data-sample-id="${escapeHtml(sample.id)}" title="Changer split (1-3)">
                                         <i class="fas fa-exchange-alt"></i> Split
                                     </button>
                                 </div>
-                                <button class="btn btn-sm delete-btn" data-sample-id="${sample.id}" title="Supprimer">
+                                <button class="btn btn-sm delete-btn" data-sample-id="${escapeHtml(sample.id)}" title="Supprimer">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -1890,8 +1898,8 @@
             return `
                 <div class="group-header" data-group-index="${groupIndex}">
                     <div class="group-info">
-                        <div class="group-transcription" title="${group.originalText}">
-                            ${group.originalText}
+                        <div class="group-transcription" title="${escapeHtml(group.originalText)}">
+                            ${escapeHtml(group.originalText)}
                         </div>
                         <div class="group-count">${group.samples.length}</div>
                         <small class="text-muted">${duration}</small>
@@ -1912,7 +1920,7 @@
                 </div>
                 <div class="unified-transcription" id="unified-edit-${groupIndex}" style="display: none;">
                     <label><strong>Éditer la transcription pour tous les ${group.samples.length} échantillons :</strong></label>
-                    <textarea class="unified-textarea" data-group-index="${groupIndex}">${group.originalText}</textarea>
+                    <textarea class="unified-textarea" data-group-index="${groupIndex}">${escapeHtml(group.originalText)}</textarea>
                     <div class="unified-actions">
                         <button class="btn btn-sm btn-success apply-unified-btn" data-group-index="${groupIndex}">
                             <i class="fas fa-check"></i> Appliquer à tous
@@ -1931,21 +1939,21 @@
             const date = sample.timestamp ? new Date(sample.timestamp * 1000).toLocaleDateString() : '-';
             
             return `
-                <div class="group-sample-item" data-sample-id="${sample.id}">
+                <div class="group-sample-item" data-sample-id="${escapeHtml(sample.id)}">
                     <label class="custom-checkbox">
-                        <input type="checkbox" class="group-sample-checkbox" data-sample-id="${sample.id}">
+                        <input type="checkbox" class="group-sample-checkbox" data-sample-id="${escapeHtml(sample.id)}">
                         <span class="checkmark"></span>
                     </label>
-                    <button class="btn btn-sm btn-outline-primary play-sample-btn" data-audio="${sample.audio_path}">
+                    <button class="btn btn-sm btn-outline-primary play-sample-btn" data-audio="${escapeHtml(sample.audio_path)}">
                         <i class="fas fa-play"></i>
                     </button>
                     <div class="flex-grow-1">
-                        <strong>${sample.engine}</strong> - ${duration} - ${date}
+                        <strong>${escapeHtml(sample.engine)}</strong> - ${duration} - ${date}
                     </div>
                     <span class="badge badge-${sample.split === 'train' ? 'success' : sample.split === 'validation' ? 'warning' : 'info'}">
-                        ${sample.split}
+                        ${escapeHtml(sample.split)}
                     </span>
-                    <button class="btn btn-sm btn-outline-danger delete-sample-btn" data-sample-id="${sample.id}">
+                    <button class="btn btn-sm btn-outline-danger delete-sample-btn" data-sample-id="${escapeHtml(sample.id)}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -2169,37 +2177,37 @@
                 row.innerHTML = `
                     <td>
                         <label class="custom-checkbox">
-                            <input type="checkbox" class="sample-select" data-sample-id="${sample.id}" data-index="${index}">
+                            <input type="checkbox" class="sample-select" data-sample-id="${escapeHtml(sample.id)}" data-index="${index}">
                             <span class="checkmark"></span>
                         </label>
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary play-btn" data-audio="${sample.audio_path}">
+                        <button class="btn btn-sm btn-outline-primary play-btn" data-audio="${escapeHtml(sample.audio_path)}">
                             <i class="fas fa-play"></i>
                         </button>
                     </td>
                     <td class="transcription-cell">
                         <input type="text" class="transcription-inline-edit form-control form-control-sm" 
-                               value="${sample.transcription}"
-                               data-sample-id="${sample.id}"
-                               data-text-path="${sample.text_path}"
-                               data-json-path="${sample.json_path}"
-                               data-original="${sample.transcription}">
+                               value="${escapeHtml(sample.transcription)}"
+                               data-sample-id="${escapeHtml(sample.id)}"
+                               data-text-path="${escapeHtml(sample.text_path)}"
+                               data-json-path="${escapeHtml(sample.json_path)}"
+                               data-original="${escapeHtml(sample.transcription)}">
                     </td>
                     <td>
-                        <select class="form-control form-control-sm split-select" data-sample-id="${sample.id}">
+                        <select class="form-control form-control-sm split-select" data-sample-id="${escapeHtml(sample.id)}">
                             <option value="train" ${sample.split === 'train' ? 'selected' : ''}>Train</option>
                             <option value="validation" ${sample.split === 'validation' ? 'selected' : ''}>Validation</option>
                             <option value="test" ${sample.split === 'test' ? 'selected' : ''}>Test</option>
                         </select>
                     </td>
-                    <td>${sample.engine}</td>
+                    <td>${escapeHtml(sample.engine)}</td>
                     <td>${duration}</td>
                     <td>
-                        <button class="btn btn-sm btn-success save-inline-btn" data-sample-id="${sample.id}" title="Sauvegarder">
+                        <button class="btn btn-sm btn-success save-inline-btn" data-sample-id="${escapeHtml(sample.id)}" title="Sauvegarder">
                             <i class="fas fa-save"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger delete-inline-btn" data-sample-id="${sample.id}" title="Supprimer">
+                        <button class="btn btn-sm btn-danger delete-inline-btn" data-sample-id="${escapeHtml(sample.id)}" title="Supprimer">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>

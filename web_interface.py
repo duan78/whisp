@@ -21,8 +21,9 @@ import time
 import json
 import os
 import sys
-from concurrent.futures import ThreadPoolExecutor
+import traceback
 import functools
+from concurrent.futures import ThreadPoolExecutor
 
 # Core imports (always needed)
 from config import (
@@ -71,7 +72,13 @@ from web.state import (
     get_error_handler,
     get_error_types,
     get_bug_tracker,
+    register_sse_client,
+    unregister_sse_client,
+    publish_web_message,
 )
+
+# Types d'erreurs utilisés par les gestionnaires d'erreurs des routes
+ErrorCategory, ErrorSeverity = get_error_types()
 
 # Créer l'application Flask
 app = Flask(__name__,
@@ -88,6 +95,11 @@ app.register_blueprint(bugs_bp)
 app.register_blueprint(shortcuts_bp)
 app.register_blueprint(aliases_bp)
 app.register_blueprint(finetune_bp)
+
+# Charger les modules de sécurité (validation des entrées, stockage chiffré
+# des clés API) dès le démarrage : sans cet appel, la validation de
+# /set_api_key restait désactivée et le stockage chiffré inutilisé.
+_init_security()
 
 def start_web_server(host=None, port=None):
     """Démarre le serveur web dans un thread séparé.
@@ -260,8 +272,14 @@ def serve_records(filename):
     records_dir = os.path.realpath(os.path.join(os.getcwd(), "records"))
     file_path = os.path.realpath(os.path.join(records_dir, filename))
 
-    # Empêcher la sortie du dossier records (path traversal type ../)
-    if not file_path.startswith(records_dir + os.sep) and file_path != records_dir:
+    # Empêcher la sortie du dossier records (path traversal type ../).
+    # Comparaison via commonpath + normcase : insensible à la casse sous Windows.
+    records_norm = os.path.normcase(records_dir)
+    try:
+        in_records = os.path.commonpath((records_norm, os.path.normcase(file_path))) == records_norm
+    except ValueError:
+        in_records = False  # lecteurs différents (ex. C: vs D:)
+    if not in_records:
         add_log(f"Tentative d'accès hors de records/ : {filename}", "warning")
         abort(403)
 
@@ -340,7 +358,7 @@ def toggle():
         "stt_engine": get_stt_engine(),
         "tts_engine": obtenir_moteur_tts()
     }
-    web_message_queue.put(json.dumps({"type": "status", "data": status_data}))
+    publish_web_message(json.dumps({"type": "status", "data": status_data}))
     
     return jsonify({"success": True, "running": new_state})
 
@@ -586,10 +604,10 @@ def set_api_key():
         # Valider les entrées si le module est disponible
         if security_available:
             try:
-                api_type = InputValidator.sanitize_string(api_type, max_length=20)
+                api_type = _InputValidator.sanitize_string(api_type, max_length=20)
                 if api_key:
-                    api_key = InputValidator.validate_api_key(api_key)
-            except ValidationError as e:
+                    api_key = _InputValidator.validate_api_key(api_key)
+            except _ValidationError as e:
                 return jsonify({"success": False, "error": str(e)}), 400
         
         if api_type == 'openai':
@@ -600,7 +618,7 @@ def set_api_key():
             
             # Stocker de manière sécurisée si disponible
             if security_available and api_key:
-                set_secure_api_key('openai', api_key)
+                _api_security['set']('openai', api_key)
             
             success = set_openai_api_key(api_key)
             if success:
@@ -629,7 +647,7 @@ def set_api_key():
             
             # Stocker de manière sécurisée si disponible
             if security_available and api_key:
-                set_secure_api_key('mistral', api_key)
+                _api_security['set']('mistral', api_key)
             
             success = set_mistral_api_key(api_key)
             if success:
@@ -1523,49 +1541,59 @@ def clear_cache_route():
 
 @app.route('/events')
 def events():
-    """Flux SSE (Server-Sent Events) pour les mises à jour en temps réel"""
+    """Flux SSE (Server-Sent Events) pour les mises à jour en temps réel.
+
+    Chaque client reçoit sa propre file via le registre SSE (fan-out à la
+    publication dans web.state.publish_web_message) : tous les onglets
+    ouverts reçoivent chaque message.
+    """
+    client_queue = register_sse_client()
+
     def generate():
-        yield "data: {\"initial\": true}\n\n"
-        
-        # Envoyer les métriques STT initiales
-        from speech_recognition_module import get_stt_metrics
-        metrics_data = get_stt_metrics()
-        yield f"data: {json.dumps({'type': 'metrics', 'data': metrics_data})}\n\n"
-        
-        # Compteur pour les mises à jour périodiques des métriques
-        metrics_counter = 0
-        
-        while True:
-            try:
-                # Attendre un message avec timeout
-                message = web_message_queue.get(timeout=1.0)
-                yield f"data: {message}\n\n"
-                web_message_queue.task_done()
-                
-                # Incrémenter le compteur
-                metrics_counter += 1
-                
-                # Envoyer les métriques STT toutes les 5 itérations
-                if metrics_counter >= 5:
-                    metrics_counter = 0
-                    metrics_data = get_stt_metrics()
-                    yield f"data: {json.dumps({'type': 'metrics', 'data': metrics_data})}\n\n"
-                
-            except queue.Empty:
-                # Envoyer un ping pour maintenir la connexion
-                yield "data: {\"ping\": true}\n\n"
-                
-                # Envoyer les métriques STT périodiquement même sans activité
-                metrics_counter += 1
-                if metrics_counter >= 5:
-                    metrics_counter = 0
-                    metrics_data = get_stt_metrics()
-                    yield f"data: {json.dumps({'type': 'metrics', 'data': metrics_data})}\n\n"
-                
-            except Exception as e:
-                print(f"Erreur dans le flux SSE: {e}")
-                break
-    
+        try:
+            yield "data: {\"initial\": true}\n\n"
+
+            # Envoyer les métriques STT initiales
+            from speech_recognition_module import get_stt_metrics
+            metrics_data = get_stt_metrics()
+            yield f"data: {json.dumps({'type': 'metrics', 'data': metrics_data})}\n\n"
+
+            # Compteur pour les mises à jour périodiques des métriques
+            metrics_counter = 0
+
+            while True:
+                try:
+                    # Attendre un message avec timeout
+                    message = client_queue.get(timeout=1.0)
+                    yield f"data: {message}\n\n"
+                    client_queue.task_done()
+
+                    # Incrémenter le compteur
+                    metrics_counter += 1
+
+                    # Envoyer les métriques STT toutes les 5 itérations
+                    if metrics_counter >= 5:
+                        metrics_counter = 0
+                        metrics_data = get_stt_metrics()
+                        yield f"data: {json.dumps({'type': 'metrics', 'data': metrics_data})}\n\n"
+
+                except queue.Empty:
+                    # Envoyer un ping pour maintenir la connexion
+                    yield "data: {\"ping\": true}\n\n"
+
+                    # Envoyer les métriques STT périodiquement même sans activité
+                    metrics_counter += 1
+                    if metrics_counter >= 5:
+                        metrics_counter = 0
+                        metrics_data = get_stt_metrics()
+                        yield f"data: {json.dumps({'type': 'metrics', 'data': metrics_data})}\n\n"
+
+                except Exception as e:
+                    print(f"Erreur dans le flux SSE: {e}")
+                    break
+        finally:
+            unregister_sse_client(client_queue)
+
     return Response(stream_with_context(generate()),
                    mimetype='text/event-stream')
 

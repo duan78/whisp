@@ -29,35 +29,52 @@ def lazy_import(module_name, as_name=None):
         def __getattr__(self, attr):
             # Vérifier si le module est déjà en cours de chargement
             if module_name in _loading_modules:
-                # Si le module est en cours de chargement, c'est probablement une récursion
-                # Au lieu de lever une exception, retourner un objet factice pour certains modules critiques
-                if module_name == "speech_recognition" and attr == "Recognizer":
-                    print(f"Récursion détectée pour {module_name}.{attr}, utilisation d'un import direct")
-                    import speech_recognition as sr_direct
-                    return getattr(sr_direct, attr)
-                else:
-                    raise ImportError(f"Détection de récursion lors du chargement de {module_name}.{attr}")
-                
+                loader_thread = _loading_modules[module_name].get("thread")
+                if loader_thread == threading.get_ident():
+                    # Chargé par le MÊME thread : véritable récursion.
+                    # Au lieu de lever une exception, retourner un objet factice pour certains modules critiques
+                    if module_name == "speech_recognition" and attr == "Recognizer":
+                        print(f"Récursion détectée pour {module_name}.{attr}, utilisation d'un import direct")
+                        import speech_recognition as sr_direct
+                        return getattr(sr_direct, attr)
+                    else:
+                        raise ImportError(f"Détection de récursion lors du chargement de {module_name}.{attr}")
+
+                # Chargé par un AUTRE thread : simple accès concurrent —
+                # attendre la fin du chargement au lieu de lever une erreur.
+                deadline = time.time() + 60.0
+                while module_name in _loading_modules and time.time() < deadline:
+                    time.sleep(0.05)
+                if module_name in sys.modules and not isinstance(sys.modules[module_name], LazyModule):
+                    return getattr(sys.modules[module_name], attr)
+                # Timeout ou échec : tenter un import direct (l'import lock de
+                # CPython sérialise les importations concurrentes)
+                module = importlib.import_module(module_name)
+                return getattr(module, attr)
+
             if module_name not in sys.modules or isinstance(sys.modules[module_name], LazyModule):
                 print(f"Chargement paresseux du module: {module_name}")
                 try:
                     # Marquer le module comme en cours de chargement
-                    _loading_modules[module_name] = time.time()
-                    
+                    _loading_modules[module_name] = {
+                        "thread": threading.get_ident(),
+                        "start": time.time(),
+                    }
+
                     # Importer le module
                     module = importlib.import_module(module_name)
-                    
+
                     # Remplacer le proxy par le vrai module dans sys.modules
                     sys.modules[name] = module
-                    
+
                     # Marquer le module comme chargé
-                    _loaded_modules[module_name] = time.time() - _loading_modules.pop(module_name)
-                    
+                    start = _loading_modules.pop(module_name)["start"]
+                    _loaded_modules[module_name] = time.time() - start
+
                     return getattr(module, attr)
                 except Exception as e:
                     # S'assurer que le module n'est plus marqué comme en cours de chargement
-                    if module_name in _loading_modules:
-                        _loading_modules.pop(module_name)
+                    _loading_modules.pop(module_name, None)
                     print(f"Erreur lors du chargement paresseux de {module_name}: {e}")
                     raise
             else:
